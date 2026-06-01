@@ -94,7 +94,7 @@ export default function SidebarLayout({
               color: "var(--text-primary)",
             }}
           >
-            LeadFlow
+            LeadQueue
           </span>
         </Link>
 

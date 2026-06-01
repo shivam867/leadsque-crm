@@ -7,11 +7,10 @@ type Feature = {
   label: string;
   basic: boolean | string;
   ai: boolean | string;
-  advanced: boolean | string;
 };
 
 type Tier = {
-  id: "basic" | "ai" | "advanced";
+  id: "basic" | "ai";
   name: string;
   tagline: string;
   badge?: string;
@@ -92,56 +91,21 @@ const tiers: Tier[] = [
       </svg>
     ),
   },
-  {
-    id: "advanced",
-    name: "LeadFlow Pro",
-    tagline: "Revenue intelligence platform",
-    badge: "Enterprise",
-    badgeColor: "bg-violet-100 text-violet-700",
-    accent: "#7C3AED",
-    iconBg: "bg-violet-50",
-    borderTop: "border-t-violet-600",
-    description:
-      "The complete AI revenue intelligence system — multi-language NLP, automated escalation, worksheet engagement loops, rejection analytics, and a director-level revenue dashboard.",
-    price: "Full Stack",
-    priceNote: "For institutes serious about revenue",
-    highlights: [
-      "Everything in AI",
-      "Multi-language NLP: Hindi/Telugu/Kannada/Tamil/Marathi",
-      "Pre-call brief (urgency, emotional state, opening line)",
-      "Auto-corrected CRM logging vs call transcript",
-      "Missed lead escalation: 90min warning → 120min reassign",
-      "Weekend worksheet engine + PDF performance report",
-      "Rejection reason database & leakage analysis",
-      "Smart callback scheduling from natural speech",
-      "Director revenue dashboard: 30-day enrollment prediction",
-      "Self-learning AI — compounds with every call",
-    ],
-    icon: (
-      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-        <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
-      </svg>
-    ),
-  },
 ];
 
 const comparisonFeatures: Feature[] = [
-  { label: "Lead capture & pipeline", basic: true, ai: true, advanced: true },
-  { label: "Follow-up reminders", basic: true, ai: true, advanced: true },
-  { label: "Team assignment & reassignment", basic: true, ai: true, advanced: true },
-  { label: "Activity timeline per lead", basic: true, ai: true, advanced: true },
-  { label: "Dashboard & analytics", basic: true, ai: true, advanced: true },
-  { label: "AI call summaries", basic: false, ai: true, advanced: true },
-  { label: "AI lead scoring (Hot/Medium/Cold)", basic: false, ai: true, advanced: true },
-  { label: "Best time to call — per lead", basic: false, ai: true, advanced: true },
-  { label: "Counselor talk-ratio analysis", basic: false, ai: true, advanced: true },
-  { label: "Multi-language NLP", basic: false, ai: false, advanced: true },
-  { label: "Pre-call brief (AI-generated)", basic: false, ai: false, advanced: true },
-  { label: "Auto-corrected CRM logging", basic: false, ai: false, advanced: true },
-  { label: "Missed lead escalation engine", basic: false, ai: false, advanced: true },
-  { label: "Worksheet engagement loop", basic: false, ai: false, advanced: true },
-  { label: "Director revenue intelligence", basic: false, ai: false, advanced: true },
-  { label: "Self-learning AI model", basic: false, ai: false, advanced: true },
+  { label: "Lead capture & pipeline", basic: true, ai: true },
+  { label: "Follow-up reminders", basic: true, ai: true },
+  { label: "Team assignment & reassignment", basic: true, ai: true },
+  { label: "Activity timeline per lead", basic: true, ai: true },
+  { label: "Dashboard & analytics", basic: true, ai: true },
+  { label: "AI call summaries", basic: false, ai: true },
+  { label: "AI lead scoring (Hot/Medium/Cold)", basic: false, ai: true },
+  { label: "Best time to call — per lead", basic: false, ai: true },
+  { label: "Counselor talk-ratio analysis", basic: false, ai: true },
+  { label: "Auto-generated follow-up messages", basic: false, ai: true },
+  { label: "Objection detection & tagging", basic: false, ai: true },
+  { label: "Student + parent profile per lead", basic: false, ai: true },
 ];
 
 // ─── Sub-components ──────────────────────────────────────────────────────────
@@ -168,7 +132,7 @@ function XIcon() {
 
 export default function TierComparison() {
   const [activeTab, setActiveTab] = useState<"cards" | "table">("cards");
-  const [selectedTier, setSelectedTier] = useState<"basic" | "ai" | "advanced">("ai");
+  const [selectedTier, setSelectedTier] = useState<"basic" | "ai">("ai");
 
   return (
     <section id="plans" className="py-24">
@@ -178,13 +142,13 @@ export default function TierComparison() {
         <div className="text-center mb-12">
           <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-indigo-50 border border-indigo-100 mb-5">
             <span className="w-1.5 h-1.5 rounded-full bg-indigo-500" />
-            <span className="text-xs font-bold tracking-widest uppercase text-indigo-600">Three Modes</span>
+            <span className="text-xs font-bold tracking-widest uppercase text-indigo-600">Two Modes</span>
           </div>
           <h2 className="text-3xl md:text-4xl font-extrabold text-gray-900 mb-4 tracking-tight">
             Start simple. Scale to intelligence.
           </h2>
           <p className="text-gray-500 text-lg max-w-xl mx-auto leading-relaxed">
-            One platform, three power levels. Every institute starts with a solid foundation — and unlocks AI features as they grow.
+            One platform, two power levels. Every institute starts with a solid foundation — and unlocks AI features as they grow.
           </p>
         </div>
 
@@ -209,7 +173,7 @@ export default function TierComparison() {
 
         {/* Cards View */}
         {activeTab === "cards" && (
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-5 max-w-3xl mx-auto">
             {tiers.map((tier) => (
               <div
                 key={tier.id}
@@ -275,15 +239,15 @@ export default function TierComparison() {
 
         {/* Comparison Table */}
         {activeTab === "table" && (
-          <div className="overflow-x-auto rounded-2xl border border-gray-200 shadow-sm">
-            <table className="w-full min-w-[640px]">
+          <div className="overflow-x-auto rounded-2xl border border-gray-200 shadow-sm max-w-3xl mx-auto">
+            <table className="w-full min-w-[480px]">
               <thead>
                 <tr className="border-b border-gray-100">
                   <th className="text-left px-6 py-5 text-sm font-bold text-gray-500 w-1/2">Feature</th>
                   {tiers.map((t) => (
                     <th key={t.id} className="px-4 py-5 text-center">
                       <div className="text-[11px] font-bold tracking-widest uppercase mb-1" style={{ color: t.accent }}>
-                        {t.id === "basic" ? "Basic" : t.id === "ai" ? "AI" : "Pro"}
+                        {t.id === "basic" ? "Basic" : "AI"}
                       </div>
                       <div className="text-sm font-bold text-gray-900">{t.name}</div>
                     </th>
@@ -294,7 +258,7 @@ export default function TierComparison() {
                 {comparisonFeatures.map((f, i) => (
                   <tr key={i} className={i % 2 === 0 ? "bg-gray-50/50" : "bg-white"}>
                     <td className="px-6 py-3.5 text-sm text-gray-700 font-medium">{f.label}</td>
-                    {(["basic", "ai", "advanced"] as const).map((tid) => {
+                    {(["basic", "ai"] as const).map((tid) => {
                       const tier = tiers.find((t) => t.id === tid)!;
                       const val = f[tid];
                       return (

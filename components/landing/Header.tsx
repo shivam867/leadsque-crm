@@ -6,7 +6,7 @@ import { Activity } from "lucide-react";
 const navLinks = [
   { label: "Roles", href: "#role-selector" },
   { label: "How It Works", href: "#how-it-works" },
-  { label: "Plans", href: "#plans" },
+  { label: "Features", href: "#plans" },
 ];
 
 function scrollToSection(href: string) {
@@ -29,7 +29,7 @@ export default function Header() {
           <div className="w-8 h-8 rounded-lg bg-indigo-600 flex items-center justify-center">
             <Activity size={15} color="white" strokeWidth={2.5} />
           </div>
-          <span className="font-bold text-lg text-gray-900 tracking-tight">LeadFlow</span>
+          <span className="font-bold text-lg text-gray-900 tracking-tight">LeadQueue</span>
         </Link>
 
         {/* Center nav — desktop */}
