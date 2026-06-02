@@ -1,367 +1,704 @@
 "use client";
 import { useState } from "react";
 import type { Lead, LeadStatus } from "@/data/dummy";
+import { STATUS_CONFIG, SCORE_CONFIG, LOST_REASONS, COURSE_OPTIONS } from "@/data/dummy";
 import {
-  ArrowLeft, Phone, Mail, MapPin, Calendar, User, Sparkles,
-  Check, Activity, LayoutGrid, Brain, ExternalLink, Zap, Target,
-  ChevronRight, Copy, Clock, Languages, Shield, Swords,
+  ArrowLeft, Phone, Mail, MapPin, Check, Activity, Copy,
+  Clock, ChevronDown, ChevronUp, PhoneCall, StickyNote,
+  CalendarDays, UserCheck, PhoneMissed, Ban, Tag,
+  CheckCircle2, MessageSquare, Zap, User, Layers,
+  AlertTriangle, Send, TrendingUp,
 } from "lucide-react";
 
-const STAGE_COLORS: Record<string, { bg: string; text: string; border: string }> = {
-  New: { bg: "#EFF6FF", text: "#1D4ED8", border: "#BFDBFE" },
-  Contacted: { bg: "#F8FAFC", text: "#475569", border: "#CBD5E1" },
-  Interested: { bg: "#F0FDF4", text: "#15803D", border: "#BBF7D0" },
-  "Follow-up": { bg: "#FFFBEB", text: "#B45309", border: "#FDE68A" },
-  Qualified: { bg: "#FAF5FF", text: "#7E22CE", border: "#DDD6FE" },
-  Won: { bg: "#ECFDF5", text: "#065F46", border: "#A7F3D0" },
-  Lost: { bg: "#FFF1F2", text: "#BE123C", border: "#FECDD3" },
-  Spam: { bg: "#F9FAFB", text: "#6B7280", border: "#E5E7EB" },
-};
-const SCORE_COLORS: Record<string, { bg: string; text: string; dot: string }> = {
-  Hot: { bg: "#FFF1F2", text: "#BE123C", dot: "#F87171" },
-  Warm: { bg: "#FFFBEB", text: "#B45309", dot: "#FCD34D" },
-  Medium: { bg: "#FFFBEB", text: "#B45309", dot: "#FCD34D" },
-  Cold: { bg: "#EFF6FF", text: "#1D4ED8", dot: "#93C5FD" },
-};
-const ACTIVITY_COLORS: Record<string, string> = {
-  call: "#2563EB", note: "#D97706", status: "#7C3AED", followup: "#059669", email: "#0891B2",
-};
-const ACTIVITY_LABELS: Record<string, string> = {
-  call: "Call", note: "Note", status: "Status change", followup: "Follow-up set", email: "Email",
-};
 const AVATAR_PALETTE = [
-  { bg: "#EFF6FF", text: "#1D4ED8", ring: "#BFDBFE" },
-  { bg: "#F0FDF4", text: "#15803D", ring: "#BBF7D0" },
-  { bg: "#FFFBEB", text: "#B45309", ring: "#FDE68A" },
-  { bg: "#FAF5FF", text: "#7E22CE", ring: "#DDD6FE" },
+  { bg: "#DBEAFE", text: "#1D4ED8", ring: "#BFDBFE" },
+  { bg: "#DCFCE7", text: "#15803D", ring: "#BBF7D0" },
+  { bg: "#FED7AA", text: "#C2410C", ring: "#FED7AA" },
+  { bg: "#E9D5FF", text: "#7E22CE", ring: "#DDD6FE" },
 ];
 
-const KNOWN_LANGS = ["Hindi", "English", "Tamil", "Telugu", "Gujarati", "Marathi", "Bengali", "Malayalam", "Kannada", "Punjabi", "Odia"];
-const LANG_COLORS: Record<string, { bg: string; text: string; border: string }> = {
-  Hindi: { bg: "#FFF7ED", text: "#C2410C", border: "#FED7AA" },
-  English: { bg: "#EFF6FF", text: "#1D4ED8", border: "#BFDBFE" },
-  Tamil: { bg: "#FDF4FF", text: "#7E22CE", border: "#E9D5FF" },
-  Telugu: { bg: "#ECFDF5", text: "#065F46", border: "#A7F3D0" },
-  Gujarati: { bg: "#FFFBEB", text: "#B45309", border: "#FDE68A" },
-  Marathi: { bg: "#FFF1F2", text: "#BE123C", border: "#FECDD3" },
-  Malayalam: { bg: "#F0FDF4", text: "#15803D", border: "#BBF7D0" },
-  default: { bg: "#F1F5F9", text: "#475569", border: "#CBD5E1" },
+const ACTIVITY_COLORS: Record<string, string> = {
+  call: "#2563EB", note: "#D97706", status: "#7C3AED",
+  followup: "#059669", email: "#0891B2", whatsapp: "#25D366", meeting: "#374151",
 };
-function extractLangBadges(pref: string): string[] {
-  return KNOWN_LANGS.filter(l => pref.toLowerCase().includes(l.toLowerCase()));
-}
-function getLangColor(lang: string) {
-  return LANG_COLORS[lang] ?? LANG_COLORS.default;
-}
+const ACTIVITY_LABELS: Record<string, string> = {
+  call: "Call", note: "Note", status: "Status change",
+  followup: "Follow-up set", email: "Email", whatsapp: "WhatsApp", meeting: "Meeting",
+};
 
-type Tab = "overview" | "activity";
+const ORDERED_STAGES: LeadStatus[] = ["New", "Contacted", "Qualified", "Proposal Sent", "Negotiation", "Enrolled"];
+
+const ESCALATION_REASONS = [
+  "Needs discount approval",
+  "Requesting refund or exception",
+  "Budget negotiation required",
+  "High-value lead — needs senior attention",
+  "Repeated no-shows — needs intervention",
+  "Complaint or grievance",
+  "Other",
+];
+
+type Tab = "overview" | "calls" | "activity" | "escalate";
+
 function getInitials(name: string) {
-  return name.split(" ").map(n => n[0]).join("").slice(0, 2);
-}
-function getOpeningLine(lead: Lead): string {
-  if (lead.aiSummary.suggestedOpeningLine) return lead.aiSummary.suggestedOpeningLine;
-  if (lead.status === "Won") return `Hi ${lead.name.split(" ")[0]}! Welcome to Pinnacle IAS — excited to have you on board. Let's get your onboarding sorted today!`;
-  if (lead.status === "Qualified") return `Hello ${lead.name.split(" ")[0]} ji, aapki seat confirm karne ke liye call kar raha/rahi hoon — aaj payment complete kar sakte hain?`;
-  return `Hello ${lead.name.split(" ")[0]} ji! Main Pinnacle IAS se bol raha/rahi hoon — aapne recently hamare ${lead.service} ke baare mein inquiry ki thi, kya abhi 5 minute baat ho sakti hai?`;
+  return name.split(" ").map(n => n[0]).join("").slice(0, 2).toUpperCase();
 }
 
-export default function LeadFullPage({
-  lead, onBack, onOpenCallIntelligence, avatarIndex = 0,
-}: {
-  lead: Lead; onBack: () => void; onOpenCallIntelligence: (lead: Lead) => void; avatarIndex?: number;
-}) {
-  const [tab, setTab] = useState<Tab>("overview");
-  const [currentStage] = useState<LeadStatus>(lead.status);
-  const [notes, setNotes] = useState(lead.notes ?? "");
-  const [noteSaved, setNoteSaved] = useState(false);
-  const [copied, setCopied] = useState(false);
+// ─── Full pipeline stepper — wider, labels always visible ───────
+function PipelineStepper({ current }: { current: LeadStatus }) {
+  const currentIdx = ORDERED_STAGES.indexOf(current);
+  const isTerminal = current === "Lost" || current === "Not Interested";
 
-  const palette = AVATAR_PALETTE[avatarIndex % AVATAR_PALETTE.length];
-  const sc = STAGE_COLORS[currentStage] ?? STAGE_COLORS.Spam;
-  const scorec = SCORE_COLORS[lead.score] ?? SCORE_COLORS.Cold;
-  const ai = lead.aiSummary;
-  const probColor = ai.dealProbability >= 70 ? "#059669" : ai.dealProbability >= 40 ? "#D97706" : "#DC2626";
-
-  const saveNote = () => { lead.notes = notes; setNoteSaved(true); setTimeout(() => setNoteSaved(false), 1800); };
-  const copyPhone = () => { navigator.clipboard.writeText(lead.phone); setCopied(true); setTimeout(() => setCopied(false), 1500); };
-
-  const langBadges = ai.languagePreference ? extractLangBadges(ai.languagePreference) : [];
-  const hasNewFields = !!(ai.competitorIntel || ai.handlingObjections || ai.languagePreference);
-
-  return (
-    <div style={{ minHeight: "100vh", background: "var(--surface)", display: "flex", flexDirection: "column" }}>
-
-      {/* ── Nav Bar ── */}
-      <div style={{ height: 52, display: "flex", alignItems: "center", justifyContent: "space-between", padding: "0 20px", borderBottom: "0.5px solid var(--border)", background: "var(--surface)", position: "sticky", top: 0, zIndex: 10, flexShrink: 0 }}>
-        <button onClick={onBack} style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 13, fontWeight: 500, color: "#6B7280", background: "transparent", border: "none", cursor: "pointer", padding: "6px 10px", borderRadius: 8 }}
-          onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = "var(--surface-2)"; (e.currentTarget as HTMLElement).style.color = "var(--text-primary)"; }}
-          onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = "transparent"; (e.currentTarget as HTMLElement).style.color = "#6B7280"; }}>
-          <ArrowLeft size={14} strokeWidth={2} /> Back to Leads
-        </button>
-        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-          <span style={{ fontSize: 11, color: "#9CA3AF", fontFamily: "monospace" }}>{lead.id}</span>
-          <button onClick={() => onOpenCallIntelligence(lead)} style={{ display: "flex", alignItems: "center", gap: 7, fontSize: 12, fontWeight: 600, padding: "7px 14px", borderRadius: 8, cursor: "pointer", background: "#1D4ED8", color: "#fff", border: "none" }}
-            onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = "#1E40AF"; }}
-            onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = "#1D4ED8"; }}>
-            <Brain size={13} strokeWidth={2} /> Call Intelligence <ExternalLink size={11} strokeWidth={2} />
-          </button>
+  if (isTerminal) {
+    return (
+      <div style={{ padding: "12px 24px 16px" }}>
+        <div style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "8px 16px", background: "#FEF2F2", border: "1px solid #FECACA", borderRadius: 99 }}>
+          <span style={{ width: 8, height: 8, borderRadius: "50%", background: "#EF4444" }} />
+          <span style={{ fontSize: 13, fontWeight: 700, color: "#B91C1C" }}>Lead {current}</span>
         </div>
       </div>
+    );
+  }
 
-      <div style={{ flex: 1, display: "flex", flexDirection: "column" }}>
+  return (
+    <div style={{ padding: "16px 32px 20px", background: "#fff" }}>
+      <div style={{ position: "relative" }}>
+        {/* Track background */}
+        <div style={{ position: "absolute", top: 16, left: 16, right: 16, height: 3, background: "#E5E7EB", borderRadius: 99 }} />
+        {/* Track fill */}
+        {currentIdx > 0 && (
+          <div style={{
+            position: "absolute", top: 16, left: 16,
+            width: `calc(${(currentIdx / (ORDERED_STAGES.length - 1)) * 100}% - 32px * ${currentIdx / (ORDERED_STAGES.length - 1)})`,
+            height: 3, background: "linear-gradient(90deg, #2563EB, #3B82F6)", borderRadius: 99,
+          }} />
+        )}
 
-        {/* ── Hero ── */}
-        <div style={{ padding: "24px 24px 0", background: "var(--surface)", borderBottom: "0.5px solid var(--border)" }}>
-          <div style={{ maxWidth: 1200, margin: "0 auto" }}>
+        {/* Dots + labels */}
+        <div style={{ display: "flex", justifyContent: "space-between", position: "relative" }}>
+          {ORDERED_STAGES.map((stage, i) => {
+            const done   = i < currentIdx;
+            const active = i === currentIdx;
+            const future = i > currentIdx;
+            const cfg    = STATUS_CONFIG[stage];
 
-            {/* Avatar + name row */}
-            <div style={{ display: "flex", alignItems: "flex-start", gap: 16, marginBottom: 20 }}>
-              <div style={{ width: 52, height: 52, borderRadius: 16, flexShrink: 0, background: palette.bg, border: `0.5px solid ${palette.ring}`, display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 700, fontSize: 18, color: palette.text }}>
-                {getInitials(lead.name)}
-              </div>
-              <div style={{ flex: 1 }}>
-                <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 8, flexWrap: "wrap" }}>
-                  <h1 style={{ fontSize: 20, fontWeight: 700, color: "var(--text-primary)", margin: 0 }}>{lead.name}</h1>
-                  <span style={{ fontSize: 11, fontWeight: 500, padding: "3px 9px", borderRadius: 20, background: sc.bg, color: sc.text, border: `0.5px solid ${sc.border}` }}>{currentStage}</span>
-                  <span style={{ fontSize: 11, fontWeight: 500, padding: "3px 9px", borderRadius: 20, background: scorec.bg, color: scorec.text, display: "flex", alignItems: "center", gap: 4 }}>
-                    <span style={{ width: 6, height: 6, borderRadius: "50%", background: scorec.dot }} />{lead.score}
-                  </span>
-                </div>
-                <div style={{ display: "flex", alignItems: "center", gap: 14, flexWrap: "wrap" }}>
-                  <MetaItem icon={<MapPin size={12} />} text={lead.city} />
-                  <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                    <MetaItem icon={<Phone size={12} />} text={lead.phone} mono />
-                    <button onClick={copyPhone} style={{ display: "flex", alignItems: "center", gap: 3, fontSize: 10, padding: "2px 6px", borderRadius: 5, cursor: "pointer", background: copied ? "#ECFDF5" : "var(--surface-2)", color: copied ? "#059669" : "#9CA3AF", border: `0.5px solid ${copied ? "#A7F3D0" : "var(--border)"}` }}>
-                      {copied ? <Check size={9} strokeWidth={3} /> : <Copy size={9} strokeWidth={2} />}
-                    </button>
-                  </div>
-                  {lead.email && <MetaItem icon={<Mail size={12} />} text={lead.email} />}
-                  <MetaItem icon={<User size={12} />} text={`Assigned to ${lead.assignedTo}`} />
-                  <MetaItem icon={<Calendar size={12} />} text={`Created ${lead.createdAt}`} />
-                </div>
-              </div>
-              {/* Deal probability */}
-              <div style={{ display: "flex", flexDirection: "column", alignItems: "center", padding: "12px 18px", borderRadius: 14, background: "var(--surface-2)", border: "0.5px solid var(--border)", flexShrink: 0 }}>
-                <span style={{ fontSize: 28, fontWeight: 800, color: probColor, lineHeight: 1 }}>{ai.dealProbability}%</span>
-                <span style={{ fontSize: 9, color: "#9CA3AF", marginTop: 2, letterSpacing: "0.06em", textTransform: "uppercase" as const }}>Deal Probability</span>
-                <div style={{ height: 3, background: "#E5E7EB", borderRadius: 99, overflow: "hidden", width: 72, marginTop: 8 }}>
-                  <div style={{ height: "100%", width: `${ai.dealProbability}%`, background: probColor, borderRadius: 99 }} />
-                </div>
-              </div>
-            </div>
-
-            {/* ── Action Strip (3 columns, primary AI actions) ── */}
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", border: "0.5px solid var(--border)", borderRadius: 12, overflow: "hidden", marginBottom: 20 }}>
-              {/* Suggested Opening */}
-              <div style={{ padding: "16px 20px", borderRight: "0.5px solid var(--border)", background: "#EFF6FF" }}>
-                <ActionLabel icon={<Zap size={11} />} label="Suggested Opening" color="#2563EB" />
-                <p style={{ fontSize: 13, color: "var(--text-secondary)", fontStyle: "italic", lineHeight: 1.65, margin: 0 }}>
-                  &ldquo;{getOpeningLine(lead)}&rdquo;
-                </p>
-              </div>
-              {/* Pre-Call Brief */}
-              <div style={{ padding: "16px 20px", borderRight: "0.5px solid var(--border)", background: "#FFFBEB" }}>
-                <ActionLabel icon={<Target size={11} />} label="Pre-Call Brief" color="#B45309" />
-                <p style={{ fontSize: 13, color: "var(--text-secondary)", lineHeight: 1.65, margin: 0 }}>{ai.summary}</p>
-              </div>
-              {/* Best Time to Call */}
-              <div style={{ padding: "16px 20px", background: "#F0FDF4" }}>
-                <ActionLabel icon={<Clock size={11} />} label="Best Time to Call" color="#059669" />
-                <p style={{ fontSize: 15, fontWeight: 700, color: "var(--text-primary)", margin: "0 0 6px" }}>{ai.bestTimeToCall}</p>
-                <div style={{ display: "flex", alignItems: "flex-start", gap: 5, fontSize: 12, color: "#2563EB" }}>
-                  <Sparkles size={10} strokeWidth={2} style={{ marginTop: 2, flexShrink: 0 }} />
-                  <span style={{ lineHeight: 1.5 }}>{ai.nextAction}</span>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* ── Tabs ── */}
-        <div style={{ display: "flex", borderBottom: "0.5px solid var(--border)", background: "var(--surface)", paddingLeft: 24 }}>
-          {(["overview", "activity"] as Tab[]).map(t => {
-            const isActive = tab === t;
-            const icons: Record<Tab, React.ReactNode> = { overview: <LayoutGrid size={13} />, activity: <Activity size={13} /> };
-            const labels: Record<Tab, string> = { overview: "Overview", activity: "Activity" };
             return (
-              <button key={t} onClick={() => setTab(t)} style={{ padding: "10px 16px", fontSize: 13, fontWeight: isActive ? 600 : 400, color: isActive ? "#2563EB" : "#9CA3AF", background: "transparent", cursor: "pointer", border: "none", borderBottom: `2px solid ${isActive ? "#2563EB" : "transparent"}`, display: "flex", alignItems: "center", gap: 6 }}>
-                {icons[t]}{labels[t]}
-              </button>
+              <div key={stage} style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 8 }}>
+                {/* Circle */}
+                <div style={{
+                  width: 34, height: 34, borderRadius: "50%",
+                  display: "flex", alignItems: "center", justifyContent: "center",
+                  background: done ? "#2563EB" : active ? "#fff" : "#fff",
+                  border: done ? "none" : active ? `3px solid ${cfg.text}` : "2.5px solid #E5E7EB",
+                  boxShadow: active ? `0 0 0 5px ${cfg.text}18, 0 2px 8px ${cfg.text}20` : done ? "0 2px 6px rgba(37,99,235,0.25)" : "none",
+                  transition: "all .25s",
+                  zIndex: 1, position: "relative",
+                }}>
+                  {done
+                    ? <Check size={14} style={{ color: "#fff" }} strokeWidth={3} />
+                    : active
+                    ? <div style={{ width: 10, height: 10, borderRadius: "50%", background: cfg.text }} />
+                    : <div style={{ width: 8, height: 8, borderRadius: "50%", background: "#D1D5DB" }} />
+                  }
+                </div>
+
+                {/* Label */}
+                <div style={{ textAlign: "center" }}>
+                  <span style={{
+                    fontSize: 11,
+                    fontWeight: active ? 800 : done ? 600 : 400,
+                    color: active ? cfg.text : done ? "#374151" : "#9CA3AF",
+                    display: "block", whiteSpace: "nowrap",
+                    lineHeight: 1.3,
+                  }}>
+                    {stage}
+                  </span>
+                  {active && (
+                    <span style={{ fontSize: 9, color: cfg.text, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.05em", opacity: 0.8 }}>
+                      Current
+                    </span>
+                  )}
+                </div>
+              </div>
             );
           })}
         </div>
+      </div>
+    </div>
+  );
+}
 
-        {/* ── Body ── */}
-        <div style={{ flex: 1, maxWidth: 1200, margin: "0 auto", width: "100%", padding: "20px 24px 32px", boxSizing: "border-box" as const }}>
+function SectionCard({ title, icon, children, accent }: {
+  title: string; icon?: React.ReactNode; children: React.ReactNode; accent?: string;
+}) {
+  return (
+    <div style={{ background: "#fff", border: "1px solid #E5E7EB", borderRadius: 12, overflow: "hidden" }}>
+      <div style={{ padding: "11px 16px", borderBottom: "1px solid #F3F4F6", display: "flex", alignItems: "center", gap: 7 }}>
+        {icon && <span style={{ color: accent ?? "#9CA3AF" }}>{icon}</span>}
+        <span style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.06em", textTransform: "uppercase" as const, color: "#4B5563" }}>{title}</span>
+      </div>
+      <div style={{ padding: "12px 16px" }}>{children}</div>
+    </div>
+  );
+}
 
-          {tab === "overview" && (
-            <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
+function InfoRow({ label, value, mono, last }: { label: string; value: string; mono?: boolean; last?: boolean }) {
+  return (
+    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "8px 0", borderBottom: last ? "none" : "1px solid #F9FAFB" }}>
+      <span style={{ fontSize: 13, color: "#4B5563" }}>{label}</span>
+      <span style={{ fontSize: 13, color: "#111827", fontFamily: mono ? "monospace" : undefined, fontWeight: 500 }}>{value}</span>
+    </div>
+  );
+}
 
-              {/* ── Intel cards row (only if any exist) ── */}
-              {hasNewFields && (
-                <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 14 }}>
-                  {ai.competitorIntel && (
-                    <IntelCard icon={<Swords size={12} />} label="Competitor Intel" color="#4F46E5">
-                      <p style={{ fontSize: 13, color: "var(--text-secondary)", lineHeight: 1.65, margin: 0 }}>{ai.competitorIntel}</p>
-                    </IntelCard>
+export default function LeadFullPage({ lead, onBack, avatarIndex = 0 }: {
+  lead: Lead; onBack: () => void; avatarIndex?: number;
+}) {
+  const [tab, setTab] = useState<Tab>("overview");
+  const [notes, setNotes] = useState(lead.notes ?? "");
+  const [noteSaved, setNoteSaved] = useState(false);
+  const [copied, setCopied] = useState(false);
+  const [showAllActivity, setShowAllActivity] = useState(false);
+  const [selectedStatus, setSelectedStatus] = useState<LeadStatus>(lead.status);
+  const [selectedLostReason, setSelectedLostReason] = useState(lead.lostReason ?? "");
+  const [statusSaved, setStatusSaved] = useState(false);
+  const [noteInput, setNoteInput] = useState("");
+  const [noteAdded, setNoteAdded] = useState(false);
+  const [selectedCourses, setSelectedCourses] = useState<string[]>(lead.courseInterests ?? []);
+  const [escalationReason, setEscalationReason] = useState("");
+  const [escalationNote, setEscalationNote] = useState("");
+  const [escalationPriority, setEscalationPriority] = useState("Normal");
+  const [escalationSent, setEscalationSent] = useState(false);
+
+  const palette  = AVATAR_PALETTE[avatarIndex % 4];
+  const sc       = STATUS_CONFIG[selectedStatus] ?? STATUS_CONFIG["New"];
+  const scorec   = SCORE_CONFIG[lead.score] ?? SCORE_CONFIG.Cold;
+  const displayedActivity = showAllActivity ? lead.activity : lead.activity.slice(0, 6);
+  const connectedCalls = lead.callLogs.filter(c => c.result === "Connected").length;
+  const totalCalls = lead.callLogs.length;
+
+  const saveNote    = () => { lead.notes = notes; setNoteSaved(true); setTimeout(() => setNoteSaved(false), 1800); };
+  const addNote     = () => { if (!noteInput.trim()) return; setNoteAdded(true); setTimeout(() => { setNoteAdded(false); setNoteInput(""); }, 1800); };
+  const copyPhone   = () => { navigator.clipboard.writeText(lead.phone); setCopied(true); setTimeout(() => setCopied(false), 1500); };
+  const updateStatus = () => { setStatusSaved(true); setTimeout(() => setStatusSaved(false), 1800); };
+  const sendEscalation = () => { if (!escalationReason) return; setEscalationSent(true); setTimeout(() => { setEscalationSent(false); setEscalationReason(""); setEscalationNote(""); }, 2200); };
+
+  return (
+    <div style={{ minHeight: "100vh", background: "#F5F5F7", display: "flex", flexDirection: "column" }}>
+
+      {/* ── Nav bar ── */}
+      <div style={{
+        height: 54, display: "flex", alignItems: "center", justifyContent: "space-between",
+        padding: "0 28px", borderBottom: "1px solid #E5E7EB", background: "#fff",
+        position: "sticky", top: 0, zIndex: 10, flexShrink: 0,
+      }}>
+        <button onClick={onBack} style={{
+          display: "flex", alignItems: "center", gap: 7, fontSize: 13, fontWeight: 600,
+          color: "#374151", background: "transparent", border: "1px solid #E5E7EB",
+          cursor: "pointer", padding: "6px 14px", borderRadius: 8, transition: "all .15s",
+        }}
+          onMouseEnter={e => (e.currentTarget as HTMLElement).style.background = "#F9FAFB"}
+          onMouseLeave={e => (e.currentTarget as HTMLElement).style.background = "transparent"}>
+          <ArrowLeft size={14} strokeWidth={2.5} /> Back
+        </button>
+        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+          <span style={{ fontSize: 12, fontFamily: "monospace", color: "#9CA3AF" }}>{lead.id}</span>
+          <span style={{ fontSize: 12, fontWeight: 700, padding: "4px 12px", borderRadius: 99, background: sc.bg, color: sc.text, border: `1px solid ${sc.border}` }}>
+            {selectedStatus}
+          </span>
+          <a href={`tel:${lead.phone}`}>
+            <button style={{
+              display: "flex", alignItems: "center", gap: 6, fontSize: 13, fontWeight: 700,
+              padding: "7px 18px", borderRadius: 9, background: "#111827", color: "#fff", border: "none", cursor: "pointer",
+            }}>
+              <Phone size={13} /> Call Now
+            </button>
+          </a>
+        </div>
+      </div>
+
+      {/* ── Hero block ── */}
+      <div style={{ background: "#fff", borderBottom: "1px solid #E5E7EB" }}>
+        {/* Identity strip */}
+        <div style={{ padding: "20px 28px 16px", display: "flex", alignItems: "flex-start", gap: 18 }}>
+          <div style={{
+            width: 60, height: 60, borderRadius: 18, flexShrink: 0,
+            background: palette.bg, color: palette.text,
+            display: "flex", alignItems: "center", justifyContent: "center",
+            fontSize: 20, fontWeight: 800, letterSpacing: "-0.03em",
+            boxShadow: `0 0 0 4px ${palette.ring}`,
+          }}>
+            {getInitials(lead.name)}
+          </div>
+
+          <div style={{ flex: 1 }}>
+            <h1 style={{ fontSize: 22, fontWeight: 800, color: "#111827", margin: "0 0 6px", letterSpacing: "-0.03em" }}>{lead.name}</h1>
+            <div style={{ display: "flex", flexWrap: "wrap", gap: 14, alignItems: "center" }}>
+              <button onClick={copyPhone} style={{ display: "flex", alignItems: "center", gap: 5, fontSize: 13, color: "#374151", background: "transparent", border: "none", cursor: "pointer", padding: 0, fontFamily: "monospace" }}>
+                <Phone size={13} style={{ color: "#9CA3AF" }} />{lead.phone}
+                {copied ? <Check size={11} style={{ color: "#059669" }} /> : <Copy size={11} style={{ color: "#C4C4C4" }} />}
+              </button>
+              <span style={{ display: "flex", alignItems: "center", gap: 5, fontSize: 13, color: "#374151" }}>
+                <Mail size={13} style={{ color: "#9CA3AF" }} />{lead.email}
+              </span>
+              <span style={{ display: "flex", alignItems: "center", gap: 5, fontSize: 13, color: "#374151" }}>
+                <MapPin size={13} style={{ color: "#9CA3AF" }} />{lead.city}
+              </span>
+            </div>
+          </div>
+
+          {/* Score + badge cluster */}
+          <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 8, flexShrink: 0 }}>
+            <div style={{ display: "flex", gap: 7, alignItems: "center" }}>
+              <span style={{ display: "inline-flex", alignItems: "center", gap: 4, fontSize: 12, fontWeight: 700, padding: "4px 12px", borderRadius: 99, background: scorec.bg, color: scorec.text }}>
+                <span style={{ width: 6, height: 6, borderRadius: "50%", background: scorec.dot }} />{lead.score}
+              </span>
+              <span style={{ fontSize: 12, fontWeight: 600, padding: "4px 12px", borderRadius: 99, background: "#F3F4F6", color: "#374151", border: "1px solid #E5E7EB" }}>
+                {lead.service}
+              </span>
+            </div>
+            {typeof lead.leadScore === "number" && (
+              <div style={{ display: "flex", alignItems: "center", gap: 10, background: "#F9FAFB", padding: "7px 14px", borderRadius: 99, border: "1px solid #E5E7EB" }}>
+                <span style={{ fontSize: 12, color: "#6B7280", fontWeight: 600 }}>Lead Score</span>
+                <div style={{ width: 90, height: 5, background: "#E5E7EB", borderRadius: 99, overflow: "hidden" }}>
+                  <div style={{ height: "100%", width: `${lead.leadScore}%`, borderRadius: 99, background: lead.leadScore >= 70 ? "#059669" : lead.leadScore >= 40 ? "#D97706" : "#9CA3AF" }} />
+                </div>
+                <span style={{ fontSize: 16, fontWeight: 900, color: lead.leadScore >= 70 ? "#059669" : lead.leadScore >= 40 ? "#D97706" : "#6B7280", minWidth: 28, textAlign: "right" }}>{lead.leadScore}</span>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Pipeline stepper — full width, no truncation */}
+        <PipelineStepper current={selectedStatus} />
+      </div>
+
+      {/* ── Tab bar ── */}
+      <div style={{ display: "flex", background: "#fff", borderBottom: "1px solid #E5E7EB", padding: "0 28px" }}>
+        {([
+          { key: "overview",  label: "Overview",    icon: <Layers size={14} />        },
+          { key: "calls",     label: "Call Logs",   icon: <PhoneCall size={14} />     },
+          { key: "activity",  label: "Activity",    icon: <Activity size={14} />      },
+          { key: "escalate",  label: "Escalate",    icon: <AlertTriangle size={14} /> },
+        ] as { key: Tab; label: string; icon: React.ReactNode }[]).map(t => (
+          <button key={t.key} onClick={() => setTab(t.key)} style={{
+            display: "flex", alignItems: "center", gap: 6, padding: "13px 18px",
+            fontSize: 14, fontWeight: 600, border: "none", cursor: "pointer",
+            borderBottom: tab === t.key ? "2.5px solid #111827" : "2.5px solid transparent",
+            color: tab === t.key ? "#111827" : "#9CA3AF",
+            background: "transparent", transition: "all .15s",
+          }}>
+            {t.icon}{t.label}
+            {t.key === "escalate" && (
+              <span style={{ fontSize: 9, fontWeight: 800, padding: "1px 6px", borderRadius: 99, background: "#FEF2F2", color: "#B91C1C", marginLeft: 2 }}>!</span>
+            )}
+          </button>
+        ))}
+      </div>
+
+      {/* ── Content ── */}
+      <div style={{ flex: 1, overflowY: "auto", padding: "24px 28px" }}>
+
+        {/* ════════ OVERVIEW ════════ */}
+        {tab === "overview" && (
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 380px", gap: 20, maxWidth: 1140 }}>
+
+            {/* ── Left column ── */}
+            <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+
+              {/* Lead info */}
+              <SectionCard title="Lead Information" icon={<User size={13} />}>
+                <InfoRow label="Lead ID"     value={lead.id}         mono />
+                <InfoRow label="Source"      value={lead.source}          />
+                <InfoRow label="City"        value={lead.city}            />
+                <InfoRow label="Assigned To" value={lead.assignedTo}      />
+                <InfoRow label="Created"     value={lead.createdAt}  mono />
+                {lead.followUpDate && <InfoRow label="Next Follow-up" value={lead.followUpDate} mono />}
+                <InfoRow label="Priority"    value={lead.priority}   last />
+              </SectionCard>
+
+              {/* Qualification */}
+              <SectionCard title="Lead Qualification" icon={<TrendingUp size={13} />} accent="#2563EB">
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginBottom: 12 }}>
+                  {[
+                    { label: "Intake Timeline", value: lead.intakeTimeline ?? "—" },
+                    { label: "Education",        value: lead.education ?? "—"       },
+                    { label: "Engagement Level", value: lead.engagementLevel ?? "—" },
+                    { label: "Budget Readiness", value: lead.budgetReadiness ?? "—" },
+                  ].map(row => (
+                    <div key={row.label} style={{ padding: "11px 13px", background: "#F9FAFB", borderRadius: 10, border: "1px solid #F0F0F0" }}>
+                      <p style={{ fontSize: 10, fontWeight: 700, color: "#6B7280", textTransform: "uppercase", letterSpacing: "0.05em", margin: "0 0 4px" }}>{row.label}</p>
+                      <p style={{ fontSize: 14, fontWeight: 700, color: "#111827", margin: 0 }}>{row.value}</p>
+                    </div>
+                  ))}
+                </div>
+                {typeof lead.leadScore === "number" && (
+                  <div style={{ padding: "12px 14px", background: "#F9FAFB", borderRadius: 10, border: "1px solid #F0F0F0", display: "flex", alignItems: "center", gap: 12 }}>
+                    <span style={{ fontSize: 12, fontWeight: 700, color: "#4B5563", textTransform: "uppercase", letterSpacing: "0.05em" }}>Lead Score</span>
+                    <div style={{ flex: 1, height: 6, background: "#E5E7EB", borderRadius: 99, overflow: "hidden" }}>
+                      <div style={{ height: "100%", width: `${lead.leadScore}%`, background: lead.leadScore >= 70 ? "#059669" : lead.leadScore >= 40 ? "#D97706" : "#9CA3AF", borderRadius: 99 }} />
+                    </div>
+                    <span style={{ fontSize: 22, fontWeight: 900, color: lead.leadScore >= 70 ? "#059669" : lead.leadScore >= 40 ? "#D97706" : "#6B7280", minWidth: 36, textAlign: "right" }}>{lead.leadScore}</span>
+                  </div>
+                )}
+              </SectionCard>
+
+              {/* Course interests */}
+              <SectionCard title="Course Interests" icon={<Tag size={13} />} accent="#7C3AED">
+                <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginBottom: 12 }}>
+                  {(lead.courseInterests ?? []).length > 0
+                    ? (lead.courseInterests ?? []).map(c => (
+                        <span key={c} style={{ fontSize: 12, fontWeight: 700, padding: "4px 11px", borderRadius: 8, background: "#EFF6FF", color: "#1D4ED8", border: "1px solid #BFDBFE" }}>{c}</span>
+                      ))
+                    : <span style={{ fontSize: 13, color: "#9CA3AF" }}>None selected</span>
+                  }
+                </div>
+                <p style={{ fontSize: 11, fontWeight: 700, color: "#9CA3AF", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 8 }}>Update interests:</p>
+                <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+                  {COURSE_OPTIONS.map(c => {
+                    const sel = selectedCourses.includes(c);
+                    return (
+                      <button key={c}
+                        onClick={() => setSelectedCourses(prev => prev.includes(c) ? prev.filter(x => x !== c) : [...prev, c])}
+                        style={{
+                          fontSize: 12, fontWeight: 600, padding: "4px 10px", borderRadius: 7, cursor: "pointer",
+                          border: `1.5px solid ${sel ? "#7C3AED" : "#E5E7EB"}`,
+                          background: sel ? "#FAF5FF" : "#fff", color: sel ? "#7C3AED" : "#374151", transition: "all .15s",
+                        }}>
+                        {c}
+                      </button>
+                    );
+                  })}
+                </div>
+              </SectionCard>
+
+              {/* Counseling form */}
+              {lead.counselingNote && (
+                <SectionCard title="Counseling Form" icon={<UserCheck size={13} />} accent="#059669">
+                  {[
+                    { label: "Target Program",    value: lead.counselingNote.targetProgram      },
+                    { label: "Course Interest",   value: lead.counselingNote.courseInterest     },
+                    { label: "Engagement Level",  value: lead.counselingNote.engagementLevel    },
+                    { label: "Prev. Experience",  value: lead.counselingNote.previousExperience },
+                    { label: "Budget",            value: lead.counselingNote.budget             },
+                  ].map((row, i, arr) => <InfoRow key={row.label} label={row.label} value={row.value} last={i === arr.length - 1} />)}
+                  {lead.counselingNote.painPoints && (
+                    <div style={{ marginTop: 10, padding: "11px 13px", background: "#FFFBEB", borderRadius: 9, border: "1px solid #FDE68A" }}>
+                      <p style={{ fontSize: 10, fontWeight: 800, color: "#B45309", margin: "0 0 4px", textTransform: "uppercase", letterSpacing: "0.05em" }}>Pain Points</p>
+                      <p style={{ fontSize: 13, color: "#78350F", margin: 0, lineHeight: 1.55 }}>{lead.counselingNote.painPoints}</p>
+                    </div>
                   )}
-                  {ai.handlingObjections && (
-                    <IntelCard icon={<Shield size={12} />} label="Handling Objections" color="#0369A1">
-                      <p style={{ fontSize: 13, color: "var(--text-secondary)", lineHeight: 1.65, margin: 0 }}>{ai.handlingObjections}</p>
-                    </IntelCard>
-                  )}
-                  {ai.languagePreference && (
-                    <IntelCard icon={<Languages size={12} />} label="Language Preference" color="#0369A1">
-                      <p style={{ fontSize: 12, color: "var(--text-secondary)", marginBottom: 8 }}>Comfortable communicating in:</p>
-                      <div style={{ display: "flex", flexWrap: "wrap" as const, gap: 6 }}>
-                        {langBadges.length > 0
-                          ? langBadges.map((lang, i) => {
-                            const lc = getLangColor(lang);
-                            return <span key={i} style={{ fontSize: 12, fontWeight: 600, padding: "3px 10px", borderRadius: 20, background: lc.bg, color: lc.text, border: `0.5px solid ${lc.border}` }}>{lang}</span>;
-                          })
-                          : <span style={{ fontSize: 13, color: "var(--text-secondary)" }}>{ai.languagePreference}</span>
-                        }
-                      </div>
-                    </IntelCard>
-                  )}
+                  <p style={{ fontSize: 11, color: "#9CA3AF", margin: "8px 0 0", fontFamily: "monospace" }}>By {lead.counselingNote.createdBy} · {lead.counselingNote.createdAt}</p>
+                </SectionCard>
+              )}
+
+              {/* Sponsor / parent */}
+              {lead.parentName && (
+                <SectionCard title="Sponsor / Parent" icon={<User size={13} />}>
+                  <InfoRow label="Name"  value={lead.parentName} />
+                  {lead.parentPhone && <InfoRow label="Phone" value={lead.parentPhone} mono last />}
+                </SectionCard>
+              )}
+
+              {/* Lost reason */}
+              {lead.lostReason && (
+                <div style={{ padding: "14px 16px", background: "#FEF2F2", border: "1px solid #FECACA", borderRadius: 12 }}>
+                  <p style={{ fontSize: 11, fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.06em", color: "#B91C1C", margin: "0 0 6px" }}>Lost Reason</p>
+                  <p style={{ fontSize: 14, color: "#7F1D1D", lineHeight: 1.5, margin: 0 }}>{lead.lostReason}</p>
                 </div>
               )}
 
-              {/* ── Details + AI key points ── */}
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 14 }}>
-                {/* Left 2/3: contact + enquiry */}
-                <div style={{ gridColumn: "1 / 3", display: "flex", flexDirection: "column", gap: 14 }}>
-                  <SectionCard title="Contact Details">
-                    <InfoRow label="Phone" value={lead.phone} mono />
-                    <InfoRow label="Email" value={lead.email ?? "—"} />
-                    <InfoRow label="City" value={lead.city} />
-                    <InfoRow label="Source" value={lead.source} />
-                    <InfoRow label="Assigned" value={lead.assignedTo} />
-                  </SectionCard>
-                  <SectionCard title="Enquiry Details">
-                    <InfoRow label="Course" value={lead.service} />
-                    <InfoRow label="Priority" value={lead.priority} />
-                    <InfoRow label="Created" value={lead.createdAt} />
-                    {lead.followUpDate && <InfoRow label="Follow-up" value={lead.followUpDate} highlight />}
-                  </SectionCard>
-                  {/* Notes */}
-                  <div style={{ background: "var(--surface-2)", border: "0.5px solid var(--border)", borderRadius: 12, padding: "14px 16px" }}>
-                    <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.06em", textTransform: "uppercase" as const, color: "#6B7280", marginBottom: 10, marginTop: 0 }}>Notes</p>
-                    <textarea value={notes} onChange={e => setNotes(e.target.value)} rows={5} placeholder="Add a note…"
-                      style={{ width: "100%", fontSize: 13, borderRadius: 8, padding: "10px 12px", resize: "vertical" as const, lineHeight: 1.6, boxSizing: "border-box" as const, background: "var(--surface)", border: `0.5px solid ${noteSaved ? "#A7F3D0" : "var(--border-strong)"}`, color: "var(--text-primary)", outline: "none" }}
-                      onFocus={e => (e.currentTarget.style.borderColor = "#BFDBFE")}
-                      onBlur={e => (e.currentTarget.style.borderColor = noteSaved ? "#A7F3D0" : "var(--border-strong)")} />
-                    <button onClick={saveNote} style={{ marginTop: 10, display: "flex", alignItems: "center", gap: 6, fontSize: 12, padding: "7px 14px", borderRadius: 8, fontWeight: 500, background: noteSaved ? "#ECFDF5" : "var(--surface)", color: noteSaved ? "#065F46" : "var(--text-secondary)", border: `0.5px solid ${noteSaved ? "#A7F3D0" : "var(--border-strong)"}`, cursor: "pointer" }}>
-                      {noteSaved && <Check size={12} strokeWidth={2.5} />}
-                      {noteSaved ? "Saved!" : "Save note"}
-                    </button>
-                  </div>
-                </div>
-
-                {/* Right 1/3: AI key points */}
-                <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
-                  <div style={{ background: "var(--surface-2)", border: "0.5px solid var(--border)", borderRadius: 12, padding: "14px 16px", flex: 1 }}>
-                    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 14 }}>
-                      <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.06em", textTransform: "uppercase" as const, color: "#6B7280", margin: 0 }}>AI Key Points</p>
-                      <Sparkles size={13} style={{ color: "#2563EB" }} />
-                    </div>
-                    <ul style={{ listStyle: "none", margin: 0, padding: 0, display: "flex", flexDirection: "column", gap: 9 }}>
-                      {ai.keyPoints.map((pt, i) => (
-                        <li key={i} style={{ display: "flex", alignItems: "flex-start", gap: 9 }}>
-                          <span style={{ width: 18, height: 18, borderRadius: 5, background: "#EFF6FF", color: "#2563EB", fontSize: 10, fontWeight: 700, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, marginTop: 1 }}>{i + 1}</span>
-                          <span style={{ fontSize: 13, color: "var(--text-secondary)", lineHeight: 1.55 }}>{pt}</span>
-                        </li>
-                      ))}
-                    </ul>
-                    <button onClick={() => onOpenCallIntelligence(lead)}
-                      style={{ marginTop: 14, display: "flex", alignItems: "center", gap: 8, padding: "10px 12px", borderRadius: 10, cursor: "pointer", background: "var(--surface)", border: "0.5px solid var(--border)", color: "var(--text-primary)", fontSize: 12, fontWeight: 500, width: "100%" }}
-                      onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = "#EFF6FF"; }}
-                      onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = "var(--surface)"; }}>
-                      <Brain size={15} style={{ color: "#2563EB" }} />
-                      <div style={{ textAlign: "left" as const, flex: 1 }}>
-                        <p style={{ margin: 0, fontSize: 13, fontWeight: 600, color: "var(--text-primary)" }}>Full Call Intelligence</p>
-                        <p style={{ margin: 0, fontSize: 11, color: "#6B7280" }}>Transcript · Tags · Coaching</p>
+              {/* Follow-up schedule */}
+              {lead.followUps.length > 0 && (
+                <SectionCard title="Follow-up Schedule" icon={<CalendarDays size={13} />} accent="#059669">
+                  {lead.followUps.map(fu => (
+                    <div key={fu.id} style={{ padding: "10px 0", borderBottom: "1px solid #F9FAFB", display: "flex", gap: 12 }}>
+                      <div style={{ width: 9, height: 9, borderRadius: "50%", marginTop: 4, flexShrink: 0, background: fu.status === "Completed" ? "#059669" : fu.status === "Missed" ? "#EF4444" : "#D97706" }} />
+                      <div>
+                        <div style={{ display: "flex", gap: 8, marginBottom: 2 }}>
+                          <span style={{ fontSize: 13, fontWeight: 700, color: "#111827" }}>{fu.date} · {fu.time}</span>
+                          <span style={{ fontSize: 10, fontWeight: 800, padding: "2px 8px", borderRadius: 99, background: fu.status === "Completed" ? "#ECFDF5" : fu.status === "Missed" ? "#FEF2F2" : "#FFFBEB", color: fu.status === "Completed" ? "#059669" : fu.status === "Missed" ? "#B91C1C" : "#B45309" }}>{fu.status}</span>
+                        </div>
+                        {fu.remarks && <p style={{ fontSize: 12, color: "#1F2937", margin: 0 }}>{fu.remarks}</p>}
                       </div>
-                      <ChevronRight size={14} style={{ color: "#9CA3AF" }} />
-                    </button>
+                    </div>
+                  ))}
+                </SectionCard>
+              )}
+            </div>
+
+            {/* ── Right column ── */}
+            <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+
+              {/* Update status */}
+              <SectionCard title="Update Status" icon={<Zap size={13} />} accent="#F59E0B">
+                <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                  <div style={{ position: "relative" }}>
+                    <select value={selectedStatus} onChange={e => setSelectedStatus(e.target.value as LeadStatus)}
+                      style={{ width: "100%", fontSize: 13, padding: "10px 32px 10px 12px", borderRadius: 9, border: "1px solid #E5E7EB", background: "#fff", color: "#111827", appearance: "none", cursor: "pointer" }}>
+                      {(["New","Contacted","Qualified","Proposal Sent","Negotiation","Enrolled","Not Interested","Lost"] as LeadStatus[]).map(s => (
+                        <option key={s} value={s}>{s}</option>
+                      ))}
+                    </select>
+                    <ChevronDown size={14} style={{ position: "absolute", right: 10, top: "50%", transform: "translateY(-50%)", color: "#9CA3AF", pointerEvents: "none" }} />
+                  </div>
+                  {(selectedStatus === "Lost" || selectedStatus === "Not Interested") && (
+                    <div style={{ position: "relative" }}>
+                      <select value={selectedLostReason} onChange={e => setSelectedLostReason(e.target.value)}
+                        style={{ width: "100%", fontSize: 13, padding: "10px 32px 10px 12px", borderRadius: 9, border: "1px solid #FECACA", background: "#FEF2F2", color: "#B91C1C", appearance: "none", cursor: "pointer" }}>
+                        <option value="">Select lost reason...</option>
+                        {LOST_REASONS.map(r => <option key={r} value={r}>{r}</option>)}
+                      </select>
+                      <ChevronDown size={14} style={{ position: "absolute", right: 10, top: "50%", transform: "translateY(-50%)", color: "#B91C1C", pointerEvents: "none" }} />
+                    </div>
+                  )}
+                  <button onClick={updateStatus} style={{
+                    display: "flex", alignItems: "center", justifyContent: "center", gap: 6, padding: "10px 0", borderRadius: 9, fontSize: 13, fontWeight: 700,
+                    background: statusSaved ? "#ECFDF5" : "#111827", color: statusSaved ? "#059669" : "#fff",
+                    border: statusSaved ? "1px solid #A7F3D0" : "none", cursor: "pointer", transition: "all .15s",
+                  }}>
+                    {statusSaved ? <><CheckCircle2 size={14} />Status Saved!</> : "Save Status"}
+                  </button>
+                </div>
+              </SectionCard>
+
+              {/* Rep notes */}
+              <SectionCard title="Rep Notes" icon={<StickyNote size={13} />} accent="#D97706">
+                <textarea value={notes} onChange={e => setNotes(e.target.value)} rows={6} placeholder="Add notes..."
+                  style={{ width: "100%", fontSize: 13, borderRadius: 9, padding: "10px 12px", resize: "vertical" as const, lineHeight: 1.6, boxSizing: "border-box" as const, background: "#F9FAFB", border: `1px solid ${noteSaved ? "#A7F3D0" : "#E5E7EB"}`, color: "#111827", outline: "none" }}
+                  onFocus={e => (e.currentTarget.style.borderColor = "#BFDBFE")}
+                  onBlur={e => (e.currentTarget.style.borderColor = noteSaved ? "#A7F3D0" : "#E5E7EB")}
+                />
+                <button onClick={saveNote} style={{
+                  marginTop: 8, display: "flex", alignItems: "center", gap: 5, fontSize: 12, fontWeight: 700,
+                  padding: "8px 16px", borderRadius: 8, background: noteSaved ? "#ECFDF5" : "#fff",
+                  color: noteSaved ? "#065F46" : "#374151", border: `1px solid ${noteSaved ? "#A7F3D0" : "#E5E7EB"}`, cursor: "pointer",
+                }}>
+                  {noteSaved ? <><Check size={13} strokeWidth={2.5} />Saved!</> : "Save Notes"}
+                </button>
+              </SectionCard>
+
+              {/* Quick note */}
+              <SectionCard title="Add Quick Note" icon={<MessageSquare size={13} />}>
+                <textarea value={noteInput} onChange={e => setNoteInput(e.target.value)} rows={3} placeholder="Quick note..."
+                  style={{ width: "100%", fontSize: 13, borderRadius: 9, padding: "9px 12px", resize: "none", boxSizing: "border-box" as const, background: "#F9FAFB", border: "1px solid #E5E7EB", color: "#111827", outline: "none" }}
+                />
+                <button onClick={addNote} disabled={!noteInput.trim()} style={{
+                  marginTop: 8, width: "100%", display: "flex", alignItems: "center", justifyContent: "center", gap: 5, padding: "9px 0", borderRadius: 9, fontSize: 13, fontWeight: 700,
+                  background: noteAdded ? "#ECFDF5" : noteInput.trim() ? "#2563EB" : "#F3F4F6",
+                  color: noteAdded ? "#059669" : noteInput.trim() ? "#fff" : "#9CA3AF",
+                  border: "none", cursor: noteInput.trim() ? "pointer" : "not-allowed",
+                }}>
+                  {noteAdded ? <><CheckCircle2 size={14} />Added!</> : "Add Note"}
+                </button>
+              </SectionCard>
+
+              {/* Recent activity */}
+              <SectionCard title="Recent Activity" icon={<Activity size={13} />}>
+                {lead.activity.length === 0
+                  ? <p style={{ fontSize: 13, color: "#9CA3AF", margin: 0 }}>No activity recorded.</p>
+                  : <>
+                      <ol style={{ position: "relative" as const, borderLeft: "2px solid #F0F0F0", marginLeft: 4, padding: 0, listStyle: "none" }}>
+                        {displayedActivity.map((item, i) => {
+                          const color = ACTIVITY_COLORS[item.type] ?? "#374151";
+                          return (
+                            <li key={i} style={{ position: "relative" as const, paddingBottom: 14, paddingLeft: 16 }}>
+                              <span style={{ position: "absolute" as const, left: -5, top: 4, width: 8, height: 8, borderRadius: "50%", background: color, border: "2px solid #fff" }} />
+                              <p style={{ fontSize: 10, fontWeight: 800, color, margin: "0 0 2px", textTransform: "uppercase", letterSpacing: "0.05em" }}>{ACTIVITY_LABELS[item.type] ?? item.type}</p>
+                              <p style={{ fontSize: 12, color: "#1F2937", lineHeight: 1.45, margin: "0 0 1px" }}>{item.text}</p>
+                              <p style={{ fontSize: 10, color: "#9CA3AF", margin: 0 }}>{item.time}</p>
+                            </li>
+                          );
+                        })}
+                      </ol>
+                      {lead.activity.length > 6 && (
+                        <button onClick={() => setShowAllActivity(v => !v)}
+                          style={{ display: "flex", alignItems: "center", gap: 4, fontSize: 12, color: "#2563EB", background: "transparent", border: "none", cursor: "pointer", padding: "4px 0" }}>
+                          {showAllActivity ? <><ChevronUp size={12} />Show less</> : <><ChevronDown size={12} />Show all {lead.activity.length}</>}
+                        </button>
+                      )}
+                    </>
+                }
+              </SectionCard>
+            </div>
+          </div>
+        )}
+
+        {/* ════════ CALL LOGS ════════ */}
+        {tab === "calls" && (
+          <div style={{ maxWidth: 720 }}>
+            <div style={{ display: "flex", gap: 10, marginBottom: 20 }}>
+              {[
+                { label: `${totalCalls} Total`,             color: "#1D4ED8", bg: "#EFF6FF",  border: "#BFDBFE" },
+                { label: `${connectedCalls} Connected`,     color: "#059669", bg: "#ECFDF5",  border: "#A7F3D0" },
+                { label: `${totalCalls - connectedCalls} Missed`, color: "#374151", bg: "#F3F4F6", border: "#E5E7EB" },
+              ].map(c => (
+                <span key={c.label} style={{ fontSize: 13, fontWeight: 700, padding: "6px 16px", borderRadius: 99, background: c.bg, color: c.color, border: `1px solid ${c.border}` }}>
+                  {c.label}
+                </span>
+              ))}
+            </div>
+            {lead.callLogs.length === 0
+              ? <div style={{ padding: "60px 0", textAlign: "center" as const }}>
+                  <PhoneCall size={28} style={{ color: "#D1D5DB", margin: "0 auto 10px" }} />
+                  <p style={{ fontSize: 14, color: "#9CA3AF" }}>No call logs yet.</p>
+                </div>
+              : <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+                  {lead.callLogs.map(log => {
+                    const rc = log.result === "Connected" ? "#059669" : log.result === "Busy" ? "#B45309" : log.result === "Wrong Number" ? "#B91C1C" : "#374151";
+                    const ResultIcon = log.result === "Connected" ? PhoneCall : log.result === "Not Connected" ? PhoneMissed : log.result === "Busy" ? Clock : Ban;
+                    return (
+                      <div key={log.id} style={{ padding: "15px 18px", background: "#fff", border: "1px solid #E5E7EB", borderRadius: 12, display: "flex", gap: 14 }}>
+                        <div style={{ width: 40, height: 40, borderRadius: 11, background: rc + "18", color: rc, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                          <ResultIcon size={17} strokeWidth={2} />
+                        </div>
+                        <div style={{ flex: 1 }}>
+                          <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 4 }}>
+                            <span style={{ fontSize: 14, fontWeight: 700, color: rc }}>{log.result}</span>
+                            <span style={{ fontSize: 12, color: "#9CA3AF", fontFamily: "monospace" }}>{log.date} · {log.time}</span>
+                          </div>
+                          <div style={{ display: "flex", gap: 12, marginBottom: log.remarks ? 5 : 0 }}>
+                            {log.duration && <span style={{ fontSize: 13, color: "#374151" }}>{log.duration}</span>}
+                            <span style={{ fontSize: 12, color: "#6B7280" }}>by {log.by}</span>
+                          </div>
+                          {log.remarks && <p style={{ fontSize: 13, color: "#1F2937", margin: 0, lineHeight: 1.5 }}>{log.remarks}</p>}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+            }
+          </div>
+        )}
+
+        {/* ════════ ACTIVITY ════════ */}
+        {tab === "activity" && (
+          <div style={{ maxWidth: 640 }}>
+            {lead.activity.length === 0
+              ? <div style={{ padding: "60px 0", textAlign: "center" as const, fontSize: 14, color: "#9CA3AF" }}>No activity recorded yet.</div>
+              : <ol style={{ position: "relative" as const, borderLeft: "2px solid #E5E7EB", marginLeft: 8, padding: 0, listStyle: "none" }}>
+                  {lead.activity.map((item, i) => {
+                    const color = ACTIVITY_COLORS[item.type] ?? "#374151";
+                    return (
+                      <li key={i} style={{ position: "relative" as const, paddingBottom: 20, paddingLeft: 24 }}>
+                        <span style={{ position: "absolute" as const, left: -6, top: 3, width: 12, height: 12, borderRadius: "50%", background: color, border: "2px solid #F5F5F7" }} />
+                        <div style={{ padding: "12px 16px", background: "#fff", borderRadius: 11, border: "1px solid #E5E7EB" }}>
+                          <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 4 }}>
+                            <p style={{ fontSize: 11, fontWeight: 800, color, margin: 0, textTransform: "uppercase", letterSpacing: "0.05em" }}>{ACTIVITY_LABELS[item.type] ?? item.type}</p>
+                            <p style={{ fontSize: 11, color: "#9CA3AF", fontFamily: "monospace", margin: 0 }}>{item.time}</p>
+                          </div>
+                          <p style={{ fontSize: 14, color: "#1F2937", lineHeight: 1.5, margin: "0 0 4px" }}>{item.text}</p>
+                          {item.by && <p style={{ fontSize: 11, color: "#9CA3AF", margin: 0 }}>by {item.by}</p>}
+                        </div>
+                      </li>
+                    );
+                  })}
+                </ol>
+            }
+          </div>
+        )}
+
+        {/* ════════ ESCALATE ════════ */}
+        {tab === "escalate" && (
+          <div style={{ maxWidth: 640 }}>
+            <div style={{ padding: "16px 20px", background: "#FFF7ED", border: "1px solid #FED7AA", borderRadius: 12, marginBottom: 20, display: "flex", gap: 14 }}>
+              <AlertTriangle size={20} style={{ color: "#C2410C", flexShrink: 0, marginTop: 1 }} />
+              <div>
+                <p style={{ fontSize: 14, fontWeight: 700, color: "#C2410C", margin: "0 0 4px" }}>Escalate to Manager</p>
+                <p style={{ fontSize: 13, color: "#78350F", margin: 0, lineHeight: 1.5 }}>
+                  Flag this lead for manager attention — discount approvals, high-value opportunities, complaints, or situations beyond your authority.
+                </p>
+              </div>
+            </div>
+
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14, marginBottom: 20 }}>
+              <div style={{ padding: "14px 16px", background: "#fff", border: "1px solid #E5E7EB", borderRadius: 11 }}>
+                <p style={{ fontSize: 10, fontWeight: 700, color: "#9CA3AF", textTransform: "uppercase", letterSpacing: "0.05em", margin: "0 0 10px" }}>Lead</p>
+                <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
+                  <div style={{ width: 36, height: 36, borderRadius: 10, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 12, fontWeight: 800, background: palette.bg, color: palette.text, flexShrink: 0 }}>
+                    {getInitials(lead.name)}
+                  </div>
+                  <div>
+                    <p style={{ fontSize: 14, fontWeight: 700, color: "#111827", margin: 0 }}>{lead.name}</p>
+                    <p style={{ fontSize: 12, color: "#374151", margin: 0 }}>{lead.service}</p>
                   </div>
                 </div>
               </div>
+              <div style={{ padding: "14px 16px", background: "#fff", border: "1px solid #E5E7EB", borderRadius: 11 }}>
+                <p style={{ fontSize: 10, fontWeight: 700, color: "#9CA3AF", textTransform: "uppercase", letterSpacing: "0.05em", margin: "0 0 10px" }}>Current Status</p>
+                <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+                  <span style={{ fontSize: 12, fontWeight: 700, padding: "3px 10px", borderRadius: 99, background: STATUS_CONFIG[lead.status]?.bg, color: STATUS_CONFIG[lead.status]?.text, border: `1px solid ${STATUS_CONFIG[lead.status]?.border}` }}>{lead.status}</span>
+                  <span style={{ fontSize: 12, fontWeight: 700, padding: "3px 10px", borderRadius: 99, background: scorec.bg, color: scorec.text }}>{lead.score}</span>
+                </div>
+                {typeof lead.leadScore === "number" && (
+                  <div style={{ marginTop: 10, display: "flex", alignItems: "center", gap: 8 }}>
+                    <div style={{ flex: 1, height: 5, background: "#E5E7EB", borderRadius: 99, overflow: "hidden" }}>
+                      <div style={{ height: "100%", width: `${lead.leadScore}%`, background: lead.leadScore >= 70 ? "#059669" : "#D97706", borderRadius: 99 }} />
+                    </div>
+                    <span style={{ fontSize: 14, fontWeight: 800, color: "#374151" }}>{lead.leadScore}</span>
+                  </div>
+                )}
+              </div>
             </div>
-          )}
 
-          {/* ── Activity Tab ── */}
-          {tab === "activity" && (
-            <div style={{ maxWidth: 640 }}>
-              {lead.activity.length === 0
-                ? <div style={{ padding: "64px 0", textAlign: "center" as const, fontSize: 13, color: "#9CA3AF" }}>No activity recorded yet.</div>
-                : (
-                  <ol style={{ position: "relative" as const, borderLeft: "1.5px solid var(--border)", marginLeft: 8, padding: 0, listStyle: "none" }}>
-                    {lead.activity.map((item, i) => {
-                      const color = ACTIVITY_COLORS[item.type] ?? "#374151";
-                      return (
-                        <li key={i} style={{ position: "relative" as const, paddingBottom: 24, paddingLeft: 24 }}>
-                          <span style={{ position: "absolute" as const, left: -5, top: 4, width: 10, height: 10, borderRadius: "50%", background: color, border: "2px solid var(--surface)" }} />
-                          <p style={{ fontSize: 11, fontWeight: 600, color, marginBottom: 2 }}>{ACTIVITY_LABELS[item.type] ?? item.type}</p>
-                          <p style={{ fontSize: 13, color: "var(--text-secondary)", lineHeight: 1.5, marginBottom: 3 }}>{item.text}</p>
-                          <p style={{ fontSize: 11, color: "#9CA3AF", fontFamily: "monospace" }}>{item.time}</p>
-                        </li>
-                      );
-                    })}
-                  </ol>
-                )
-              }
+            <div style={{ marginBottom: 16 }}>
+              <label style={{ fontSize: 12, fontWeight: 700, color: "#374151", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 7, display: "block" }}>Reason *</label>
+              <div style={{ position: "relative" }}>
+                <select value={escalationReason} onChange={e => setEscalationReason(e.target.value)}
+                  style={{ width: "100%", fontSize: 14, padding: "11px 32px 11px 14px", borderRadius: 10, border: "1px solid #E5E7EB", background: "#fff", color: "#111827", appearance: "none", cursor: "pointer" }}>
+                  <option value="">Select reason...</option>
+                  {ESCALATION_REASONS.map(r => <option key={r} value={r}>{r}</option>)}
+                </select>
+                <ChevronDown size={15} style={{ position: "absolute", right: 12, top: "50%", transform: "translateY(-50%)", color: "#9CA3AF", pointerEvents: "none" }} />
+              </div>
             </div>
-          )}
-        </div>
-      </div>
-    </div>
-  );
-}
 
-// ── Primitives ────────────────────────────────────────────────────
-function ActionLabel({ icon, label, color }: { icon: React.ReactNode; label: string; color: string }) {
-  return (
-    <div style={{ display: "flex", alignItems: "center", gap: 5, marginBottom: 8 }}>
-      <span style={{ color }}>{icon}</span>
-      <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase" as const, color }}>{label}</span>
-    </div>
-  );
-}
-function IntelCard({ icon, label, color, children }: { icon: React.ReactNode; label: string; color: string; children: React.ReactNode }) {
-  return (
-    <div style={{ background: "var(--surface-2)", border: "0.5px solid var(--border)", borderRadius: 12, padding: "14px 16px" }}>
-      <div style={{ display: "flex", alignItems: "center", gap: 5, marginBottom: 10 }}>
-        <span style={{ color }}>{icon}</span>
-        <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase" as const, color }}>{label}</span>
+            <div style={{ marginBottom: 16 }}>
+              <label style={{ fontSize: 12, fontWeight: 700, color: "#374151", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 7, display: "block" }}>Priority</label>
+              <div style={{ display: "flex", gap: 8 }}>
+                {[
+                  { label: "Normal",   activeBg: "#111827" },
+                  { label: "Urgent",   activeBg: "#B45309" },
+                  { label: "Critical", activeBg: "#B91C1C" },
+                ].map(p => (
+                  <button key={p.label} onClick={() => setEscalationPriority(p.label)} style={{
+                    flex: 1, padding: "9px 0", borderRadius: 9, fontSize: 13, fontWeight: 700, cursor: "pointer", transition: "all .15s",
+                    background: escalationPriority === p.label ? p.activeBg : "#F9FAFB",
+                    color: escalationPriority === p.label ? "#fff" : "#374151",
+                    border: `1.5px solid ${escalationPriority === p.label ? p.activeBg : "#E5E7EB"}`,
+                  }}>{p.label}</button>
+                ))}
+              </div>
+            </div>
+
+            <div style={{ marginBottom: 20 }}>
+              <label style={{ fontSize: 12, fontWeight: 700, color: "#374151", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 7, display: "block" }}>Context for Manager</label>
+              <textarea value={escalationNote} onChange={e => setEscalationNote(e.target.value)}
+                placeholder="Budget discussed, what the student said, what you've already tried..."
+                rows={4}
+                style={{ width: "100%", fontSize: 13, padding: "11px 14px", borderRadius: 10, border: "1px solid #E5E7EB", resize: "none", color: "#111827", background: "#fff", boxSizing: "border-box" as const, lineHeight: 1.55, outline: "none" }}
+              />
+            </div>
+
+            <button onClick={sendEscalation} disabled={!escalationReason} style={{
+              width: "100%", padding: "13px 0", borderRadius: 11, fontSize: 14, fontWeight: 700,
+              border: "none", cursor: escalationReason ? "pointer" : "not-allowed", transition: "all .15s",
+              background: escalationSent ? "#ECFDF5" : escalationReason ? "#C2410C" : "#F3F4F6",
+              color: escalationSent ? "#059669" : escalationReason ? "#fff" : "#9CA3AF",
+              display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
+            }}>
+              {escalationSent ? <><CheckCircle2 size={17} />Escalation Sent!</> : <><Send size={15} />Send to Manager</>}
+            </button>
+
+            {escalationSent && (
+              <div style={{ marginTop: 14, padding: "14px 18px", background: "#ECFDF5", border: "1px solid #A7F3D0", borderRadius: 11, textAlign: "center" as const }}>
+                <p style={{ fontSize: 14, fontWeight: 700, color: "#065F46", margin: "0 0 3px" }}>Manager Notified</p>
+                <p style={{ fontSize: 12, color: "#374151", margin: 0 }}>Your manager will review and follow up shortly.</p>
+              </div>
+            )}
+          </div>
+        )}
       </div>
-      {children}
-    </div>
-  );
-}
-function MetaItem({ icon, text, mono }: { icon: React.ReactNode; text: string; mono?: boolean }) {
-  return (
-    <div style={{ display: "flex", alignItems: "center", gap: 5, fontSize: 12, color: "#6B7280" }}>
-      <span style={{ color: "#9CA3AF" }}>{icon}</span>
-      <span style={{ fontFamily: mono ? "monospace" : undefined, fontSize: mono ? 12 : undefined }}>{text}</span>
-    </div>
-  );
-}
-function SectionCard({ title, children }: { title: string; children: React.ReactNode }) {
-  return (
-    <div style={{ background: "var(--surface-2)", border: "0.5px solid var(--border)", borderRadius: 12, overflow: "hidden" }}>
-      <div style={{ padding: "10px 14px", borderBottom: "0.5px solid var(--border)" }}>
-        <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.06em", textTransform: "uppercase" as const, color: "#6B7280", margin: 0 }}>{title}</p>
-      </div>
-      {children}
-    </div>
-  );
-}
-function InfoRow({ label, value, mono, highlight }: { label: string; value: string; mono?: boolean; highlight?: boolean }) {
-  return (
-    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "9px 14px", borderBottom: "0.5px solid var(--border)", background: "var(--surface)" }}>
-      <span style={{ fontSize: 13, color: "#6B7280" }}>{label}</span>
-      <span style={{ fontSize: 13, color: highlight ? "#2563EB" : "var(--text-secondary)", fontFamily: mono ? "monospace" : undefined, fontWeight: highlight ? 600 : 400 }}>{value}</span>
     </div>
   );
 }

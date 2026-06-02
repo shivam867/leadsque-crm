@@ -4,18 +4,22 @@ import { leads } from "@/data/dummy";
 import { StatusBadge, ScoreBadge, PriorityDot } from "@/components/ui/Badges";
 import LeadDetailPanel from "@/components/ui/LeadDetailPanel";
 import LeadFullPage from "@/components/ui/LeadFullPage";
-import CallIntelligencePage from "@/components//ui/CallIntelligencePage";
-import type { Lead, LeadStatus } from "@/data/dummy";
-import { Plus, Search, X } from "lucide-react";
+import type { Lead, LeadStatus, LeadScore } from "@/data/dummy";
+import { Plus, Search, X, Filter, SlidersHorizontal } from "lucide-react";
 
 const myLeads = leads.filter(l => l.assignedTo === "Aanya Sharma");
-const STATUSES: LeadStatus[] = ["New", "Contacted", "Interested", "Follow-up", "Qualified", "Won", "Lost", "Spam"];
 
-type View = "list" | "full" | "intel";
+const STATUSES: LeadStatus[] = [
+  "New", "Contacted", "Qualified", "Proposal Sent",
+  "Negotiation", "Enrolled", "Not Interested", "Lost",
+];
+
+type View = "list" | "full";
 
 export default function RepLeads() {
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<LeadStatus | "All">("All");
+  const [scoreFilter, setScoreFilter] = useState<LeadScore | "All">("All");
   const [selected, setSelected] = useState<Lead | null>(null);
   const [view, setView] = useState<View>("list");
   const [avatarIndex, setAvatarIndex] = useState(0);
@@ -29,7 +33,8 @@ export default function RepLeads() {
       l.city.toLowerCase().includes(q) ||
       l.service.toLowerCase().includes(q);
     const matchStatus = statusFilter === "All" || l.status === statusFilter;
-    return matchSearch && matchStatus;
+    const matchScore  = scoreFilter === "All"  || l.score  === scoreFilter;
+    return matchSearch && matchStatus && matchScore;
   });
 
   const handleSelectLead = (lead: Lead, index: number) => {
@@ -38,99 +43,91 @@ export default function RepLeads() {
     setView("list");
   };
 
-  const handleOpenFullPage = (lead: Lead) => {
-    setSelected(lead);
-    setView("full");
-  };
+  const handleOpenFullPage = (lead: Lead) => { setSelected(lead); setView("full"); };
+  const handleClosePanel   = ()           => { setSelected(null); setView("list"); };
 
-  const handleOpenCallIntelligence = (lead: Lead) => {
-    setSelected(lead);
-    setView("intel");
-  };
-
-  const handleClosePanel = () => {
-    setSelected(null);
-    setView("list");
-  };
-
-  // ── Full-screen views ──────────────────────────────────────────
   if (view === "full" && selected) {
-    return (
-      <LeadFullPage
-        lead={selected}
-        onBack={() => setView("list")}
-        onOpenCallIntelligence={handleOpenCallIntelligence}
-        avatarIndex={avatarIndex}
-      />
-    );
+    return <LeadFullPage lead={selected} onBack={() => setView("list")} avatarIndex={avatarIndex} />;
   }
 
-  if (view === "intel" && selected) {
-    return (
-      <CallIntelligencePage
-        lead={selected}
-        onBack={() => setView("full")}
-      />
-    );
-  }
-
-  // ── List + side panel ──────────────────────────────────────────
   return (
-    <div className="flex h-full">
+    <div style={{ display: "flex", height: "100%", background: "#F9FAFB" }}>
       {/* List */}
-      <div className="flex-1 p-6 overflow-y-auto min-w-0">
+      <div style={{ flex: 1, padding: "24px 28px", overflowY: "auto", minWidth: 0 }}>
+
         {/* Header */}
-        <div className="flex items-start justify-between mb-5 animate-fade-up">
+        <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: 20 }}>
           <div>
-            <h1 className="text-xl font-bold tracking-tight mb-0.5" style={{ color: "var(--text-primary)" }}>
-              My Leads
-            </h1>
-            <p className="text-sm" style={{ color: "var(--text-secondary)" }}>
-              {myLeads.length} leads assigned to you
-            </p>
+            <h1 style={{ fontSize: 22, fontWeight: 800, color: "#111827", margin: "0 0 4px", letterSpacing: "-0.02em" }}>My Leads</h1>
+            <p style={{ fontSize: 13, color: "#6B7280", margin: 0 }}>{myLeads.length} leads assigned · {filtered.length} shown</p>
           </div>
           <a href="/rep/add-lead">
-            <button className="btn-primary">
-              <Plus size={14} />
-              Add Lead
+            <button style={{
+              display: "flex", alignItems: "center", gap: 7, padding: "9px 18px",
+              borderRadius: 10, background: "#111827", color: "#fff",
+              fontSize: 13, fontWeight: 600, border: "none", cursor: "pointer",
+            }}>
+              <Plus size={14} strokeWidth={2.5} /> Add Lead
             </button>
           </a>
         </div>
 
-        {/* Search + Filters */}
-        <div className="flex flex-col gap-3 mb-4 animate-fade-up delay-50">
-          <div className="relative" style={{ maxWidth: 280 }}>
-            <Search size={13} className="absolute left-3 top-1/2 -translate-y-1/2"
-              style={{ color: "#374151" }} />
-            <input
-              className="input pr-8"
-              style={{ paddingLeft: "34px" }}
-              placeholder="Search name, phone, course…"
-              value={search}
-              onChange={e => setSearch(e.target.value)}
-            />
-            {search && (
-              <button onClick={() => setSearch("")} className="absolute right-2.5 top-1/2 -translate-y-1/2">
-                <X size={12} style={{ color: "#374151" }} />
-              </button>
-            )}
-          </div>
+        {/* Filters */}
+        <div style={{ display: "flex", flexDirection: "column", gap: 10, marginBottom: 18 }}>
+          <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
+            {/* Search */}
+            <div style={{ position: "relative", flex: "0 0 260px" }}>
+              <Search size={13} style={{ position: "absolute", left: 10, top: "50%", transform: "translateY(-50%)", color: "#9CA3AF" }} />
+              <input
+                style={{
+                  width: "100%", padding: "8px 10px 8px 30px", fontSize: 13, borderRadius: 9,
+                  border: "1px solid #D1D5DB", background: "#fff", color: "#111827", boxSizing: "border-box",
+                  outline: "none",
+                }}
+                placeholder="Search name, phone, course…"
+                value={search} onChange={e => setSearch(e.target.value)}
+              />
+              {search && (
+                <button onClick={() => setSearch("")} style={{ position: "absolute", right: 8, top: "50%", transform: "translateY(-50%)", background: "none", border: "none", cursor: "pointer" }}>
+                  <X size={13} style={{ color: "#9CA3AF" }} />
+                </button>
+              )}
+            </div>
 
-          <div className="flex gap-1.5 flex-wrap">
-            {(["All", ...STATUSES] as const).map(s => {
-              const count = s === "All" ? myLeads.length : myLeads.filter(l => l.status === s).length;
-              const isActive = statusFilter === s;
-              return (
-                <button key={s} onClick={() => setStatusFilter(s as any)}
-                  className="flex items-center gap-1.5 badge cursor-pointer transition-all"
+            {/* Score filter */}
+            <div style={{ display: "flex", gap: 5 }}>
+              {(["All", "Hot", "Warm", "Cold"] as const).map(s => (
+                <button key={s} onClick={() => setScoreFilter(s)}
                   style={{
-                    padding: "4px 10px",
-                    background: isActive ? "var(--accent)" : "var(--surface)",
-                    color: isActive ? "#fff" : "var(--text-secondary)",
-                    border: `1px solid ${isActive ? "var(--accent)" : "var(--border-strong)"}`,
+                    padding: "6px 12px", fontSize: 12, fontWeight: 600, borderRadius: 8, cursor: "pointer",
+                    background: scoreFilter === s ? "#111827" : "#fff",
+                    color: scoreFilter === s ? "#fff" : "#374151",
+                    border: `1.5px solid ${scoreFilter === s ? "#111827" : "#E5E7EB"}`,
+                    transition: "all 0.15s",
                   }}>
                   {s}
-                  <span className="text-xs opacity-70">({count})</span>
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Status chips */}
+          <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+            {(["All", ...STATUSES] as const).map(s => {
+              const count = s === "All" ? myLeads.length : myLeads.filter(l => l.status === s).length;
+              const active = statusFilter === s;
+              return (
+                <button key={s} onClick={() => setStatusFilter(s as LeadStatus | "All")}
+                  style={{
+                    display: "flex", alignItems: "center", gap: 5,
+                    padding: "5px 11px", fontSize: 12, fontWeight: 600, borderRadius: 99, cursor: "pointer",
+                    background: active ? "#111827" : "#fff",
+                    color: active ? "#fff" : "#374151",
+                    border: `1.5px solid ${active ? "#111827" : "#E5E7EB"}`,
+                    transition: "all 0.15s",
+                  }}>
+                  {s}
+                  <span style={{ fontSize: 11, opacity: 0.7 }}>({count})</span>
                 </button>
               );
             })}
@@ -138,55 +135,56 @@ export default function RepLeads() {
         </div>
 
         {/* Table */}
-        <div className="card overflow-hidden animate-fade-up delay-100">
-          <table className="w-full">
+        <div style={{ background: "#fff", border: "1px solid #E5E7EB", borderRadius: 14, overflow: "hidden" }}>
+          <table style={{ width: "100%", borderCollapse: "collapse" }}>
             <thead>
-              <tr style={{ borderBottom: "1px solid var(--border)", background: "var(--surface-2)" }}>
-                {["Lead", "Contact", "Course", "Source", "Score", "Status", "Follow-up"].map(h => (
-                  <th key={h} className="text-left px-4 py-2.5 text-xs font-semibold uppercase tracking-wide"
-                    style={{ color: "#374151" }}>{h}</th>
+              <tr style={{ background: "#F9FAFB", borderBottom: "1px solid #E5E7EB" }}>
+                {["Lead", "Contact", "Program", "Source", "Score", "Status", "Follow-up"].map(h => (
+                  <th key={h} style={{
+                    textAlign: "left", padding: "11px 16px", fontSize: 11, fontWeight: 700,
+                    textTransform: "uppercase", letterSpacing: "0.05em", color: "#6B7280",
+                  }}>{h}</th>
                 ))}
               </tr>
             </thead>
             <tbody>
-              {filtered.map((lead, i) => (
-                <tr key={lead.id}
-                  onClick={() => handleSelectLead(lead, i)}
-                  className="cursor-pointer transition-colors animate-fade-up"
-                  style={{
-                    borderBottom: "1px solid var(--border)",
-                    background: selected?.id === lead.id ? "var(--accent-light)" : undefined,
-                    animationDelay: `${i * 25}ms`,
-                  }}
-                  onMouseEnter={e => { if (selected?.id !== lead.id) (e.currentTarget as HTMLElement).style.background = "var(--surface-2)"; }}
-                  onMouseLeave={e => { if (selected?.id !== lead.id) (e.currentTarget as HTMLElement).style.background = ""; }}>
-                  <td className="px-4 py-3">
-                    <div className="flex items-center gap-2">
-                      <PriorityDot priority={lead.priority} />
-                      <div>
-                        <p className="font-semibold text-sm" style={{ color: "var(--text-primary)" }}>{lead.name}</p>
-                        <p className="text-xs" style={{ color: "#374151" }}>{lead.city}</p>
+              {filtered.map((lead, i) => {
+                const isSelected = selected?.id === lead.id;
+                return (
+                  <tr key={lead.id}
+                    onClick={() => handleSelectLead(lead, i)}
+                    style={{
+                      borderBottom: "1px solid #F9FAFB", cursor: "pointer",
+                      background: isSelected ? "#EFF6FF" : undefined, transition: "background 0.12s",
+                    }}
+                    onMouseEnter={e => { if (!isSelected) (e.currentTarget as HTMLElement).style.background = "#F9FAFB"; }}
+                    onMouseLeave={e => { if (!isSelected) (e.currentTarget as HTMLElement).style.background = ""; }}>
+                    <td style={{ padding: "12px 16px" }}>
+                      <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                        <PriorityDot priority={lead.priority} />
+                        <div>
+                          <p style={{ fontSize: 13, fontWeight: 600, color: "#111827", margin: 0 }}>{lead.name}</p>
+                          <p style={{ fontSize: 11, color: "#6B7280", margin: 0 }}>{lead.city}</p>
+                        </div>
                       </div>
-                    </div>
-                  </td>
-                  <td className="px-4 py-3 text-xs"
-                    style={{ color: "#374151", fontFamily: "'JetBrains Mono', monospace" }}>
-                    {lead.phone}
-                  </td>
-                  <td className="px-4 py-3 text-sm" style={{ color: "var(--text-secondary)" }}>{lead.service}</td>
-                  <td className="px-4 py-3 text-sm" style={{ color: "#374151" }}>{lead.source}</td>
-                  <td className="px-4 py-3"><ScoreBadge score={lead.score} /></td>
-                  <td className="px-4 py-3"><StatusBadge status={lead.status} /></td>
-                  <td className="px-4 py-3 text-xs font-mono"
-                    style={{ color: lead.followUpDate ? "var(--text-secondary)" : "#374151" }}>
-                    {lead.followUpDate || "—"}
-                  </td>
-                </tr>
-              ))}
+                    </td>
+                    <td style={{ padding: "12px 16px", fontSize: 12, color: "#374151", fontFamily: "monospace" }}>
+                      {lead.phone}
+                    </td>
+                    <td style={{ padding: "12px 16px", fontSize: 12, color: "#374151" }}>{lead.service}</td>
+                    <td style={{ padding: "12px 16px", fontSize: 12, color: "#374151" }}>{lead.source}</td>
+                    <td style={{ padding: "12px 16px" }}><ScoreBadge score={lead.score} /></td>
+                    <td style={{ padding: "12px 16px" }}><StatusBadge status={lead.status} /></td>
+                    <td style={{ padding: "12px 16px", fontSize: 12, fontFamily: "monospace", color: lead.followUpDate ? "#374151" : "#9CA3AF" }}>
+                      {lead.followUpDate || "—"}
+                    </td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
           {filtered.length === 0 && (
-            <div className="py-16 text-center" style={{ color: "#374151" }}>
+            <div style={{ padding: "48px 0", textAlign: "center", color: "#9CA3AF", fontSize: 13 }}>
               No leads match your filters.
             </div>
           )}
@@ -199,7 +197,6 @@ export default function RepLeads() {
           lead={selected}
           onClose={handleClosePanel}
           onOpenFullPage={handleOpenFullPage}
-          onOpenCallIntelligence={handleOpenCallIntelligence}
           avatarIndex={avatarIndex}
         />
       )}
