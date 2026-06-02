@@ -98,6 +98,16 @@ export interface SalesRep {
   wonThisMonth: number;
 }
 
+export type LostReason = {
+  id: string;
+  reason: string;
+  category: "price" | "timing" | "competitor" | "contact" | "product" | "other";
+  count: number;
+  trend: "up" | "down" | "flat";
+  repBreakdown: { repName: string; avatar: string; count: number }[];
+  examples: string[];
+};
+
 // ── PIPELINE STAGES ──────────────────────────────────────────────
 export const PIPELINE_STAGES: {
   status: LeadStatus;
@@ -882,12 +892,127 @@ export const leadSources = [
   { source: "Cold Call",    leads: 7,  enrolled: 0, conversionRate: 0  },
 ];
 
-export const lostReasons = [
-  { reason: "Joined Competitor",     count: 23, trend: "up"   as const },
-  { reason: "Too Expensive",         count: 38, trend: "up"   as const },
-  { reason: "Timing Not Right",      count: 27, trend: "flat" as const },
-  { reason: "No Response",           count: 19, trend: "down" as const },
-  { reason: "Sponsor Rejected",      count: 11, trend: "flat" as const },
-  { reason: "Financial Issue",       count: 14, trend: "up"   as const },
-  { reason: "Self Study Preferred",  count: 8,  trend: "down" as const },
+// Replace your existing lostReasons export in dummy.ts with this:
+
+export const lostReasons: LostReason[] = [
+  {
+    id: "lr-1",
+    reason: "Too Expensive / Price Objection",
+    category: "price",
+    count: 38,
+    trend: "up",
+    repBreakdown: [
+      { repName: "Kabir Singh",  avatar: "KS", count: 12 },
+      { repName: "Rohan Mehta",  avatar: "RM", count: 10 },
+      { repName: "Aanya Sharma", avatar: "AS", count: 8  },
+      { repName: "Aryan Gupta",  avatar: "AG", count: 8  },
+    ],
+    examples: [
+      "Competitor offering similar course ₹8,000 cheaper",
+      "Student couldn't afford even with EMI plan",
+      "Parent felt fee was too high for online mode",
+    ],
+  },
+  {
+    id: "lr-2",
+    reason: "Joined Competitor",
+    category: "competitor",
+    count: 23,
+    trend: "up",
+    repBreakdown: [
+      { repName: "Kabir Singh",  avatar: "KS", count: 9 },
+      { repName: "Aanya Sharma", avatar: "AS", count: 7 },
+      { repName: "Rohan Mehta",  avatar: "RM", count: 7 },
+    ],
+    examples: [
+      "Chose institute closer to home",
+      "Friend already enrolled in competitor batch",
+      "Competitor promised better placement support",
+    ],
+  },
+  {
+    id: "lr-3",
+    reason: "Timing Not Right",
+    category: "timing",
+    count: 27,
+    trend: "flat",
+    repBreakdown: [
+      { repName: "Meera Iyer",   avatar: "MI", count: 9 },
+      { repName: "Divya Reddy",  avatar: "DR", count: 8 },
+      { repName: "Aanya Sharma", avatar: "AS", count: 6 },
+      { repName: "Priya Nair",   avatar: "PN", count: 4 },
+    ],
+    examples: [
+      "Wants to re-evaluate after results in 3 months",
+      "Family situation changed, deferring by 6 months",
+      "Exam dates clashing with batch start",
+    ],
+  },
+  {
+    id: "lr-4",
+    reason: "No Response / Unreachable",
+    category: "contact",
+    count: 19,
+    trend: "down",
+    repBreakdown: [
+      { repName: "Rohan Mehta",  avatar: "RM", count: 8 },
+      { repName: "Kabir Singh",  avatar: "KS", count: 6 },
+      { repName: "Aryan Gupta",  avatar: "AG", count: 5 },
+    ],
+    examples: [
+      "Number invalid after 3 attempts",
+      "WhatsApp delivered but never replied",
+      "Email bounced, no alternate contact",
+    ],
+  },
+  {
+    id: "lr-5",
+    reason: "Financial Issue / Sponsor Rejected",
+    category: "price",
+    count: 14,
+    trend: "up",
+    repBreakdown: [
+      { repName: "Aanya Sharma", avatar: "AS", count: 5 },
+      { repName: "Divya Reddy",  avatar: "DR", count: 5 },
+      { repName: "Meera Iyer",   avatar: "MI", count: 4 },
+    ],
+    examples: [
+      "Parent refused to sponsor after initial approval",
+      "Lost job during follow-up period",
+      "Bank loan rejected, no alternate funding",
+    ],
+  },
+  {
+    id: "lr-6",
+    reason: "Self Study / Preparing Independently",
+    category: "product",
+    count: 8,
+    trend: "down",
+    repBreakdown: [
+      { repName: "Priya Nair",   avatar: "PN", count: 4 },
+      { repName: "Aryan Gupta",  avatar: "AG", count: 4 },
+    ],
+    examples: [
+      "Confident with YouTube and free resources",
+      "Already passed 1st stage, doesn't need coaching",
+      "Prefers self-paced study over structured batch",
+    ],
+  },
+  {
+    id: "lr-7",
+    reason: "Program Not Suitable",
+    category: "product",
+    count: 11,
+    trend: "flat",
+    repBreakdown: [
+      { repName: "Rohan Mehta",  avatar: "RM", count: 5 },
+      { repName: "Kabir Singh",  avatar: "KS", count: 4 },
+      { repName: "Meera Iyer",   avatar: "MI", count: 2 },
+    ],
+    examples: [
+      "Wanted evening batch but only morning available",
+      "Needed hybrid but centre too far for offline days",
+      "Background didn't match program prerequisites",
+    ],
+  },
 ];

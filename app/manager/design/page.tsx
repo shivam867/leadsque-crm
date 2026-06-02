@@ -1,9 +1,18 @@
 "use client";
 import { useState } from "react";
-import { Tag, Bell, Save, RotateCcw, Check } from "lucide-react";
+import { Layers, FileText, Star, Save, RotateCcw, Check } from "lucide-react";
 
-import LeadSources, { DEFAULT_SOURCES, type LeadSource } from "@/components/design/LeadSources";
-import Notifications from "@/components/design/Notifications";
+import PipelineStages, {
+  DEFAULT_STAGES, type Stage,
+} from "@/components/design/PipelineStages";
+
+import CounselingForm, {
+  DEFAULT_FORM_FIELDS, type FormField,
+} from "@/components/design/CounselingForm";
+
+import LeadScoring, {
+  DEFAULT_SCORE_WEIGHTS, type ScoreWeight,
+} from "@/components/design/LeadScoring";
 
 // ─── Toast ───────────────────────────────────────────────────────
 function SaveToast({ show }: { show: boolean }) {
@@ -24,19 +33,28 @@ function SaveToast({ show }: { show: boolean }) {
 
 // ─── Tabs ────────────────────────────────────────────────────────
 const TABS = [
-  { key: "sources",  label: "Lead Sources",  icon: <Tag size={13} /> },
-  { key: "notify",   label: "Notifications", icon: <Bell size={13} /> },
+  { key: "pipeline", label: "Pipeline Stages", icon: <Layers size={13} /> },
+  { key: "form",     label: "Counseling Form", icon: <FileText size={13} /> },
+  { key: "scoring",  label: "Lead Scoring",    icon: <Star size={13} /> },
 ];
 
 // ─── Main Component ───────────────────────────────────────────────
-export default function RepDesignSettings() {
-  const [activeTab, setActiveTab] = useState("sources");
-  const [sources, setSources]     = useState<LeadSource[]>(DEFAULT_SOURCES);
-  const [saved, setSaved]         = useState(false);
+export default function ManagerDesignSettings() {
+  const [activeTab, setActiveTab]       = useState("pipeline");
+  const [stages, setStages]             = useState<Stage[]>(DEFAULT_STAGES);
+  const [fields, setFields]             = useState<FormField[]>(DEFAULT_FORM_FIELDS);
+  const [scoreWeights, setScoreWeights] = useState<ScoreWeight[]>(DEFAULT_SCORE_WEIGHTS);
+  const [saved, setSaved]               = useState(false);
 
   const handleSave = () => {
     setSaved(true);
     setTimeout(() => setSaved(false), 2200);
+  };
+
+  const handleReset = () => {
+    setStages(DEFAULT_STAGES);
+    setFields(DEFAULT_FORM_FIELDS);
+    setScoreWeights(DEFAULT_SCORE_WEIGHTS);
   };
 
   return (
@@ -46,10 +64,10 @@ export default function RepDesignSettings() {
       <div style={{ padding: "20px 24px 0", background: "#fff", borderBottom: "1px solid #E5E7EB" }}>
         <div style={{ marginBottom: 14 }}>
           <h1 style={{ fontSize: 18, fontWeight: 800, color: "#111827", margin: "0 0 3px", letterSpacing: "-0.02em" }}>
-            Design
+            CRM Design
           </h1>
           <p style={{ fontSize: 12, color: "#6B7280", margin: 0 }}>
-            Configure your lead sources and notification preferences.
+            Configure pipeline stages, counseling form, and lead scoring rules for all reps.
           </p>
         </div>
 
@@ -80,11 +98,14 @@ export default function RepDesignSettings() {
 
       {/* Scrollable content */}
       <div style={{ flex: 1, overflowY: "auto", padding: "20px 24px 80px" }}>
-        {activeTab === "sources" && (
-          <LeadSources sources={sources} setSources={setSources} />
+        {activeTab === "pipeline" && (
+          <PipelineStages stages={stages} setStages={setStages} />
         )}
-        {activeTab === "notify" && (
-          <Notifications />
+        {activeTab === "form" && (
+          <CounselingForm fields={fields} setFields={setFields} />
+        )}
+        {activeTab === "scoring" && (
+          <LeadScoring scoreWeights={scoreWeights} setScoreWeights={setScoreWeights} />
         )}
       </div>
 
@@ -104,7 +125,7 @@ export default function RepDesignSettings() {
           <Save size={13} /> Save Changes
         </button>
         <button
-          onClick={() => setSources(DEFAULT_SOURCES)}
+          onClick={handleReset}
           style={{
             display: "flex", alignItems: "center", gap: 5, padding: "8px 14px",
             borderRadius: 8, background: "#fff", color: "#374151",
@@ -113,7 +134,7 @@ export default function RepDesignSettings() {
         >
           <RotateCcw size={12} /> Reset
         </button>
-        <span style={{ fontSize: 11, color: "#9CA3AF" }}>Changes apply to your account</span>
+        <span style={{ fontSize: 11, color: "#9CA3AF" }}>Changes apply to all reps in your workspace</span>
       </div>
 
       <SaveToast show={saved} />

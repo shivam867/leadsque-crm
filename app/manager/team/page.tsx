@@ -1,410 +1,339 @@
 "use client";
 import { useState, useMemo } from "react";
 import { salesReps, leads } from "@/data/dummy";
-import RepDetailPanel, {
-  salesRepsExtended,
-} from "@/components/ui/RepDetailPanel";
+import { salesRepsExtended, type SalesRepExtended } from "@/components/ui/RepDetailPanel";
+import RepDetailPanel from "@/components/ui/RepDetailPanel";
+import {
+  Users, Phone, CheckCircle, TrendingUp,
+  AlertCircle, Calendar, ChevronRight, X,
+} from "lucide-react";
+import type { Lead } from "@/data/dummy";
 
-type SortKey = "conversionRate" | "wonThisMonth" | "leadsAssigned" | "callsToday";
-type SortDir = "asc" | "desc";
+const today = "2025-05-28";
 
-const SORT_OPTIONS: { key: SortKey; label: string }[] = [
-  { key: "conversionRate", label: "Conversion" },
-  { key: "wonThisMonth", label: "Won" },
-  { key: "leadsAssigned", label: "Leads" },
-  { key: "callsToday", label: "Calls" },
+// ─── Types ───────────────────────────────────────────────────────
+interface OverdueModalProps {
+  rep: SalesRepExtended;
+  overdueLeads: Lead[];
+  onClose: () => void;
+}
+
+// ─── Avatar palette ───────────────────────────────────────────────
+const PALETTES = [
+  { bg: "#EFF6FF", text: "#1D4ED8" },
+  { bg: "#F0FDF4", text: "#15803D" },
+  { bg: "#FFFBEB", text: "#B45309" },
+  { bg: "#FAF5FF", text: "#7E22CE" },
+  { bg: "#FDF2F8", text: "#9D174D" },
+  { bg: "#ECFDF5", text: "#065F46" },
+  { bg: "#FFF7ED", text: "#C2410C" },
 ];
 
-function RankBadge({ rank }: { rank: number }) {
+// ─── Overdue Modal ────────────────────────────────────────────────
+function OverdueModal({ rep, overdueLeads, onClose }: OverdueModalProps) {
   return (
-    <span
-      className="text-xs font-bold w-6 h-6 rounded-full flex items-center justify-center"
-      style={{ background: "var(--surface-2)", color: "#374151" }}
-    >
-      {rank}
-    </span>
+    <>
+      {/* Backdrop */}
+      <div
+        onClick={onClose}
+        style={{
+          position: "fixed", inset: 0, background: "rgba(0,0,0,0.3)",
+          zIndex: 50, backdropFilter: "blur(2px)",
+        }}
+      />
+      {/* Modal */}
+      <div style={{
+        position: "fixed", top: "50%", left: "50%",
+        transform: "translate(-50%, -50%)",
+        zIndex: 51, width: 520, maxHeight: "80vh",
+        background: "#fff", borderRadius: 16,
+        boxShadow: "0 20px 60px rgba(0,0,0,0.18)",
+        display: "flex", flexDirection: "column", overflow: "hidden",
+      }}>
+        {/* Header */}
+        <div style={{
+          padding: "18px 20px", borderBottom: "1px solid #E5E7EB",
+          display: "flex", alignItems: "center", justifyContent: "space-between",
+          flexShrink: 0,
+        }}>
+          <div>
+            <h3 style={{ fontSize: 15, fontWeight: 700, color: "#111827", margin: 0 }}>
+              Overdue Follow-ups — {rep.name}
+            </h3>
+            <p style={{ fontSize: 12, color: "#6B7280", margin: "2px 0 0" }}>
+              {overdueLeads.length} lead{overdueLeads.length !== 1 ? "s" : ""} past their follow-up date
+            </p>
+          </div>
+          <button
+            onClick={onClose}
+            style={{
+              width: 30, height: 30, borderRadius: 8,
+              display: "flex", alignItems: "center", justifyContent: "center",
+              border: "1px solid #E5E7EB", background: "#fff", cursor: "pointer", color: "#6B7280",
+            }}
+          >
+            <X size={14} />
+          </button>
+        </div>
+
+        {/* Lead list */}
+        <div style={{ overflowY: "auto", flex: 1, padding: "12px 16px" }}>
+          {overdueLeads.length === 0 ? (
+            <div style={{ textAlign: "center", padding: "40px 0", color: "#9CA3AF" }}>
+              <CheckCircle size={28} style={{ margin: "0 auto 8px", color: "#D1D5DB" }} />
+              <p style={{ fontSize: 13, margin: 0 }}>No overdue follow-ups</p>
+            </div>
+          ) : (
+            <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+              {overdueLeads.map(lead => {
+                const SCORE_CFG = {
+                  Hot:  { bg: "#FFF1F2", color: "#BE123C" },
+                  Warm: { bg: "#FFFBEB", color: "#B45309" },
+                  Cold: { bg: "#EFF6FF", color: "#1D4ED8" },
+                };
+                const sc = SCORE_CFG[lead.score as keyof typeof SCORE_CFG] ?? { bg: "#F9FAFB", color: "#6B7280" };
+
+                return (
+                  <div key={lead.id} style={{
+                    padding: "12px 14px", borderRadius: 10,
+                    background: "#FEF2F2", border: "1px solid #FECACA",
+                  }}>
+                    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 4 }}>
+                      <span style={{ fontSize: 13, fontWeight: 600, color: "#111827" }}>{lead.name}</span>
+                      <span style={{
+                        fontSize: 10, fontWeight: 700, padding: "2px 7px", borderRadius: 99,
+                        background: sc.bg, color: sc.color,
+                      }}>
+                        {lead.score}
+                      </span>
+                    </div>
+                    <p style={{ fontSize: 11, color: "#374151", margin: "0 0 4px" }}>
+                      {lead.service} · {lead.city}
+                    </p>
+                    <div style={{ display: "flex", alignItems: "center", gap: 5 }}>
+                      <Calendar size={10} style={{ color: "#DC2626" }} />
+                      <span style={{ fontSize: 11, fontWeight: 700, color: "#DC2626" }}>
+                        Due: {lead.followUpDate}
+                      </span>
+                      <span style={{ fontSize: 11, color: "#9CA3AF", marginLeft: 4 }}>{lead.phone}</span>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </div>
+      </div>
+    </>
   );
 }
 
-function TrendArrow({ value, threshold }: { value: number; threshold: number }) {
-  const isGood = value >= threshold;
-  return (
-    <svg
-      width="12"
-      height="12"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke={isGood ? "#059669" : "#DC2626"}
-      strokeWidth="2.5"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      style={{ transform: isGood ? "none" : "rotate(180deg)" }}
-    >
-      <polyline points="18 15 12 9 6 15" />
-    </svg>
-  );
-}
-
-export default function ManagerTeam() {
-  const [sortKey, setSortKey] = useState<SortKey>("conversionRate");
-  const [sortDir, setSortDir] = useState<SortDir>("desc");
-  const [teamFilter, setTeamFilter] = useState<string>("All");
-  const [expanded, setExpanded] = useState<string | null>(null);
-  const [reassignModal, setReassignModal] = useState<string | null>(null);
-  const [selectedRep, setSelectedRep] = useState<any | null>(null);
-
-  const teams = useMemo(() => ["All", ...Array.from(new Set(salesReps.map((r) => r.team)))], []);
-
-  const sorted = useMemo(() => {
-    const filtered = teamFilter === "All" ? salesReps : salesReps.filter((r) => r.team === teamFilter);
-    return [...filtered].sort((a, b) =>
-      sortDir === "desc" ? b[sortKey] - a[sortKey] : a[sortKey] - b[sortKey]
-    );
-  }, [sortKey, sortDir, teamFilter]);
-
-  function toggleSort(key: SortKey) {
-    if (sortKey === key) setSortDir((d) => (d === "desc" ? "asc" : "desc"));
-    else { setSortKey(key); setSortDir("desc"); }
-  }
-
-  function getRepLeads(repName: string) {
-    return leads.filter((l) => l.assignedTo === repName);
-  }
-
-  // Helper to compute lead breakdown for a rep
-  function getLeadBreakdown(repName: string) {
-    const repLeads = leads.filter((l) => l.assignedTo === repName);
-    const statuses = ["New", "Contacted", "Qualified", "Won", "Lost"];
-    return statuses.map(status => ({
-      status,
-      count: repLeads.filter(l => l.status === status).length,
-    }));
-  }
+// ─── Rep Card ─────────────────────────────────────────────────────
+function RepCard({
+  rep,
+  index,
+  overdueCount,
+  onSelect,
+  onViewOverdue,
+  isSelected,
+}: {
+  rep: SalesRepExtended;
+  index: number;
+  overdueCount: number;
+  onSelect: () => void;
+  onViewOverdue: () => void;
+  isSelected: boolean;
+}) {
+  const palette = PALETTES[index % PALETTES.length];
+  const convColor = rep.conversionRate >= 35 ? "#059669"
+    : rep.conversionRate >= 28 ? "#D97706"
+    : "#DC2626";
 
   return (
     <div
       style={{
-        display: "flex",
-        height: "100%",
-        overflow: "hidden",
+        background: isSelected ? "#EFF6FF" : "#fff",
+        border: `1.5px solid ${isSelected ? "#BFDBFE" : "#E5E7EB"}`,
+        borderRadius: 14, padding: "16px 18px", cursor: "pointer",
+        transition: "all 0.15s",
+        boxShadow: isSelected ? "0 0 0 2px #BFDBFE" : "0 1px 3px rgba(0,0,0,0.04)",
       }}
+      onClick={onSelect}
+      onMouseEnter={e => { if (!isSelected) (e.currentTarget as HTMLElement).style.background = "#F9FAFB"; }}
+      onMouseLeave={e => { if (!isSelected) (e.currentTarget as HTMLElement).style.background = "#fff"; }}
     >
-      <div
-        style={{
-          flex: 1,
-          overflowY: "auto",
-          padding: "28px",
-        }}
-      >
-        {/* Header */}
-        <div className="flex items-start justify-between mb-6 animate-fade-up">
-          <div>
-            <h1
-              className="text-2xl font-semibold tracking-tight"
-              style={{ fontFamily: "'Syne', sans-serif", color: "var(--text-primary)" }}
-            >
-              Team Performance
-            </h1>
-            <p className="text-sm mt-0.5" style={{ color: "var(--text-secondary)" }}>
-              {sorted.length} reps · Sorted by{" "}
-              <span className="font-medium" style={{ color: "var(--text-primary)" }}>
-                {SORT_OPTIONS.find((s) => s.key === sortKey)?.label}
-              </span>{" "}
-              · May 2025
-            </p>
+      {/* Header */}
+      <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: 14 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+          <div style={{
+            width: 36, height: 36, borderRadius: 10,
+            background: palette.bg, color: palette.text,
+            display: "flex", alignItems: "center", justifyContent: "center",
+            fontSize: 12, fontWeight: 700, flexShrink: 0,
+          }}>
+            {rep.avatar}
           </div>
-
-          {/* Team filter pills */}
-          <div className="flex gap-1.5">
-            {teams.map((t) => (
-              <button
-                key={t}
-                onClick={() => setTeamFilter(t)}
-                className="px-3 py-1.5 rounded-lg text-xs font-semibold transition-all"
-                style={{
-                  background: teamFilter === t ? "var(--accent)" : "var(--surface-2)",
-                  color: teamFilter === t ? "#fff" : "#374151",
-                  border: "1px solid",
-                  borderColor: teamFilter === t ? "var(--accent)" : "var(--border)",
-                }}
-              >
-                {t === "All" ? "All Teams" : `Team ${t}`}
-              </button>
-            ))}
+          <div>
+            <p style={{ fontSize: 13, fontWeight: 700, color: "#111827", margin: 0 }}>{rep.name}</p>
+            <p style={{ fontSize: 11, color: "#6B7280", margin: "1px 0 0" }}>Team {rep.team}</p>
           </div>
         </div>
+        <ChevronRight size={14} style={{ color: "#9CA3AF", marginTop: 2 }} />
+      </div>
 
-        {/* Sort tabs */}
-        <div className="flex gap-2 mb-5 animate-fade-up delay-50">
-          <span className="text-xs font-medium self-center mr-1" style={{ color: "#374151" }}>Sort by:</span>
-          {SORT_OPTIONS.map(({ key, label }) => (
-            <button
-              key={key}
-              onClick={() => toggleSort(key)}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all"
-              style={{
-                background: sortKey === key ? "#E0F2FE" : "var(--surface-2)",
-                color: sortKey === key ? "#0369A1" : "#374151",
-                border: `1px solid ${sortKey === key ? "#BAE6FD" : "var(--border)"}`,
-              }}
-            >
-              {label}
-              {sortKey === key && (
-                <svg
-                  width="10"
-                  height="10"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="3"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  style={{ transform: sortDir === "asc" ? "rotate(180deg)" : "none", transition: "transform 0.2s" }}
-                >
-                  <polyline points="18 15 12 9 6 15" />
-                </svg>
-              )}
-            </button>
+      {/* Metrics grid */}
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, marginBottom: 12 }}>
+        {[
+          { label: "Leads",   value: rep.leadsAssigned, color: "#1D4ED8" },
+          { label: "Calls",   value: rep.callsToday,    color: "#0369A1" },
+          { label: "Won",     value: rep.wonThisMonth,  color: "#059669" },
+          { label: "Conv.",   value: `${rep.conversionRate}%`, color: convColor },
+        ].map(m => (
+          <div key={m.label} style={{
+            padding: "8px 10px", background: "#F9FAFB", borderRadius: 8,
+          }}>
+            <p style={{ fontSize: 16, fontWeight: 800, color: m.color, margin: 0, lineHeight: 1 }}>{m.value}</p>
+            <p style={{ fontSize: 10, color: "#9CA3AF", margin: "2px 0 0", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.05em" }}>{m.label}</p>
+          </div>
+        ))}
+      </div>
+
+      {/* Conversion bar */}
+      <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 10 }}>
+        <div style={{ flex: 1, height: 5, background: "#F3F4F6", borderRadius: 99, overflow: "hidden" }}>
+          <div style={{ height: "100%", width: `${rep.conversionRate}%`, background: convColor, borderRadius: 99 }} />
+        </div>
+        <span style={{ fontSize: 11, fontWeight: 700, color: convColor }}>{rep.conversionRate}%</span>
+      </div>
+
+      {/* Overdue button */}
+      {overdueCount > 0 && (
+        <button
+          onClick={e => { e.stopPropagation(); onViewOverdue(); }}
+          style={{
+            width: "100%", display: "flex", alignItems: "center", justifyContent: "center",
+            gap: 6, padding: "7px 0", borderRadius: 8,
+            background: "#FEF2F2", border: "1px solid #FECACA",
+            color: "#DC2626", fontSize: 11, fontWeight: 700, cursor: "pointer",
+          }}
+        >
+          <AlertCircle size={12} />
+          {overdueCount} overdue follow-up{overdueCount !== 1 ? "s" : ""}
+        </button>
+      )}
+    </div>
+  );
+}
+
+// ─── Main Component ───────────────────────────────────────────────
+export default function TeamPerformance() {
+  const [selected, setSelected]       = useState<SalesRepExtended | null>(null);
+  const [overdueRep, setOverdueRep]   = useState<SalesRepExtended | null>(null);
+
+  // Build overdue lead counts per rep
+  const overdueByRep = useMemo(() => {
+    const map: Record<string, Lead[]> = {};
+    leads.forEach(lead => {
+      if (lead.followUpDate && lead.followUpDate < today) {
+        if (!map[lead.assignedTo]) map[lead.assignedTo] = [];
+        map[lead.assignedTo].push(lead);
+      }
+    });
+    return map;
+  }, []);
+
+  // Lead breakdown for panel chart
+  const leadBreakdown = useMemo(() => {
+    if (!selected) return [];
+    const repLeads = leads.filter(l => l.assignedTo === selected.name);
+    const counts: Record<string, number> = {};
+    repLeads.forEach(l => { counts[l.status] = (counts[l.status] ?? 0) + 1; });
+    return Object.entries(counts).map(([status, count]) => ({ status, count }));
+  }, [selected]);
+
+  // Team summary stats
+  const totalLeads   = salesRepsExtended.reduce((a, r) => a + r.leadsAssigned, 0);
+  const totalCalls   = salesRepsExtended.reduce((a, r) => a + r.callsToday, 0);
+  const totalWon     = salesRepsExtended.reduce((a, r) => a + r.wonThisMonth, 0);
+  const avgConv      = Math.round(salesRepsExtended.reduce((a, r) => a + r.conversionRate, 0) / salesRepsExtended.length);
+  const totalOverdue = Object.values(overdueByRep).reduce((a, arr) => a + arr.length, 0);
+
+  return (
+    <div style={{ display: "flex", height: "100%", background: "#F9FAFB" }}>
+
+      {/* Main content */}
+      <div style={{ flex: 1, padding: "28px 32px", overflowY: "auto", minWidth: 0 }}>
+
+        {/* Header */}
+        <div style={{ marginBottom: 24 }}>
+          <h1 style={{ fontSize: 22, fontWeight: 800, color: "#111827", margin: "0 0 4px", letterSpacing: "-0.02em" }}>
+            Team Performance
+          </h1>
+          <p style={{ fontSize: 13, color: "#6B7280", margin: 0 }}>
+            {salesRepsExtended.length} reps across all teams · May 2025
+          </p>
+        </div>
+
+        {/* Summary strip */}
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(5, 1fr)", gap: 12, marginBottom: 24 }}>
+          {[
+            { label: "Total Leads",  value: totalLeads,          color: "#1D4ED8", bg: "#EFF6FF", icon: <Users size={15} /> },
+            { label: "Calls Today",  value: totalCalls,          color: "#0369A1", bg: "#F0F9FF", icon: <Phone size={15} /> },
+            { label: "Won / Month",  value: totalWon,            color: "#065F46", bg: "#ECFDF5", icon: <CheckCircle size={15} /> },
+            { label: "Avg Conv.",    value: `${avgConv}%`,       color: "#7C3AED", bg: "#FAF5FF", icon: <TrendingUp size={15} /> },
+            { label: "Overdue",      value: totalOverdue,        color: "#DC2626", bg: "#FEF2F2", icon: <AlertCircle size={15} /> },
+          ].map(s => (
+            <div key={s.label} style={{
+              background: "#fff", border: "1px solid #E5E7EB", borderRadius: 12,
+              padding: "14px 16px", display: "flex", alignItems: "center", gap: 12,
+            }}>
+              <div style={{ width: 34, height: 34, borderRadius: 10, background: s.bg, display: "flex", alignItems: "center", justifyContent: "center", color: s.color, flexShrink: 0 }}>
+                {s.icon}
+              </div>
+              <div>
+                <p style={{ fontSize: 20, fontWeight: 800, color: s.color, margin: 0, lineHeight: 1 }}>{s.value}</p>
+                <p style={{ fontSize: 11, color: "#6B7280", margin: "2px 0 0" }}>{s.label}</p>
+              </div>
+            </div>
           ))}
         </div>
 
-        {/* Rep list */}
-        <div className="card overflow-hidden animate-fade-up delay-100">
-          {/* Table header */}
-          <div
-            className="grid text-xs font-semibold uppercase tracking-wide px-5 py-3"
-            style={{
-              gridTemplateColumns: "2rem 1fr 6rem 6rem 6rem 6rem 10rem 7rem",
-              borderBottom: "1px solid var(--border)",
-              background: "var(--surface-2)",
-              color: "#374151",
-            }}
-          >
-            <span>#</span>
-            <span>Rep</span>
-            <span className="text-right">Leads</span>
-            <span className="text-right">Calls</span>
-            <span className="text-right">Won</span>
-            <span className="text-right">Conv.</span>
-            <span className="px-2">Progress</span>
-            <span />
-          </div>
-
-          {sorted.map((rep, i) => {
-            const rank = i + 1;
-            const isExpanded = expanded === rep.id;
-            const repLeads = getRepLeads(rep.name);
-            const openCount = repLeads.filter((l) => l.status === "New" || l.status === "Contacted").length;
-            const convColor =
-              rep.conversionRate >= 35 ? "#059669" : rep.conversionRate >= 28 ? "#D97706" : "#DC2626";
-
+        {/* Rep cards grid */}
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(260px, 1fr))", gap: 14 }}>
+          {salesRepsExtended.map((rep, i) => {
+            const overdueLeads = overdueByRep[rep.name] ?? [];
             return (
-              <div key={rep.id} style={{ borderBottom: "1px solid var(--border)" }}>
-                {/* Main row */}
-                <div
-                  className="grid items-center px-5 py-3.5 cursor-pointer transition-colors"
-                  style={{
-                    gridTemplateColumns: "2rem 1fr 6rem 6rem 6rem 6rem 10rem 7rem",
-                    background: isExpanded ? "var(--accent-light)" : undefined,
-                  }}
-                  onMouseEnter={(e) => { if (!isExpanded) (e.currentTarget as HTMLElement).style.background = "var(--surface-2)"; }}
-                  onMouseLeave={(e) => { if (!isExpanded) (e.currentTarget as HTMLElement).style.background = ""; }}
-                  onClick={() => {
-                    setExpanded(isExpanded ? null : rep.id);
-                    const fullRep = salesRepsExtended.find((r) => r.name === rep.name);
-                    if (fullRep) {
-                      const breakdown = getLeadBreakdown(rep.name);
-                      setSelectedRep({ ...fullRep, leadBreakdown: breakdown });
-                    }
-                  }}
-                >
-                  {/* Rank */}
-                  <div className="flex items-center">
-                    <RankBadge rank={rank} />
-                  </div>
-
-                  {/* Rep info */}
-                  <div className="flex items-center gap-3">
-                    <div
-                      className="w-9 h-9 rounded-xl flex items-center justify-center font-bold text-sm flex-shrink-0"
-                      style={{ background: "#E0F2FE", color: "#0369A1" }}
-                    >
-                      {rep.avatar}
-                    </div>
-                    <div>
-                      <p className="font-semibold text-sm" style={{ color: "var(--text-primary)" }}>{rep.name}</p>
-                      <p className="text-xs" style={{ color: "#374151" }}>
-                        Team {rep.team} · <span style={{ color: openCount > 5 ? "#DC2626" : "#059669" }}>{openCount} open</span>
-                      </p>
-                    </div>
-                  </div>
-
-                  {/* Stats */}
-                  <span className="text-right text-sm font-semibold" style={{ color: "var(--text-primary)" }}>{rep.leadsAssigned}</span>
-                  <span className="text-right text-sm" style={{ color: "var(--text-secondary)" }}>{rep.callsToday}</span>
-                  <span className="text-right text-sm font-semibold" style={{ color: "#059669" }}>{rep.wonThisMonth}</span>
-                  <div className="flex items-center justify-end gap-1">
-                    <TrendArrow value={rep.conversionRate} threshold={30} />
-                    <span className="text-sm font-bold" style={{ color: convColor }}>{rep.conversionRate}%</span>
-                  </div>
-
-                  {/* Progress bar */}
-                  <div className="px-2">
-                    <div className="h-2 rounded-full" style={{ background: "var(--border)" }}>
-                      <div
-                        className="h-full rounded-full transition-all duration-500"
-                        style={{ width: `${Math.min(rep.conversionRate, 100)}%`, background: convColor }}
-                      />
-                    </div>
-                  </div>
-
-                  {/* Expand toggle */}
-                  <div className="flex justify-end">
-                    <button
-                      className="text-xs px-3 py-1.5 rounded-lg font-medium transition-all flex items-center gap-1"
-                      style={{
-                        background: isExpanded ? "var(--accent)" : "var(--surface-2)",
-                        color: isExpanded ? "#fff" : "#374151",
-                        border: "1px solid var(--border)",
-                      }}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        const fullRep = salesRepsExtended.find((r) => r.name === rep.name);
-                        if (fullRep) {
-                          const breakdown = getLeadBreakdown(rep.name);
-                          setSelectedRep({ ...fullRep, leadBreakdown: breakdown });
-                        }
-                      }}
-                    >
-                      {isExpanded ? "Collapse" : "Details"}
-                      <svg
-                        width="10"
-                        height="10"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="3"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        style={{ transform: isExpanded ? "rotate(180deg)" : "none", transition: "transform 0.2s" }}
-                      >
-                        <polyline points="18 15 12 9 6 15" />
-                      </svg>
-                    </button>
-                  </div>
-                </div>
-
-                {/* Expanded detail panel - now only shows actions, pipeline moved to RepDetailPanel */}
-                {isExpanded && (
-                  <div
-                    className="px-5 pb-5 pt-3"
-                    style={{ background: "var(--accent-light)", borderTop: "1px solid var(--border)" }}
-                  >
-                    <div className="grid grid-cols-3 gap-4 mb-4">
-                      {/* Actions only - pipeline moved to side panel */}
-                      <div className="col-span-3 flex flex-row gap-3">
-                        <button
-                          className="btn-secondary text-xs py-2 px-4 flex-1 justify-center"
-                          onClick={() => alert(`Viewing all leads for ${rep.name}`)}
-                        >
-                          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-1">
-                            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/>
-                          </svg>
-                          View Leads ({repLeads.length})
-                        </button>
-                        <button
-                          className="btn-secondary text-xs py-2 px-4 flex-1 justify-center"
-                          onClick={() => setReassignModal(rep.id)}
-                        >
-                          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-1">
-                            <polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/>
-                          </svg>
-                          Reassign Leads
-                        </button>
-                        <button
-                          className="btn-secondary text-xs py-2 px-4 flex-1 justify-center"
-                          onClick={() => alert(`Sending coaching note to ${rep.name}`)}
-                        >
-                          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-1">
-                            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
-                          </svg>
-                          Send Note
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                )}
-              </div>
+              <RepCard
+                key={rep.id}
+                rep={rep}
+                index={i}
+                overdueCount={overdueLeads.length}
+                isSelected={selected?.id === rep.id}
+                onSelect={() => setSelected(prev => prev?.id === rep.id ? null : rep)}
+                onViewOverdue={() => setOverdueRep(rep)}
+              />
             );
           })}
         </div>
-
-        {/* Reassign modal */}
-        {reassignModal && (
-          <div
-            className="fixed inset-0 z-50 flex items-center justify-center"
-            style={{ background: "rgba(0,0,0,0.4)" }}
-            onClick={() => setReassignModal(null)}
-          >
-            <div
-              className="card p-6 w-96 animate-fade-up"
-              onClick={(e) => e.stopPropagation()}
-            >
-              <h3 className="font-bold text-base mb-1" style={{ color: "var(--text-primary)" }}>Reassign Leads</h3>
-              <p className="text-sm mb-4" style={{ color: "var(--text-secondary)" }}>
-                Select a rep to transfer{" "}
-                <strong>{salesReps.find((r) => r.id === reassignModal)?.name}'s</strong> leads to.
-              </p>
-              <div className="flex flex-col gap-2 mb-5">
-                {salesReps
-                  .filter((r) => r.id !== reassignModal)
-                  .map((r) => (
-                    <button
-                      key={r.id}
-                      className="flex items-center gap-3 p-3 rounded-xl text-left transition-colors"
-                      style={{ border: "1px solid var(--border)", background: "var(--surface-2)" }}
-                      onMouseEnter={(e) => (e.currentTarget.style.borderColor = "var(--accent)")}
-                      onMouseLeave={(e) => (e.currentTarget.style.borderColor = "var(--border)")}
-                      onClick={() => {
-                        alert(`Leads reassigned to ${r.name}`);
-                        setReassignModal(null);
-                      }}
-                    >
-                      <div className="w-8 h-8 rounded-lg flex items-center justify-center text-xs font-bold" style={{ background: "#E0F2FE", color: "#0369A1" }}>
-                        {r.avatar}
-                      </div>
-                      <div>
-                        <p className="text-sm font-semibold" style={{ color: "var(--text-primary)" }}>{r.name}</p>
-                        <p className="text-xs" style={{ color: "#374151" }}>{r.leadsAssigned} leads currently</p>
-                      </div>
-                    </button>
-                  ))}
-              </div>
-              <button className="btn-secondary w-full justify-center text-sm" onClick={() => setReassignModal(null)}>
-                Cancel
-              </button>
-            </div>
-          </div>
-        )}
       </div>
 
-      {/* Side panel for RepDetailPanel */}
-      <div
-        style={{
-          width: selectedRep ? 360 : 0,
-          transition: "width 0.25s ease",
-          overflow: "hidden",
-          flexShrink: 0,
-        }}
-      >
-        {selectedRep && (
-          <RepDetailPanel
-            rep={selectedRep}
-            leadBreakdown={selectedRep.leadBreakdown}
-            onClose={() => setSelectedRep(null)}
-          />
-        )}
-      </div>
+      {/* Rep detail panel */}
+      {selected && (
+        <RepDetailPanel
+          rep={selected}
+          leadBreakdown={leadBreakdown}
+          onClose={() => setSelected(null)}
+        />
+      )}
+
+      {/* Overdue modal */}
+      {overdueRep && (
+        <OverdueModal
+          rep={overdueRep}
+          overdueLeads={overdueByRep[overdueRep.name] ?? []}
+          onClose={() => setOverdueRep(null)}
+        />
+      )}
     </div>
   );
 }
