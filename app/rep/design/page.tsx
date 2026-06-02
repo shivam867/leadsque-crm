@@ -5,7 +5,6 @@ import { Tag, Bell, Save, RotateCcw, Check } from "lucide-react";
 import LeadSources, { DEFAULT_SOURCES, type LeadSource } from "@/components/design/LeadSources";
 import Notifications from "@/components/design/Notifications";
 
-// ─── Toast ───────────────────────────────────────────────────────
 function SaveToast({ show }: { show: boolean }) {
   if (!show) return null;
   return (
@@ -22,13 +21,11 @@ function SaveToast({ show }: { show: boolean }) {
   );
 }
 
-// ─── Tabs ────────────────────────────────────────────────────────
 const TABS = [
-  { key: "sources",  label: "Lead Sources",  icon: <Tag size={13} /> },
-  { key: "notify",   label: "Notifications", icon: <Bell size={13} /> },
+  { key: "sources", label: "Lead Sources",  icon: <Tag size={13} /> },
+  { key: "notify",  label: "Notifications", icon: <Bell size={13} /> },
 ];
 
-// ─── Main Component ───────────────────────────────────────────────
 export default function RepDesignSettings() {
   const [activeTab, setActiveTab] = useState("sources");
   const [sources, setSources]     = useState<LeadSource[]>(DEFAULT_SOURCES);
@@ -43,7 +40,7 @@ export default function RepDesignSettings() {
     <div style={{ display: "flex", flexDirection: "column", height: "100%", background: "#F9FAFB" }}>
 
       {/* Page header */}
-      <div style={{ padding: "20px 24px 0", background: "#fff", borderBottom: "1px solid #E5E7EB" }}>
+      <div className="animate-fade-up" style={{ padding: "20px 24px 0", background: "#fff", borderBottom: "1px solid #E5E7EB" }}>
         <div style={{ marginBottom: 14 }}>
           <h1 style={{ fontSize: 18, fontWeight: 800, color: "#111827", margin: "0 0 3px", letterSpacing: "-0.02em" }}>
             Design
@@ -79,7 +76,7 @@ export default function RepDesignSettings() {
       </div>
 
       {/* Scrollable content */}
-      <div style={{ flex: 1, overflowY: "auto", padding: "20px 24px 80px" }}>
+      <div className="animate-fade-up" style={{ flex: 1, overflowY: "auto", padding: "20px 24px 80px", animationDelay: "40ms" }}>
         {activeTab === "sources" && (
           <LeadSources sources={sources} setSources={setSources} />
         )}

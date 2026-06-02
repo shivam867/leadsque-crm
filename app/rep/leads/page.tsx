@@ -5,7 +5,7 @@ import { StatusBadge, ScoreBadge, PriorityDot } from "@/components/ui/Badges";
 import LeadDetailPanel from "@/components/ui/LeadDetailPanel";
 import LeadFullPage from "@/components/ui/LeadFullPage";
 import type { Lead, LeadStatus, LeadScore } from "@/data/dummy";
-import { Plus, Search, X, Filter, SlidersHorizontal } from "lucide-react";
+import { Plus, Search, X } from "lucide-react";
 
 const myLeads = leads.filter(l => l.assignedTo === "Aanya Sharma");
 
@@ -17,11 +17,11 @@ const STATUSES: LeadStatus[] = [
 type View = "list" | "full";
 
 export default function RepLeads() {
-  const [search, setSearch] = useState("");
+  const [search, setSearch]         = useState("");
   const [statusFilter, setStatusFilter] = useState<LeadStatus | "All">("All");
-  const [scoreFilter, setScoreFilter] = useState<LeadScore | "All">("All");
-  const [selected, setSelected] = useState<Lead | null>(null);
-  const [view, setView] = useState<View>("list");
+  const [scoreFilter, setScoreFilter]   = useState<LeadScore | "All">("All");
+  const [selected, setSelected]     = useState<Lead | null>(null);
+  const [view, setView]             = useState<View>("list");
   const [avatarIndex, setAvatarIndex] = useState(0);
 
   const filtered = myLeads.filter(l => {
@@ -33,7 +33,7 @@ export default function RepLeads() {
       l.city.toLowerCase().includes(q) ||
       l.service.toLowerCase().includes(q);
     const matchStatus = statusFilter === "All" || l.status === statusFilter;
-    const matchScore  = scoreFilter === "All"  || l.score  === scoreFilter;
+    const matchScore  = scoreFilter  === "All" || l.score  === scoreFilter;
     return matchSearch && matchStatus && matchScore;
   });
 
@@ -52,11 +52,10 @@ export default function RepLeads() {
 
   return (
     <div style={{ display: "flex", height: "100%", background: "#F9FAFB" }}>
-      {/* List */}
       <div style={{ flex: 1, padding: "24px 28px", overflowY: "auto", minWidth: 0 }}>
 
         {/* Header */}
-        <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: 20 }}>
+        <div className="animate-fade-up" style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: 20 }}>
           <div>
             <h1 style={{ fontSize: 22, fontWeight: 800, color: "#111827", margin: "0 0 4px", letterSpacing: "-0.02em" }}>My Leads</h1>
             <p style={{ fontSize: 13, color: "#6B7280", margin: 0 }}>{myLeads.length} leads assigned · {filtered.length} shown</p>
@@ -73,9 +72,8 @@ export default function RepLeads() {
         </div>
 
         {/* Filters */}
-        <div style={{ display: "flex", flexDirection: "column", gap: 10, marginBottom: 18 }}>
+        <div className="animate-fade-up" style={{ display: "flex", flexDirection: "column", gap: 10, marginBottom: 18, animationDelay: "40ms" }}>
           <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
-            {/* Search */}
             <div style={{ position: "relative", flex: "0 0 260px" }}>
               <Search size={13} style={{ position: "absolute", left: 10, top: "50%", transform: "translateY(-50%)", color: "#9CA3AF" }} />
               <input
@@ -93,8 +91,6 @@ export default function RepLeads() {
                 </button>
               )}
             </div>
-
-            {/* Score filter */}
             <div style={{ display: "flex", gap: 5 }}>
               {(["All", "Hot", "Warm", "Cold"] as const).map(s => (
                 <button key={s} onClick={() => setScoreFilter(s)}
@@ -110,11 +106,9 @@ export default function RepLeads() {
               ))}
             </div>
           </div>
-
-          {/* Status chips */}
           <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
             {(["All", ...STATUSES] as const).map(s => {
-              const count = s === "All" ? myLeads.length : myLeads.filter(l => l.status === s).length;
+              const count  = s === "All" ? myLeads.length : myLeads.filter(l => l.status === s).length;
               const active = statusFilter === s;
               return (
                 <button key={s} onClick={() => setStatusFilter(s as LeadStatus | "All")}
@@ -126,8 +120,7 @@ export default function RepLeads() {
                     border: `1.5px solid ${active ? "#111827" : "#E5E7EB"}`,
                     transition: "all 0.15s",
                   }}>
-                  {s}
-                  <span style={{ fontSize: 11, opacity: 0.7 }}>({count})</span>
+                  {s}<span style={{ fontSize: 11, opacity: 0.7 }}>({count})</span>
                 </button>
               );
             })}
@@ -135,7 +128,7 @@ export default function RepLeads() {
         </div>
 
         {/* Table */}
-        <div style={{ background: "#fff", border: "1px solid #E5E7EB", borderRadius: 14, overflow: "hidden" }}>
+        <div className="animate-fade-up" style={{ background: "#fff", border: "1px solid #E5E7EB", borderRadius: 14, overflow: "hidden", animationDelay: "80ms" }}>
           <table style={{ width: "100%", borderCollapse: "collapse" }}>
             <thead>
               <tr style={{ background: "#F9FAFB", borderBottom: "1px solid #E5E7EB" }}>
@@ -153,9 +146,12 @@ export default function RepLeads() {
                 return (
                   <tr key={lead.id}
                     onClick={() => handleSelectLead(lead, i)}
+                    className="animate-fade-up"
                     style={{
                       borderBottom: "1px solid #F9FAFB", cursor: "pointer",
-                      background: isSelected ? "#EFF6FF" : undefined, transition: "background 0.12s",
+                      background: isSelected ? "#EFF6FF" : undefined,
+                      transition: "background 0.12s",
+                      animationDelay: `${Math.min(i, 10) * 30}ms`,
                     }}
                     onMouseEnter={e => { if (!isSelected) (e.currentTarget as HTMLElement).style.background = "#F9FAFB"; }}
                     onMouseLeave={e => { if (!isSelected) (e.currentTarget as HTMLElement).style.background = ""; }}>
@@ -168,9 +164,7 @@ export default function RepLeads() {
                         </div>
                       </div>
                     </td>
-                    <td style={{ padding: "12px 16px", fontSize: 12, color: "#374151", fontFamily: "monospace" }}>
-                      {lead.phone}
-                    </td>
+                    <td style={{ padding: "12px 16px", fontSize: 12, color: "#374151", fontFamily: "monospace" }}>{lead.phone}</td>
                     <td style={{ padding: "12px 16px", fontSize: 12, color: "#374151" }}>{lead.service}</td>
                     <td style={{ padding: "12px 16px", fontSize: 12, color: "#374151" }}>{lead.source}</td>
                     <td style={{ padding: "12px 16px" }}><ScoreBadge score={lead.score} /></td>
@@ -191,7 +185,6 @@ export default function RepLeads() {
         </div>
       </div>
 
-      {/* Side panel */}
       {selected && (
         <LeadDetailPanel
           lead={selected}

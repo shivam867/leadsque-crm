@@ -50,7 +50,7 @@ export default function RepDashboard() {
     <div style={{ padding: "28px 32px", maxWidth: 1080, background: "#F9FAFB", minHeight: "100%" }}>
 
       {/* Header */}
-      <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: 28 }}>
+      <div className="animate-fade-up" style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: 28 }}>
         <div>
           <p style={{ fontSize: 12, fontWeight: 600, color: "#9CA3AF", margin: "0 0 4px", textTransform: "uppercase", letterSpacing: "0.06em" }}>
             Wednesday, 28 May 2025
@@ -76,18 +76,28 @@ export default function RepDashboard() {
 
       {/* Stats */}
       <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 14, marginBottom: 24 }}>
-        <StatCard label="Leads Today"       value={repDashboard.leadsToday}      icon={<Users size={18} />}        color="#1D4ED8" bg="#EFF6FF" />
-        <StatCard label="Calls Made"        value={repDashboard.callsMade}        icon={<Phone size={18} />}        color="#0369A1" bg="#F0F9FF" />
-        <StatCard label="Follow-ups Today"  value={repDashboard.pendingFollowUps} icon={<Calendar size={18} />}     color="#B45309" bg="#FFFBEB"
-          sub={repDashboard.overdueFollowUps > 0 ? `${repDashboard.overdueFollowUps} overdue` : undefined} />
-        <StatCard label="Enrolled This Month" value={repDashboard.wonThisMonth}   icon={<CheckCircle size={18} />}  color="#065F46" bg="#ECFDF5"
-          sub={`${repDashboard.conversionRate}% conversion`} trend="up" />
+        {[
+          { label: "Leads Today",          value: repDashboard.leadsToday,      icon: <Users size={18} />,        color: "#1D4ED8", bg: "#EFF6FF",  delay: "0ms" },
+          { label: "Calls Made",           value: repDashboard.callsMade,        icon: <Phone size={18} />,        color: "#0369A1", bg: "#F0F9FF",  delay: "40ms" },
+          { label: "Follow-ups Today",     value: repDashboard.pendingFollowUps, icon: <Calendar size={18} />,     color: "#B45309", bg: "#FFFBEB",  delay: "80ms" },
+          { label: "Enrolled This Month",  value: repDashboard.wonThisMonth,     icon: <CheckCircle size={18} />,  color: "#065F46", bg: "#ECFDF5",  delay: "120ms" },
+        ].map((s, i) => (
+          <div key={s.label} className="animate-fade-up" style={{ animationDelay: s.delay }}>
+            <StatCard
+              label={s.label} value={s.value} icon={s.icon}
+              color={s.color} bg={s.bg}
+              sub={s.label === "Follow-ups Today" && repDashboard.overdueFollowUps > 0
+                ? `${repDashboard.overdueFollowUps} overdue` : undefined}
+              trend={s.label === "Enrolled This Month" ? "up" : undefined}
+            />
+          </div>
+        ))}
       </div>
 
       <div style={{ display: "grid", gridTemplateColumns: "1fr 340px", gap: 18 }}>
 
         {/* My Leads table */}
-        <div style={{ display: "flex", flexDirection: "column", gap: 18 }}>
+        <div className="animate-fade-up" style={{ display: "flex", flexDirection: "column", gap: 18, animationDelay: "80ms" }}>
           <div style={{ background: "#fff", border: "1px solid #E5E7EB", borderRadius: 14, overflow: "hidden" }}>
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "16px 20px", borderBottom: "1px solid #F3F4F6" }}>
               <h2 style={{ fontSize: 15, fontWeight: 700, color: "#111827", margin: 0 }}>My Leads</h2>
@@ -131,11 +141,11 @@ export default function RepDashboard() {
             </div>
             <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
               {[
-                { label: "New",           color: "#1D4ED8", bg: "#EFF6FF" },
-                { label: "Contacted",     color: "#374151", bg: "#F9FAFB" },
-                { label: "Qualified",     color: "#0369A1", bg: "#F0F9FF" },
-                { label: "Proposal Sent", color: "#7C3AED", bg: "#FAF5FF" },
-                { label: "Negotiation",   color: "#B45309", bg: "#FFFBEB" },
+                { label: "New",           color: "#1D4ED8" },
+                { label: "Contacted",     color: "#374151" },
+                { label: "Qualified",     color: "#0369A1" },
+                { label: "Proposal Sent", color: "#7C3AED" },
+                { label: "Negotiation",   color: "#B45309" },
               ].map(stage => {
                 const count = myLeads.filter(l => l.status === stage.label).length;
                 const pct = myLeads.length ? Math.round((count / myLeads.length) * 100) : 0;
@@ -154,16 +164,16 @@ export default function RepDashboard() {
         </div>
 
         {/* Right column */}
-        <div style={{ display: "flex", flexDirection: "column", gap: 18 }}>
+        <div className="animate-fade-up" style={{ display: "flex", flexDirection: "column", gap: 18, animationDelay: "120ms" }}>
           {/* Quick stats */}
           <div style={{ background: "#fff", border: "1px solid #E5E7EB", borderRadius: 14, padding: "16px 20px" }}>
             <h2 style={{ fontSize: 15, fontWeight: 700, color: "#111827", margin: "0 0 14px" }}>Quick Stats</h2>
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
               {[
-                { label: "Hot Leads",  value: hotLeads,   color: "#BE123C", bg: "#FFF1F2" },
-                { label: "Enrolled",   value: enrolled,   color: "#065F46", bg: "#ECFDF5" },
-                { label: "Overdue",    value: overdue.length,  color: "#B91C1C", bg: "#FEF2F2" },
-                { label: "Due Today",  value: dueToday.length, color: "#B45309", bg: "#FFFBEB" },
+                { label: "Hot Leads",  value: hotLeads,        color: "#BE123C", bg: "#FFF1F2" },
+                { label: "Enrolled",   value: enrolled,         color: "#065F46", bg: "#ECFDF5" },
+                { label: "Overdue",    value: overdue.length,   color: "#B91C1C", bg: "#FEF2F2" },
+                { label: "Due Today",  value: dueToday.length,  color: "#B45309", bg: "#FFFBEB" },
               ].map(s => (
                 <div key={s.label} style={{ padding: "12px 14px", background: s.bg, borderRadius: 10, textAlign: "center" }}>
                   <p style={{ fontSize: 22, fontWeight: 800, color: s.color, margin: "0 0 2px" }}>{s.value}</p>

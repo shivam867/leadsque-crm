@@ -78,7 +78,7 @@ function SLabel({ children }: { children: React.ReactNode }) {
   );
 }
 
-// ─── Pipeline — only shows current stage name, dot row still useful for position ──
+// ─── Pipeline ───────────────────────────────────────────────────
 function PipelineStrip({ current }: { current: LeadStatus }) {
   const idx = ORDERED_STAGES.indexOf(current);
   const isTerminal = current === "Lost" || current === "Not Interested";
@@ -93,21 +93,17 @@ function PipelineStrip({ current }: { current: LeadStatus }) {
   }
 
   const cfg = STATUS_CONFIG[current] ?? STATUS_CONFIG["New"];
-  const progress = idx / (ORDERED_STAGES.length - 1); // 0–1
+  const progress = idx / (ORDERED_STAGES.length - 1);
 
   return (
     <div>
-      {/* Track + dots */}
       <div style={{ position: "relative", height: 12, marginBottom: 6 }}>
-        {/* Background track */}
         <div style={{ position: "absolute", top: 5, left: 6, right: 6, height: 2, background: "#E5E7EB", borderRadius: 99 }} />
-        {/* Filled track */}
         <div style={{
           position: "absolute", top: 5, left: 6,
           width: `calc(${progress * 100}% - 12px * ${progress})`,
           height: 2, background: "#CBD5E1", borderRadius: 99, transition: "width .3s",
         }} />
-        {/* Dots */}
         <div style={{ position: "absolute", top: 0, left: 0, right: 0, display: "flex" }}>
           {ORDERED_STAGES.map((stage, i) => {
             const done   = i < idx;
@@ -127,8 +123,6 @@ function PipelineStrip({ current }: { current: LeadStatus }) {
           })}
         </div>
       </div>
-
-      {/* Only show current stage label — centered under its dot */}
       <div style={{ display: "flex" }}>
         {ORDERED_STAGES.map((stage, i) => {
           const active = i === idx;
@@ -159,38 +153,31 @@ export default function LeadDetailPanel({
 }) {
   const [tab, setTab] = useState<Tab>("log");
 
-  // Log call state
   const [callOutcome, setCallOutcome] = useState<typeof CALL_OUTCOMES[number] | null>(null);
   const [callRemarks, setCallRemarks] = useState("");
   const [callLogged, setCallLogged]   = useState(false);
 
-  // Follow-up state
   const [followUpDate, setFollowUpDate] = useState("");
   const [followUpTime, setFollowUpTime] = useState("");
   const [followUpNote, setFollowUpNote] = useState("");
   const [followUpSaved, setFollowUpSaved] = useState(false);
 
-  // Stage state
   const [selectedStatus, setSelectedStatus] = useState<LeadStatus>(lead.status);
   const [stageSaved, setStageSaved] = useState(false);
 
-  // Notes tab
   const [noteText, setNoteText]   = useState(lead.notes ?? "");
   const [noteSaved, setNoteSaved] = useState(false);
 
-  // Activity log tab
   const [selectedActivityType, setSelectedActivityType] = useState(ACTIVITY_TYPES[0]);
   const [activityText, setActivityText] = useState("");
   const [activityLogged, setActivityLogged] = useState(false);
 
-  // Local activity feed (prepended to lead.activity for display)
   const [localActivity, setLocalActivity] = useState<ActivityEntry[]>([]);
 
   const av     = AVATAR_PALETTE[avatarIndex % 4];
   const sc     = STATUS_CONFIG[selectedStatus] ?? STATUS_CONFIG["New"];
   const scorec = SCORE_CONFIG[lead.score] ?? SCORE_CONFIG.Cold;
 
-  // All activity = local (newest) + original
   const allActivity: ActivityEntry[] = [
     ...localActivity,
     ...lead.activity.map((a, i) => ({
@@ -275,7 +262,53 @@ export default function LeadDetailPanel({
     }}>
 
       {/* ══════════ HEADER ══════════ */}
-      <div style={{ padding: "15px 16px 13px", borderBottom: "1px solid #F0F0F0", flexShrink: 0 }}>
+      <div style={{ padding: "13px 16px 13px", borderBottom: "1px solid #F0F0F0", flexShrink: 0 }}>
+
+        {/* Top action row: X on left, profile chevron on right */}
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
+          <button
+            onClick={onClose}
+            style={{
+              background: "#fff", border: "1px solid #E5E7EB", cursor: "pointer",
+              color: "#6B7280", padding: 0, borderRadius: 7,
+              display: "flex", alignItems: "center", justifyContent: "center",
+              width: 28, height: 28, flexShrink: 0, transition: "all .15s",
+            }}
+            onMouseEnter={e => {
+              (e.currentTarget as HTMLElement).style.color = "#111827";
+              (e.currentTarget as HTMLElement).style.borderColor = "#9CA3AF";
+            }}
+            onMouseLeave={e => {
+              (e.currentTarget as HTMLElement).style.color = "#6B7280";
+              (e.currentTarget as HTMLElement).style.borderColor = "#E5E7EB";
+            }}
+          >
+            <X size={14} strokeWidth={2} />
+          </button>
+
+          <button
+            onClick={() => onOpenFullPage(lead)}
+            title="View Full Profile"
+            style={{
+              background: "#F9FAFB", border: "1px solid #E5E7EB", cursor: "pointer",
+              color: "#374151", padding: 0, borderRadius: 7,
+              display: "flex", alignItems: "center", justifyContent: "center",
+              width: 28, height: 28, flexShrink: 0, transition: "all .15s",
+            }}
+            onMouseEnter={e => {
+              (e.currentTarget as HTMLElement).style.background = "#111827";
+              (e.currentTarget as HTMLElement).style.color = "#fff";
+              (e.currentTarget as HTMLElement).style.borderColor = "#111827";
+            }}
+            onMouseLeave={e => {
+              (e.currentTarget as HTMLElement).style.background = "#F9FAFB";
+              (e.currentTarget as HTMLElement).style.color = "#374151";
+              (e.currentTarget as HTMLElement).style.borderColor = "#E5E7EB";
+            }}
+          >
+            <ChevronRight size={14} strokeWidth={2.5} />
+          </button>
+        </div>
 
         {/* Name row */}
         <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 10 }}>
@@ -303,14 +336,9 @@ export default function LeadDetailPanel({
               )}
             </div>
           </div>
-          <button onClick={onClose} style={{ background: "none", border: "none", cursor: "pointer", color: "#C4C4C4", padding: 4, borderRadius: 6, display: "flex", flexShrink: 0 }}
-            onMouseEnter={e => (e.currentTarget as HTMLElement).style.color = "#374151"}
-            onMouseLeave={e => (e.currentTarget as HTMLElement).style.color = "#C4C4C4"}>
-            <X size={16} strokeWidth={2} />
-          </button>
         </div>
 
-        {/* Pipeline strip — only current label shows */}
+        {/* Pipeline strip */}
         <div style={{ marginBottom: 10 }}>
           <PipelineStrip current={selectedStatus} />
         </div>
@@ -335,7 +363,7 @@ export default function LeadDetailPanel({
         </div>
 
         {/* Score + follow-up row */}
-        <div style={{ display: "flex", gap: 8, alignItems: "center", marginBottom: 11 }}>
+        <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
           {typeof lead.leadScore === "number" && (
             <div style={{ flex: 1, display: "flex", alignItems: "center", gap: 7, padding: "5px 9px", background: "#F9FAFB", borderRadius: 7, border: "1px solid #F0F0F0" }}>
               <span style={{ fontSize: 10, fontWeight: 700, color: "#9CA3AF" }}>Score</span>
@@ -354,17 +382,6 @@ export default function LeadDetailPanel({
             </div>
           )}
         </div>
-
-        {/* CTA */}
-        <button onClick={() => onOpenFullPage(lead)} style={{
-          width: "100%", display: "flex", alignItems: "center", justifyContent: "center", gap: 5,
-          padding: "9px 0", borderRadius: 9, fontSize: 12, fontWeight: 700,
-          background: "#111827", color: "#fff", border: "none", cursor: "pointer", transition: "background .15s",
-        }}
-          onMouseEnter={e => (e.currentTarget as HTMLElement).style.background = "#1F2937"}
-          onMouseLeave={e => (e.currentTarget as HTMLElement).style.background = "#111827"}>
-          View Full Profile <ChevronRight size={13} strokeWidth={2.5} />
-        </button>
       </div>
 
       {/* ══════════ TABS ══════════ */}
@@ -393,7 +410,6 @@ export default function LeadDetailPanel({
         {/* ─────── LOG CALL ─────── */}
         {tab === "log" && (
           <div>
-            {/* 1. Update stage */}
             <SLabel>Update Stage</SLabel>
             <div style={{ position: "relative", marginBottom: 8 }}>
               <select value={selectedStatus} onChange={e => setSelectedStatus(e.target.value as LeadStatus)}
@@ -415,7 +431,6 @@ export default function LeadDetailPanel({
 
             <Divider />
 
-            {/* 2. Call outcome — single row, icon + label stacked */}
             <SLabel>Call Outcome</SLabel>
             <div style={{ display: "flex", gap: 5, marginBottom: 8 }}>
               {CALL_OUTCOMES.map(o => {
@@ -451,7 +466,6 @@ export default function LeadDetailPanel({
 
             <Divider />
 
-            {/* 3. Schedule follow-up */}
             <SLabel>Schedule Follow-up</SLabel>
             <div style={{ display: "flex", gap: 6, marginBottom: 7 }}>
               <input type="date" value={followUpDate} onChange={e => setFollowUpDate(e.target.value)}
@@ -491,7 +505,6 @@ export default function LeadDetailPanel({
               {noteSaved ? <><CheckCircle2 size={13} />Saved → Timeline</> : <><StickyNote size={13} />Save Note</>}
             </button>
 
-            {/* Counseling snapshot */}
             {lead.counselingNote && (
               <>
                 <Divider />
@@ -547,10 +560,8 @@ export default function LeadDetailPanel({
         {/* ─────── TIMELINE ─────── */}
         {tab === "activity" && (
           <div>
-            {/* Log any activity */}
             <SLabel>Log Activity</SLabel>
 
-            {/* Activity type selector */}
             <div style={{ display: "flex", gap: 5, marginBottom: 9, flexWrap: "wrap" }}>
               {ACTIVITY_TYPES.map(at => {
                 const sel = selectedActivityType.type === at.type;
@@ -592,15 +603,13 @@ export default function LeadDetailPanel({
 
             <Divider />
 
-            {/* Timeline feed */}
             <SLabel>Activity Timeline ({allActivity.length})</SLabel>
             {allActivity.length === 0
               ? <p style={{ fontSize: 12, color: "#9CA3AF", textAlign: "center", padding: "24px 0" }}>No activity yet.</p>
               : (
                 <ol style={{ position: "relative", borderLeft: "2px solid #F0F0F0", marginLeft: 6, padding: 0, listStyle: "none" }}>
-                  {allActivity.map((item, i) => {
+                  {allActivity.map((item) => {
                     const color = ACTIVITY_COLORS[item.type] ?? "#374151";
-                    const isNew = item.id.startsWith(String(Math.floor(Date.now() / 1000)));
                     return (
                       <li key={item.id} style={{ position: "relative", paddingBottom: 18, paddingLeft: 16 }}>
                         <span style={{ position: "absolute", left: -5, top: 5, width: 8, height: 8, borderRadius: "50%", background: color, border: "2px solid #fff" }} />

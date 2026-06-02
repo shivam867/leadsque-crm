@@ -8,7 +8,7 @@ import type { Lead } from "@/data/dummy";
 import { Phone, Calendar, Clock, CheckCheck, AlertCircle, ChevronRight } from "lucide-react";
 
 const myLeads = leads.filter(l => l.assignedTo === "Aanya Sharma" && l.followUpDate);
-const today = "2025-05-28";
+const today   = "2025-05-28";
 const overdue  = myLeads.filter(l => l.followUpDate < today);
 const dueToday = myLeads.filter(l => l.followUpDate === today);
 const upcoming = myLeads.filter(l => l.followUpDate > today);
@@ -36,11 +36,13 @@ function FollowUpSection({ title, subtitle, items, color, bg, icon, onSelect, se
       </div>
       <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
         {items.map((lead, i) => (
-          <FollowUpCard
-            key={lead.id} lead={lead} color={color} bg={bg}
-            isSelected={selectedId === lead.id}
-            onSelect={l => onSelect(l, globalOffset + i)}
-          />
+          <div key={lead.id} className="animate-fade-up" style={{ animationDelay: `${Math.min(i, 8) * 30}ms` }}>
+            <FollowUpCard
+              lead={lead} color={color} bg={bg}
+              isSelected={selectedId === lead.id}
+              onSelect={l => onSelect(l, globalOffset + i)}
+            />
+          </div>
         ))}
       </div>
     </div>
@@ -104,9 +106,9 @@ function FollowUpCard({ lead, color, bg, isSelected, onSelect }: {
 }
 
 export default function RepFollowUps() {
-  const [selected, setSelected] = useState<Lead | null>(null);
+  const [selected, setSelected]       = useState<Lead | null>(null);
   const [avatarIndex, setAvatarIndex] = useState(0);
-  const [view, setView] = useState<View>("list");
+  const [view, setView]               = useState<View>("list");
 
   const handleSelect = (lead: Lead, index: number) => {
     setSelected(prev => prev?.id === lead.id ? null : lead);
@@ -120,15 +122,12 @@ export default function RepFollowUps() {
     return <LeadFullPage lead={selected} onBack={() => setView("list")} avatarIndex={avatarIndex} />;
   }
 
-  const overdueOffset  = 0;
-  const dueTodayOffset = overdue.length;
-  const upcomingOffset = overdue.length + dueToday.length;
-
   return (
     <div style={{ display: "flex", height: "100%", background: "#F9FAFB" }}>
       <div style={{ flex: 1, padding: "24px 28px", overflowY: "auto", minWidth: 0, maxWidth: 860 }}>
+
         {/* Header */}
-        <div style={{ marginBottom: 20 }}>
+        <div className="animate-fade-up" style={{ marginBottom: 20 }}>
           <h1 style={{ fontSize: 22, fontWeight: 800, color: "#111827", margin: "0 0 4px", letterSpacing: "-0.02em" }}>Follow-ups</h1>
           <p style={{ fontSize: 13, color: "#6B7280", margin: 0 }}>
             {overdue.length} overdue · {dueToday.length} due today · {upcoming.length} upcoming
@@ -136,11 +135,11 @@ export default function RepFollowUps() {
         </div>
 
         {/* Summary cards */}
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 12, marginBottom: 24 }}>
+        <div className="animate-fade-up" style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 12, marginBottom: 24, animationDelay: "40ms" }}>
           {[
-            { icon: <AlertCircle size={16} />, label: "Overdue",    value: overdue.length,  color: "#B91C1C", bg: "#FEF2F2", border: "#FECACA" },
-            { icon: <Clock size={16} />,       label: "Due Today",  value: dueToday.length, color: "#B45309", bg: "#FFFBEB", border: "#FDE68A" },
-            { icon: <CheckCheck size={16} />,  label: "Upcoming",   value: upcoming.length, color: "#065F46", bg: "#ECFDF5", border: "#A7F3D0" },
+            { icon: <AlertCircle size={16} />, label: "Overdue",   value: overdue.length,  color: "#B91C1C", bg: "#FEF2F2", border: "#FECACA" },
+            { icon: <Clock size={16} />,       label: "Due Today", value: dueToday.length, color: "#B45309", bg: "#FFFBEB", border: "#FDE68A" },
+            { icon: <CheckCheck size={16} />,  label: "Upcoming",  value: upcoming.length, color: "#065F46", bg: "#ECFDF5", border: "#A7F3D0" },
           ].map(s => (
             <div key={s.label} style={{ padding: "14px 16px", background: "#fff", border: `1px solid ${s.border}`, borderRadius: 12, display: "flex", alignItems: "center", gap: 12 }}>
               <div style={{ width: 36, height: 36, borderRadius: 10, background: s.bg, display: "flex", alignItems: "center", justifyContent: "center", color: s.color, flexShrink: 0 }}>
@@ -154,21 +153,23 @@ export default function RepFollowUps() {
           ))}
         </div>
 
-        <FollowUpSection
-          title="Overdue" subtitle="— call immediately"
-          items={overdue} color="#DC2626" bg="#FEF2F2" icon={<AlertCircle size={14} />}
-          onSelect={handleSelect} selectedId={selected?.id} globalOffset={overdueOffset}
-        />
-        <FollowUpSection
-          title="Due Today" subtitle="— scheduled for today"
-          items={dueToday} color="#D97706" bg="#FFFBEB" icon={<Clock size={14} />}
-          onSelect={handleSelect} selectedId={selected?.id} globalOffset={dueTodayOffset}
-        />
-        <FollowUpSection
-          title="Upcoming" subtitle="— scheduled ahead"
-          items={upcoming} color="#059669" bg="#ECFDF5" icon={<Calendar size={14} />}
-          onSelect={handleSelect} selectedId={selected?.id} globalOffset={upcomingOffset}
-        />
+        <div className="animate-fade-up" style={{ animationDelay: "80ms" }}>
+          <FollowUpSection
+            title="Overdue" subtitle="— call immediately"
+            items={overdue} color="#DC2626" bg="#FEF2F2" icon={<AlertCircle size={14} />}
+            onSelect={handleSelect} selectedId={selected?.id} globalOffset={0}
+          />
+          <FollowUpSection
+            title="Due Today" subtitle="— scheduled for today"
+            items={dueToday} color="#D97706" bg="#FFFBEB" icon={<Clock size={14} />}
+            onSelect={handleSelect} selectedId={selected?.id} globalOffset={overdue.length}
+          />
+          <FollowUpSection
+            title="Upcoming" subtitle="— scheduled ahead"
+            items={upcoming} color="#059669" bg="#ECFDF5" icon={<Calendar size={14} />}
+            onSelect={handleSelect} selectedId={selected?.id} globalOffset={overdue.length + dueToday.length}
+          />
+        </div>
 
         {myLeads.length === 0 && (
           <div style={{ textAlign: "center", padding: "64px 0" }}>

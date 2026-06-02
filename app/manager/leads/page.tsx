@@ -6,14 +6,14 @@ import LeadDetailPanel from "@/components/ui/LeadDetailPanel";
 import LeadFullPage from "@/components/ui/LeadFullPage";
 import type { Lead } from "@/data/dummy";
 
-type View = "list" | "full" | "intel";
+type View = "list" | "full";
 
 export default function ManagerLeads() {
-  const [search, setSearch]       = useState("");
-  const [repFilter, setRepFilter] = useState("All");
-  const [selected, setSelected]   = useState<Lead | null>(null);
+  const [search, setSearch]           = useState("");
+  const [repFilter, setRepFilter]     = useState("All");
+  const [selected, setSelected]       = useState<Lead | null>(null);
   const [avatarIndex, setAvatarIndex] = useState(0);
-  const [view, setView]           = useState<View>("list");
+  const [view, setView]               = useState<View>("list");
 
   const filtered = leads.filter(l => {
     const q = search.toLowerCase();
@@ -28,54 +28,43 @@ export default function ManagerLeads() {
     setView("list");
   };
 
-  const handleOpenFullPage = (lead: Lead) => {
-    setSelected(lead);
-    setView("full");
-  };
-
-  const handleOpenCallIntelligence = (lead: Lead) => {
-    setSelected(lead);
-    setView("intel");
-  };
+  const handleOpenFullPage = (lead: Lead) => { setSelected(lead); setView("full"); };
 
   if (view === "full" && selected) {
-    return (
-      <LeadFullPage
-        lead={selected}
-        onBack={() => setView("list")}
-        avatarIndex={avatarIndex}
-      />
-    );
+    return <LeadFullPage lead={selected} onBack={() => setView("list")} avatarIndex={avatarIndex} />;
   }
-
- 
 
   return (
     <div className="flex h-full">
       <div className="flex-1 p-6 overflow-y-auto min-w-0">
-        <div className="flex items-center justify-between mb-5 animate-fade-up">
+
+        {/* Header */}
+        <div className="animate-fade-up flex items-center justify-between mb-5">
           <div>
-            <h1 className="text-xl font-bold tracking-tight" style={{ color: "var(--text-primary)" }}>All Leads</h1>
-            <p className="text-sm" style={{ color: "var(--text-secondary)" }}>{leads.length} leads across all reps</p>
+            <h1 className="page-title">All Leads</h1>
+            <p className="page-subtitle">{leads.length} leads across all reps</p>
           </div>
         </div>
 
-        <div className="flex gap-2.5 mb-4 animate-fade-up delay-50 flex-wrap">
+        {/* Filters */}
+        <div className="animate-fade-up flex gap-2.5 mb-4 flex-wrap" style={{ animationDelay: "40ms" }}>
           <input className="input" style={{ maxWidth: 240 }} placeholder="Search leads…"
             value={search} onChange={e => setSearch(e.target.value)} />
-          <select className="input" style={{ width: 180 }} value={repFilter} onChange={e => setRepFilter(e.target.value)}>
+          <select className="input" style={{ width: 180 }} value={repFilter}
+            onChange={e => setRepFilter(e.target.value)}>
             <option value="All">All Reps</option>
             {salesReps.map(r => <option key={r.id} value={r.name}>{r.name}</option>)}
           </select>
         </div>
 
-        <div className="card overflow-hidden animate-fade-up delay-100">
+        {/* Table */}
+        <div className="animate-fade-up card overflow-hidden" style={{ animationDelay: "80ms" }}>
           <table className="w-full">
             <thead>
               <tr style={{ borderBottom: "1px solid var(--border)", background: "var(--surface-2)" }}>
                 {["Lead", "Contact", "Service", "Assigned To", "Score", "Status"].map(h => (
                   <th key={h} className="text-left px-4 py-2.5 text-xs font-semibold uppercase tracking-wide"
-                    style={{ color: "#374151" }}>{h}</th>
+                    style={{ color: "var(--text-secondary)" }}>{h}</th>
                 ))}
               </tr>
             </thead>
@@ -83,10 +72,11 @@ export default function ManagerLeads() {
               {filtered.map((lead, i) => (
                 <tr key={lead.id}
                   onClick={() => handleSelectLead(lead, i)}
-                  className="cursor-pointer transition-colors"
+                  className="animate-fade-up cursor-pointer transition-colors"
                   style={{
                     borderBottom: "1px solid var(--border)",
                     background: selected?.id === lead.id ? "var(--accent-light)" : undefined,
+                    animationDelay: `${Math.min(i, 10) * 25}ms`,
                   }}
                   onMouseEnter={e => { if (selected?.id !== lead.id) (e.currentTarget as HTMLElement).style.background = "var(--surface-2)"; }}
                   onMouseLeave={e => { if (selected?.id !== lead.id) (e.currentTarget as HTMLElement).style.background = ""; }}>
@@ -95,11 +85,11 @@ export default function ManagerLeads() {
                       <PriorityDot priority={lead.priority} />
                       <div>
                         <p className="font-semibold text-sm" style={{ color: "var(--text-primary)" }}>{lead.name}</p>
-                        <p className="text-xs" style={{ color: "#374151" }}>{lead.city} · {lead.id}</p>
+                        <p className="text-xs" style={{ color: "var(--text-secondary)" }}>{lead.city} · {lead.id}</p>
                       </div>
                     </div>
                   </td>
-                  <td className="px-4 py-3 text-xs font-mono" style={{ color: "#374151" }}>{lead.phone}</td>
+                  <td className="px-4 py-3 text-xs font-mono" style={{ color: "var(--text-secondary)" }}>{lead.phone}</td>
                   <td className="px-4 py-3 text-sm" style={{ color: "var(--text-secondary)" }}>{lead.service}</td>
                   <td className="px-4 py-3">
                     <div className="flex items-center gap-2">
@@ -116,6 +106,11 @@ export default function ManagerLeads() {
               ))}
             </tbody>
           </table>
+          {filtered.length === 0 && (
+            <div className="py-16 text-center" style={{ color: "var(--text-secondary)" }}>
+              No leads match your filters.
+            </div>
+          )}
         </div>
       </div>
 
