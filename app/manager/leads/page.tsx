@@ -4,7 +4,6 @@ import { leads, salesReps } from "@/data/dummy";
 import { StatusBadge, ScoreBadge, PriorityDot } from "@/components/ui/Badges";
 import LeadDetailPanel from "@/components/ui/LeadDetailPanel";
 import LeadFullPage from "@/components/ui/LeadFullPage";
-import CallIntelligencePage from "@/components/ui/CallIntelligencePage";
 import type { Lead } from "@/data/dummy";
 
 type View = "list" | "full" | "intel";
@@ -44,20 +43,12 @@ export default function ManagerLeads() {
       <LeadFullPage
         lead={selected}
         onBack={() => setView("list")}
-        onOpenCallIntelligence={handleOpenCallIntelligence}
         avatarIndex={avatarIndex}
       />
     );
   }
 
-  if (view === "intel" && selected) {
-    return (
-      <CallIntelligencePage
-        lead={selected}
-        onBack={() => setView("full")}
-      />
-    );
-  }
+ 
 
   return (
     <div className="flex h-full">
@@ -133,7 +124,6 @@ export default function ManagerLeads() {
           lead={selected}
           onClose={() => { setSelected(null); setView("list"); }}
           onOpenFullPage={handleOpenFullPage}
-          onOpenCallIntelligence={handleOpenCallIntelligence}
           avatarIndex={avatarIndex}
         />
       )}
