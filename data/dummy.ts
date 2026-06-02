@@ -866,12 +866,12 @@ export const revenueByMonth = [
 ];
 
 export const pipelineStages = [
-  { stage: "New",           count: 47, value: "₹9.8L"  },
-  { stage: "Contacted",     count: 38, value: "₹16.2L" },
-  { stage: "Qualified",     count: 29, value: "₹24.5L" },
-  { stage: "Proposal Sent", count: 24, value: "₹19.3L" },
-  { stage: "Negotiation",   count: 12, value: "₹38.1L" },
-  { stage: "Enrolled",      count: 14, value: "₹42.1L" },
+  { stage: "New",           count: 47, value: ""  },
+  { stage: "Contacted",     count: 38, value: "" },
+  { stage: "Qualified",     count: 29, value: "" },
+  { stage: "Proposal Sent", count: 24, value: "" },
+  { stage: "Negotiation",   count: 12, value: "" },
+  { stage: "Enrolled",      count: 14, value: "" },
   { stage: "Lost",          count: 9,  value: "—"       },
 ];
 
