@@ -6,9 +6,9 @@ type Severity = "High" | "Medium" | "Low";
 type EscalationItem = (typeof escalations)[number] & { resolved?: boolean; escalatedUp?: boolean };
 
 const severityConfig = {
-  High:   { bg: "#FFF1F2", color: "#DC2626", border: "#FECDD3", label: "High Priority", dot: "#DC2626" },
-  Medium: { bg: "#FFFBEB", color: "#D97706", border: "#FDE68A", label: "Medium",        dot: "#D97706" },
-  Low:    { bg: "#F0F9FF", color: "#0369A1", border: "#BAE6FD", label: "Low",            dot: "#0369A1" },
+  High:   { bg: "var(--danger-light)",  color: "var(--danger)",  border: "var(--danger-border)",  label: "High Priority", dot: "var(--danger)" },
+  Medium: { bg: "var(--warning-light)", color: "var(--warning)", border: "var(--warning-border)", label: "Medium",        dot: "var(--warning)" },
+  Low:    { bg: "var(--info-light)",    color: "var(--info)",    border: "var(--info-border)",    label: "Low",           dot: "var(--info)" },
 };
 
 const ORDER: Severity[] = ["High", "Medium", "Low"];
@@ -19,20 +19,19 @@ function SeverityFilterPill({ severity, count, active, onClick }: {
   const cfg = severity !== "All" ? severityConfig[severity] : null;
   return (
     <button onClick={onClick}
-      className="flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-semibold transition-all"
       style={{
+        display: "flex", alignItems: "center", gap: 8, padding: "8px 14px", borderRadius: 11, fontSize: 12, fontWeight: 600, cursor: "pointer", transition: "all .15s",
         background: active ? (cfg?.bg ?? "var(--accent-light)") : "var(--surface-2)",
         color: active ? (cfg?.color ?? "var(--accent)") : "var(--text-secondary)",
         border: `1.5px solid ${active ? (cfg?.border ?? "var(--accent-border)") : "var(--border)"}`,
       }}>
-      {cfg && <span className="w-2 h-2 rounded-full flex-shrink-0" style={{ background: active ? cfg.dot : "var(--text-muted)" }} />}
+      {cfg && <span style={{ width: 8, height: 8, borderRadius: "50%", flexShrink: 0, background: active ? cfg.dot : "var(--text-muted)", display: "inline-block" }} />}
       {severity === "All" ? "All" : cfg!.label}
-      <span className="px-1.5 py-0.5 rounded-md font-bold"
-        style={{
-          background: active ? (cfg?.color ?? "var(--accent)") : "var(--border)",
-          color: active ? "#fff" : "var(--text-secondary)",
-          fontSize: 10,
-        }}>
+      <span style={{
+        padding: "2px 6px", borderRadius: 6, fontWeight: 700, fontSize: 10,
+        background: active ? (cfg?.color ?? "var(--accent)") : "var(--border)",
+        color: active ? "#fff" : "var(--text-secondary)",
+      }}>
         {count}
       </span>
     </button>
@@ -75,10 +74,10 @@ export default function ManagerEscalations() {
     setItems(prev => prev.map(e => e.id === id ? { ...e, escalatedUp: true } : e));
 
   return (
-    <div className="p-7 max-w-4xl">
+    <div style={{ padding: 28, maxWidth: 896 }}>
 
       {/* Header */}
-      <div className="animate-fade-up flex items-start justify-between mb-6">
+      <div className="animate-fade-up" style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: 24 }}>
         <div>
           <h1 className="page-title">Escalations</h1>
           <p className="page-subtitle">
@@ -87,40 +86,39 @@ export default function ManagerEscalations() {
         </div>
 
         {/* Summary strip */}
-        <div className="flex gap-2">
+        <div style={{ display: "flex", gap: 8 }}>
           {(["High", "Medium", "Low"] as Severity[]).map(s => (
-            <div key={s} className="px-3 py-2 rounded-xl text-center"
-              style={{ background: severityConfig[s].bg, border: `1px solid ${severityConfig[s].border}` }}>
-              <p className="text-lg font-bold leading-none" style={{ color: severityConfig[s].color }}>{counts[s]}</p>
-              <p className="text-xs mt-0.5" style={{ color: severityConfig[s].color, opacity: 0.8 }}>{s}</p>
+            <div key={s} style={{ padding: "8px 12px", borderRadius: 11, textAlign: "center", background: severityConfig[s].bg, border: `1px solid ${severityConfig[s].border}` }}>
+              <p style={{ fontSize: 20, fontWeight: 700, lineHeight: 1, color: severityConfig[s].color, margin: 0 }}>{counts[s]}</p>
+              <p style={{ fontSize: 12, marginTop: 2, color: severityConfig[s].color, opacity: 0.8, margin: 0 }}>{s}</p>
             </div>
           ))}
         </div>
       </div>
 
       {/* Filters */}
-      <div className="animate-fade-up flex items-center gap-3 mb-5 flex-wrap" style={{ animationDelay: "40ms" }}>
-        <div className="flex gap-1.5">
+      <div className="animate-fade-up" style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 20, flexWrap: "wrap", animationDelay: "40ms" }}>
+        <div style={{ display: "flex", gap: 6 }}>
           {(["All", "High", "Medium", "Low"] as const).map(s => (
             <SeverityFilterPill key={s} severity={s} count={counts[s] ?? open.length}
               active={severityFilter === s} onClick={() => setSeverityFilter(s)} />
           ))}
         </div>
-        <div className="h-5 w-px" style={{ background: "var(--border)" }} />
-        <select className="input text-xs py-1.5" style={{ width: 150 }}
+        <div style={{ height: 20, width: 1, background: "var(--border)" }} />
+        <select className="input" style={{ width: 150, fontSize: 12, padding: "6px 10px" }}
           value={repFilter} onChange={e => setRepFilter(e.target.value)}>
           {reps.map(r => <option key={r} value={r}>{r === "All" ? "All Reps" : r}</option>)}
         </select>
       </div>
 
       {/* Cards */}
-      <div className="animate-fade-up flex flex-col gap-3" style={{ animationDelay: "80ms" }}>
+      <div className="animate-fade-up" style={{ display: "flex", flexDirection: "column", gap: 12, animationDelay: "80ms" }}>
         {filtered.length === 0
           ? (
-            <div className="card p-12 text-center" style={{ border: "2px dashed var(--border)" }}>
-              <div className="text-4xl mb-3">✅</div>
-              <p className="font-semibold text-base" style={{ color: "var(--text-primary)" }}>All clear!</p>
-              <p className="text-sm mt-1" style={{ color: "var(--text-secondary)" }}>
+            <div className="card" style={{ padding: 48, textAlign: "center", border: "2px dashed var(--border)" }}>
+              <div style={{ fontSize: 36, marginBottom: 12 }}>✅</div>
+              <p style={{ fontWeight: 600, fontSize: 15, color: "var(--text-primary)", margin: "0 0 4px" }}>All clear!</p>
+              <p style={{ fontSize: 13, color: "var(--text-secondary)", margin: 0 }}>
                 {severityFilter !== "All" || repFilter !== "All"
                   ? "No escalations match the current filters."
                   : "No open escalations at the moment."}
@@ -132,28 +130,26 @@ export default function ManagerEscalations() {
               const isConfirming = resolveConfirm === e.id;
 
               return (
-                <div key={e.id} className="animate-fade-up card p-5 transition-all"
-                  style={{ animationDelay: `${Math.min(i, 8) * 40}ms`, borderLeft: `4px solid ${cfg.color}` }}>
-                  <div className="flex items-start gap-4">
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2.5 mb-2">
-                        <span className="text-xs font-bold font-mono" style={{ color: "var(--text-secondary)" }}>{e.id}</span>
-                        <span className="badge text-xs"
-                          style={{ background: cfg.bg, color: cfg.color, border: `1px solid ${cfg.border}` }}>
-                          <span className="w-1.5 h-1.5 rounded-full mr-1 inline-block" style={{ background: cfg.dot }} />
+                <div key={e.id} className="animate-fade-up card" style={{ padding: 20, transition: "all .15s", borderLeft: `4px solid ${cfg.color}`, animationDelay: `${Math.min(i, 8) * 40}ms` }}>
+                  <div style={{ display: "flex", alignItems: "flex-start", gap: 16 }}>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 8 }}>
+                        <span style={{ fontSize: 12, fontWeight: 700, fontFamily: "monospace", color: "var(--text-secondary)" }}>{e.id}</span>
+                        <span className="badge" style={{ background: cfg.bg, color: cfg.color, border: `1px solid ${cfg.border}` }}>
+                          <span style={{ width: 6, height: 6, borderRadius: "50%", background: cfg.dot, display: "inline-block", marginRight: 4 }} />
                           {cfg.label}
                         </span>
                       </div>
-                      <h3 className="font-bold text-base mb-1" style={{ color: "var(--text-primary)" }}>{e.lead}</h3>
-                      <p className="text-sm mb-3" style={{ color: "var(--text-secondary)" }}>{e.reason}</p>
-                      <div className="flex items-center gap-4 text-xs" style={{ color: "var(--text-secondary)" }}>
-                        <span className="flex items-center gap-1">
+                      <h3 style={{ fontWeight: 700, fontSize: 15, color: "var(--text-primary)", margin: "0 0 4px" }}>{e.lead}</h3>
+                      <p style={{ fontSize: 13, color: "var(--text-secondary)", margin: "0 0 12px" }}>{e.reason}</p>
+                      <div style={{ display: "flex", alignItems: "center", gap: 16, fontSize: 12, color: "var(--text-secondary)" }}>
+                        <span style={{ display: "flex", alignItems: "center", gap: 4 }}>
                           <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                             <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>
                           </svg>
                           Rep: <strong style={{ color: "var(--text-primary)" }}>{e.rep}</strong>
                         </span>
-                        <span className="flex items-center gap-1">
+                        <span style={{ display: "flex", alignItems: "center", gap: 4 }}>
                           <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                             <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
                           </svg>
@@ -162,26 +158,26 @@ export default function ManagerEscalations() {
                       </div>
                     </div>
 
-                    <div className="flex flex-col gap-2 flex-shrink-0">
+                    <div style={{ display: "flex", flexDirection: "column", gap: 8, flexShrink: 0 }}>
                       {isConfirming ? (
                         <>
-                          <p className="text-xs text-center mb-1 font-medium" style={{ color: "var(--text-secondary)" }}>Confirm resolve?</p>
-                          <button className="btn-primary text-xs py-2 px-4" style={{ background: "#059669" }}
+                          <p style={{ fontSize: 12, textAlign: "center", marginBottom: 4, fontWeight: 500, color: "var(--text-secondary)" }}>Confirm resolve?</p>
+                          <button className="btn-primary" style={{ fontSize: 12, background: "var(--success)" }}
                             onClick={() => resolveEscalation(e.id)}>✓ Confirm</button>
-                          <button className="btn-secondary text-xs py-2 px-4" onClick={() => setResolveConfirm(null)}>Cancel</button>
+                          <button className="btn-secondary" style={{ fontSize: 12 }} onClick={() => setResolveConfirm(null)}>Cancel</button>
                         </>
                       ) : (
                         <>
-                          <button className="btn-primary text-xs py-2 px-4" style={{ background: "#059669" }}
+                          <button className="btn-primary" style={{ fontSize: 12, background: "var(--success)" }}
                             onClick={() => setResolveConfirm(e.id)}>
                             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
                             Resolve
                           </button>
-                          <button className="btn-secondary text-xs py-2 px-4" onClick={() => escalateUp(e.id)}>
+                          <button className="btn-secondary" style={{ fontSize: 12 }} onClick={() => escalateUp(e.id)}>
                             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="18 15 12 9 6 15"/></svg>
                             Escalate Up
                           </button>
-                          <button className="btn-secondary text-xs py-2 px-4" onClick={() => alert(`Navigating to lead: ${e.lead}`)}>
+                          <button className="btn-secondary" style={{ fontSize: 12 }} onClick={() => alert(`Navigating to lead: ${e.lead}`)}>
                             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
                             View Lead
                           </button>
@@ -196,23 +192,21 @@ export default function ManagerEscalations() {
 
       {/* Resolved section */}
       {resolved.length > 0 && (
-        <div className="animate-fade-up mt-8">
-          <p className="text-xs font-semibold uppercase tracking-wide mb-3" style={{ color: "var(--text-secondary)" }}>
+        <div className="animate-fade-up" style={{ marginTop: 32 }}>
+          <p style={{ fontSize: 12, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.06em", color: "var(--text-secondary)", marginBottom: 12 }}>
             Resolved this session ({resolved.length})
           </p>
-          <div className="flex flex-col gap-2">
+          <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
             {resolved.map(e => (
-              <div key={e.id} className="flex items-center justify-between px-4 py-3 rounded-xl"
-                style={{ background: "var(--surface-2)", border: "1px solid var(--border)", opacity: 0.7 }}>
-                <div className="flex items-center gap-3">
-                  <span style={{ color: "#059669" }}>✓</span>
+              <div key={e.id} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "12px 16px", borderRadius: 11, background: "var(--surface-2)", border: "1px solid var(--border)", opacity: 0.7 }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                  <span style={{ color: "var(--success)" }}>✓</span>
                   <div>
-                    <span className="text-sm font-medium" style={{ color: "var(--text-primary)", textDecoration: "line-through" }}>{e.lead}</span>
-                    <span className="text-xs ml-2" style={{ color: "var(--text-secondary)" }}>{e.id}</span>
+                    <span style={{ fontSize: 13, fontWeight: 500, color: "var(--text-primary)", textDecoration: "line-through" }}>{e.lead}</span>
+                    <span style={{ fontSize: 12, color: "var(--text-secondary)", marginLeft: 8 }}>{e.id}</span>
                   </div>
                 </div>
-                <button className="text-xs px-2.5 py-1 rounded-lg"
-                  style={{ background: "var(--border)", color: "var(--text-secondary)" }}
+                <button className="btn-ghost" style={{ fontSize: 12 }}
                   onClick={() => setItems(prev => prev.map(i => i.id === e.id ? { ...i, resolved: false } : i))}>
                   Undo
                 </button>

@@ -5,7 +5,6 @@ import {
   ToggleLeft, ToggleRight, FileText, Hash, Type, List, Calendar,
 } from "lucide-react";
 
-// ─── Types ───────────────────────────────────────────────────────
 export interface FormField {
   id: string;
   label: string;
@@ -15,7 +14,6 @@ export interface FormField {
   enabled: boolean;
 }
 
-// ─── Constants ───────────────────────────────────────────────────
 export const DEFAULT_FORM_FIELDS: FormField[] = [
   { id: "f1",  label: "Target Program",        type: "text",     required: true,  enabled: true  },
   { id: "f2",  label: "Course Interest",        type: "select",   required: false, enabled: true,
@@ -34,14 +32,6 @@ export const DEFAULT_FORM_FIELDS: FormField[] = [
     options: ["Approved","Pending","Not Applicable"] },
 ];
 
-// ─── Shared styles ────────────────────────────────────────────────
-const inputStyle: React.CSSProperties = {
-  fontSize: 12, padding: "7px 10px", borderRadius: 7,
-  border: "1px solid #E5E7EB", color: "#111827",
-  background: "#fff", outline: "none", width: "100%",
-  boxSizing: "border-box" as const,
-};
-
 const FIELD_TYPE_ICONS: Record<string, React.ReactNode> = {
   text:     <Type size={11} />,
   select:   <List size={11} />,
@@ -50,17 +40,7 @@ const FIELD_TYPE_ICONS: Record<string, React.ReactNode> = {
   date:     <Calendar size={11} />,
 };
 
-function tag(color: string, fontSize = 10): React.CSSProperties {
-  return {
-    fontSize, fontWeight: 700, padding: "2px 7px", borderRadius: 99,
-    background: color + "18", color, border: `1px solid ${color}30`,
-  };
-}
-
-// ─── Field Row ───────────────────────────────────────────────────
-function FieldRow({
-  field, onChange, onDelete,
-}: {
+function FieldRow({ field, onChange, onDelete }: {
   field: FormField;
   onChange: (f: FormField) => void;
   onDelete: () => void;
@@ -68,35 +48,35 @@ function FieldRow({
   const [expanded, setExpanded] = useState(false);
 
   return (
-    <div style={{
-      border: "1px solid #F0F0F0", borderRadius: 9, overflow: "hidden",
-      marginBottom: 5, opacity: field.enabled ? 1 : 0.55,
-    }}>
+    <div style={{ border: "1px solid var(--surface-3)", borderRadius: 9, overflow: "hidden", marginBottom: 5, opacity: field.enabled ? 1 : 0.55 }}>
       {/* Row header */}
-      <div style={{
-        display: "flex", alignItems: "center", gap: 7,
-        padding: "8px 11px", background: "#FAFAFA",
-      }}>
-        <GripVertical size={12} style={{ color: "#D1D5DB", flexShrink: 0, cursor: "grab" }} />
-        <span style={{ color: "#9CA3AF", flexShrink: 0 }}>{FIELD_TYPE_ICONS[field.type]}</span>
-        <span style={{ flex: 1, fontSize: 12, fontWeight: 600, color: "#374151" }}>{field.label}</span>
-        <span style={{ ...tag("#6B7280"), fontSize: 9 }}>{field.type}</span>
-        {field.required && <span style={{ ...tag("#B45309"), fontSize: 9 }}>Req</span>}
+      <div style={{ display: "flex", alignItems: "center", gap: 7, padding: "8px 11px", background: "var(--surface-2)" }}>
+        <GripVertical size={12} style={{ color: "var(--border-strong)", flexShrink: 0, cursor: "grab" }} />
+        <span style={{ color: "var(--text-muted)", flexShrink: 0 }}>{FIELD_TYPE_ICONS[field.type]}</span>
+        <span style={{ flex: 1, fontSize: 12, fontWeight: 600, color: "var(--text-secondary)" }}>{field.label}</span>
+        <span style={{ fontSize: 9, fontWeight: 700, padding: "2px 7px", borderRadius: 99, background: "var(--surface-3)", color: "var(--text-muted)", border: "1px solid var(--border)" }}>
+          {field.type}
+        </span>
+        {field.required && (
+          <span style={{ fontSize: 9, fontWeight: 700, padding: "2px 7px", borderRadius: 99, background: "var(--warning-light)", color: "var(--warning)", border: "1px solid var(--warning-border)" }}>
+            Req
+          </span>
+        )}
         <button
           onClick={() => onChange({ ...field, enabled: !field.enabled })}
-          style={{ background: "none", border: "none", cursor: "pointer", color: field.enabled ? "#059669" : "#D1D5DB", display: "flex" }}
+          style={{ background: "none", border: "none", cursor: "pointer", color: field.enabled ? "var(--success)" : "var(--border-strong)", display: "flex" }}
         >
           {field.enabled ? <ToggleRight size={17} /> : <ToggleLeft size={17} />}
         </button>
         <button
           onClick={() => setExpanded(e => !e)}
-          style={{ background: "none", border: "none", cursor: "pointer", color: "#9CA3AF", display: "flex", padding: 0 }}
+          style={{ background: "none", border: "none", cursor: "pointer", color: "var(--text-muted)", display: "flex", padding: 0 }}
         >
           <ChevronDown size={13} style={{ transform: expanded ? "rotate(180deg)" : "none", transition: "transform .2s" }} />
         </button>
         <button
           onClick={onDelete}
-          style={{ background: "none", border: "none", cursor: "pointer", color: "#F87171", display: "flex", padding: 0 }}
+          style={{ background: "none", border: "none", cursor: "pointer", color: "var(--danger)", display: "flex", padding: 0 }}
         >
           <Trash2 size={12} />
         </button>
@@ -104,34 +84,28 @@ function FieldRow({
 
       {/* Expanded edit */}
       {expanded && (
-        <div style={{ padding: "10px 11px", borderTop: "1px solid #F0F0F0", background: "#fff" }}>
+        <div style={{ padding: "10px 11px", borderTop: "1px solid var(--surface-3)", background: "var(--surface)" }}>
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, marginBottom: 8 }}>
             <div>
-              <label style={{
-                fontSize: 10, fontWeight: 700, color: "#9CA3AF",
-                textTransform: "uppercase", letterSpacing: "0.06em",
-                display: "block", marginBottom: 3,
-              }}>
+              <label style={{ fontSize: 10, fontWeight: 700, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.06em", display: "block", marginBottom: 3 }}>
                 Label
               </label>
               <input
                 value={field.label}
                 onChange={e => onChange({ ...field, label: e.target.value })}
-                style={inputStyle}
+                className="input"
+                style={{ fontSize: 12, padding: "7px 10px" }}
               />
             </div>
             <div>
-              <label style={{
-                fontSize: 10, fontWeight: 700, color: "#9CA3AF",
-                textTransform: "uppercase", letterSpacing: "0.06em",
-                display: "block", marginBottom: 3,
-              }}>
+              <label style={{ fontSize: 10, fontWeight: 700, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.06em", display: "block", marginBottom: 3 }}>
                 Type
               </label>
               <select
                 value={field.type}
                 onChange={e => onChange({ ...field, type: e.target.value as FormField["type"] })}
-                style={{ ...inputStyle, appearance: "none", cursor: "pointer" }}
+                className="input"
+                style={{ fontSize: 12, padding: "7px 10px" }}
               >
                 <option value="text">Text</option>
                 <option value="textarea">Paragraph</option>
@@ -144,18 +118,15 @@ function FieldRow({
 
           {field.type === "select" && field.options && (
             <div>
-              <label style={{
-                fontSize: 10, fontWeight: 700, color: "#9CA3AF",
-                textTransform: "uppercase", letterSpacing: "0.06em",
-                display: "block", marginBottom: 3,
-              }}>
+              <label style={{ fontSize: 10, fontWeight: 700, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.06em", display: "block", marginBottom: 3 }}>
                 Options (one per line)
               </label>
               <textarea
                 value={field.options.join("\n")}
                 onChange={e => onChange({ ...field, options: e.target.value.split("\n").filter(Boolean) })}
                 rows={3}
-                style={{ ...inputStyle, resize: "none", lineHeight: 1.5 }}
+                className="input"
+                style={{ fontSize: 12, padding: "7px 10px", resize: "none", lineHeight: 1.5 }}
               />
             </div>
           )}
@@ -165,9 +136,9 @@ function FieldRow({
             style={{
               marginTop: 8, fontSize: 11, fontWeight: 700, padding: "3px 10px",
               borderRadius: 6, cursor: "pointer", border: "1px solid",
-              background: field.required ? "#FFFBEB" : "#F9FAFB",
-              color: field.required ? "#B45309" : "#9CA3AF",
-              borderColor: field.required ? "#FDE68A" : "#E5E7EB",
+              background: field.required ? "var(--warning-light)" : "var(--surface-2)",
+              color: field.required ? "var(--warning)" : "var(--text-muted)",
+              borderColor: field.required ? "var(--warning-border)" : "var(--border)",
             }}
           >
             {field.required ? "Required ✓" : "Make Required"}
@@ -178,11 +149,7 @@ function FieldRow({
   );
 }
 
-// ─── Main Component ───────────────────────────────────────────────
-export default function CounselingForm({
-  fields,
-  setFields,
-}: {
+export default function CounselingForm({ fields, setFields }: {
   fields: FormField[];
   setFields: React.Dispatch<React.SetStateAction<FormField[]>>;
 }) {
@@ -191,17 +158,11 @@ export default function CounselingForm({
 
   const addField = () => {
     if (!newFieldLabel.trim()) return;
-    setFields(prev => [
-      ...prev,
-      {
-        id: `f${Date.now()}`,
-        label: newFieldLabel.trim(),
-        type: newFieldType,
-        required: false,
-        enabled: true,
-        options: newFieldType === "select" ? ["Option 1", "Option 2"] : undefined,
-      },
-    ]);
+    setFields(prev => [...prev, {
+      id: `f${Date.now()}`, label: newFieldLabel.trim(),
+      type: newFieldType, required: false, enabled: true,
+      options: newFieldType === "select" ? ["Option 1", "Option 2"] : undefined,
+    }]);
     setNewFieldLabel("");
   };
 
@@ -220,59 +181,45 @@ export default function CounselingForm({
       {/* Stats */}
       <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 10, marginBottom: 14 }}>
         {[
-          { label: "Total Fields",    value: totalFields,    color: "#111827", bg: "#F9FAFB" },
-          { label: "Active Fields",   value: activeFields,   color: "#059669", bg: "#ECFDF5" },
-          { label: "Required Fields", value: requiredFields, color: "#B45309", bg: "#FFFBEB" },
+          { label: "Total Fields",    value: totalFields,    color: "var(--text-primary)", bg: "var(--surface-2)" },
+          { label: "Active Fields",   value: activeFields,   color: "var(--success)",      bg: "var(--success-light)" },
+          { label: "Required Fields", value: requiredFields, color: "var(--warning)",      bg: "var(--warning-light)" },
         ].map(s => (
-          <div key={s.label} style={{
-            padding: "11px 13px", background: s.bg,
-            borderRadius: 10, border: "1px solid #F0F0F0",
-          }}>
+          <div key={s.label} style={{ padding: "11px 13px", background: s.bg, borderRadius: 10, border: "1px solid var(--border)" }}>
             <p style={{ fontSize: 20, fontWeight: 900, color: s.color, margin: "0 0 2px" }}>{s.value}</p>
-            <p style={{ fontSize: 11, color: "#6B7280", margin: 0 }}>{s.label}</p>
+            <p style={{ fontSize: 11, color: "var(--text-secondary)", margin: 0 }}>{s.label}</p>
           </div>
         ))}
       </div>
 
       {/* Fields card */}
-      <div style={{ background: "#fff", border: "1px solid #E5E7EB", borderRadius: 12, overflow: "hidden" }}>
-        <div style={{
-          padding: "11px 16px", borderBottom: "1px solid #F3F4F6",
-          display: "flex", alignItems: "center", justifyContent: "space-between",
-        }}>
+      <div className="card">
+        <div style={{ padding: "11px 16px", borderBottom: "1px solid var(--border)", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
           <div>
-            <p style={{ fontSize: 13, fontWeight: 700, color: "#111827", margin: 0 }}>Form Fields</p>
-            <p style={{ fontSize: 11, color: "#6B7280", margin: "2px 0 0" }}>
-              Click a field to edit · toggle to enable/disable
-            </p>
+            <p style={{ fontSize: 13, fontWeight: 700, color: "var(--text-primary)", margin: 0 }}>Form Fields</p>
+            <p style={{ fontSize: 11, color: "var(--text-secondary)", margin: "2px 0 0" }}>Click a field to edit · toggle to enable/disable</p>
           </div>
         </div>
         <div style={{ padding: "11px 13px" }}>
           {fields.map(field => (
-            <FieldRow
-              key={field.id}
-              field={field}
-              onChange={updateField}
-              onDelete={() => deleteField(field.id)}
-            />
+            <FieldRow key={field.id} field={field} onChange={updateField} onDelete={() => deleteField(field.id)} />
           ))}
 
           {/* Add new field */}
-          <div style={{
-            display: "flex", gap: 6, marginTop: 8, padding: 10,
-            background: "#F9FAFB", borderRadius: 9, border: "1px dashed #E5E7EB",
-          }}>
+          <div style={{ display: "flex", gap: 6, marginTop: 8, padding: 10, background: "var(--surface-2)", borderRadius: 9, border: "1px dashed var(--border)" }}>
             <input
               value={newFieldLabel}
               onChange={e => setNewFieldLabel(e.target.value)}
               onKeyDown={e => e.key === "Enter" && addField()}
               placeholder="New field label…"
-              style={{ ...inputStyle, flex: 1 }}
+              className="input"
+              style={{ flex: 1, fontSize: 12, padding: "7px 10px" }}
             />
             <select
               value={newFieldType}
               onChange={e => setNewFieldType(e.target.value as FormField["type"])}
-              style={{ ...inputStyle, width: 105, appearance: "none", cursor: "pointer" }}
+              className="input"
+              style={{ width: 105, fontSize: 12, padding: "7px 10px" }}
             >
               <option value="text">Text</option>
               <option value="textarea">Paragraph</option>
@@ -280,14 +227,7 @@ export default function CounselingForm({
               <option value="number">Number</option>
               <option value="date">Date</option>
             </select>
-            <button
-              onClick={addField}
-              style={{
-                display: "flex", alignItems: "center", gap: 4, padding: "7px 12px",
-                borderRadius: 7, background: "#111827", color: "#fff",
-                fontSize: 12, fontWeight: 700, border: "none", cursor: "pointer", flexShrink: 0,
-              }}
-            >
+            <button onClick={addField} className="btn-primary" style={{ fontSize: 12, padding: "7px 12px", flexShrink: 0 }}>
               <Plus size={12} /> Add
             </button>
           </div>

@@ -12,11 +12,11 @@ function SaveToast({ show }: { show: boolean }) {
       position: "fixed", bottom: 20, right: 20, zIndex: 99,
       display: "flex", alignItems: "center", gap: 8,
       padding: "10px 16px", borderRadius: 9,
-      background: "#111827", color: "#fff",
+      background: "var(--text-primary)", color: "#fff",
       fontSize: 12, fontWeight: 600,
       boxShadow: "0 4px 16px rgba(0,0,0,0.18)",
     }}>
-      <Check size={13} style={{ color: "#4ADE80" }} /> Settings saved
+      <Check size={13} style={{ color: "var(--success)" }} /> Settings saved
     </div>
   );
 }
@@ -37,17 +37,13 @@ export default function RepDesignSettings() {
   };
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", height: "100%", background: "#F9FAFB" }}>
+    <div style={{ display: "flex", flexDirection: "column", height: "100%", background: "var(--bg)" }}>
 
       {/* Page header */}
-      <div className="animate-fade-up" style={{ padding: "20px 24px 0", background: "#fff", borderBottom: "1px solid #E5E7EB" }}>
+      <div className="animate-fade-up" style={{ padding: "20px 24px 0", background: "var(--surface)", borderBottom: "1px solid var(--border)" }}>
         <div style={{ marginBottom: 14 }}>
-          <h1 style={{ fontSize: 18, fontWeight: 800, color: "#111827", margin: "0 0 3px", letterSpacing: "-0.02em" }}>
-            Design
-          </h1>
-          <p style={{ fontSize: 12, color: "#6B7280", margin: 0 }}>
-            Configure your lead sources and notification preferences.
-          </p>
+          <h1 className="page-title" style={{ fontSize: 18, marginBottom: 3 }}>Design</h1>
+          <p className="page-subtitle">Configure your lead sources and notification preferences.</p>
         </div>
 
         {/* Tabs */}
@@ -60,9 +56,9 @@ export default function RepDesignSettings() {
                 display: "flex", alignItems: "center", gap: 6,
                 padding: "9px 14px",
                 fontSize: 12, fontWeight: activeTab === tab.key ? 700 : 500,
-                color: activeTab === tab.key ? "#111827" : "#6B7280",
+                color: activeTab === tab.key ? "var(--text-primary)" : "var(--text-secondary)",
                 background: "none", border: "none", cursor: "pointer",
-                borderBottom: activeTab === tab.key ? "2px solid #111827" : "2px solid transparent",
+                borderBottom: activeTab === tab.key ? "2px solid var(--text-primary)" : "2px solid transparent",
                 marginBottom: -1,
                 transition: "all .15s",
                 whiteSpace: "nowrap",
@@ -77,40 +73,22 @@ export default function RepDesignSettings() {
 
       {/* Scrollable content */}
       <div className="animate-fade-up" style={{ flex: 1, overflowY: "auto", padding: "20px 24px 80px", animationDelay: "40ms" }}>
-        {activeTab === "sources" && (
-          <LeadSources sources={sources} setSources={setSources} />
-        )}
-        {activeTab === "notify" && (
-          <Notifications />
-        )}
+        {activeTab === "sources" && <LeadSources sources={sources} setSources={setSources} />}
+        {activeTab === "notify"  && <Notifications />}
       </div>
 
       {/* Save bar */}
       <div style={{
-        borderTop: "1px solid #E5E7EB", background: "#fff",
+        borderTop: "1px solid var(--border)", background: "var(--surface)",
         padding: "11px 24px", display: "flex", alignItems: "center", gap: 10, flexShrink: 0,
       }}>
-        <button
-          onClick={handleSave}
-          style={{
-            display: "flex", alignItems: "center", gap: 6, padding: "8px 18px",
-            borderRadius: 8, background: "#111827", color: "#fff",
-            fontSize: 12, fontWeight: 700, border: "none", cursor: "pointer",
-          }}
-        >
+        <button onClick={handleSave} className="btn-primary" style={{ fontSize: 12 }}>
           <Save size={13} /> Save Changes
         </button>
-        <button
-          onClick={() => setSources(DEFAULT_SOURCES)}
-          style={{
-            display: "flex", alignItems: "center", gap: 5, padding: "8px 14px",
-            borderRadius: 8, background: "#fff", color: "#374151",
-            fontSize: 12, fontWeight: 600, border: "1px solid #E5E7EB", cursor: "pointer",
-          }}
-        >
+        <button onClick={() => setSources(DEFAULT_SOURCES)} className="btn-secondary" style={{ fontSize: 12 }}>
           <RotateCcw size={12} /> Reset
         </button>
-        <span style={{ fontSize: 11, color: "#9CA3AF" }}>Changes apply to your account</span>
+        <span style={{ fontSize: 11, color: "var(--text-muted)" }}>Changes apply to your account</span>
       </div>
 
       <SaveToast show={saved} />

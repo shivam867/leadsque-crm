@@ -4,10 +4,7 @@ import { leads } from "@/data/dummy";
 import { StatusBadge, ScoreBadge, PriorityDot } from "@/components/ui/Badges";
 import LeadDetailPanel from "@/components/ui/LeadDetailPanel";
 import LeadDetailPage from "@/components/lead-detail/LeadDetailPage";
-
-// ★ Single source of truth — all types from dummy.ts
 import type { Lead, LeadStatus, LeadScore } from "@/data/dummy";
-
 import { Plus, Search, X } from "lucide-react";
 
 const myLeads = leads.filter(l => l.assignedTo === "Aanya Sharma");
@@ -55,28 +52,23 @@ export default function RepLeads() {
   };
 
   if (view === "full" && selected) {
-    return (
-      <LeadDetailPage
-        lead={selected}
-        onBack={() => setView("list")}
-      />
-    );
+    return <LeadDetailPage lead={selected} onBack={() => setView("list")} />;
   }
 
   return (
-    <div style={{ display: "flex", height: "100%", background: "#F9FAFB" }}>
+    <div style={{ display: "flex", height: "100%", background: "var(--bg)" }}>
       <div style={{ flex: 1, padding: "24px 28px", overflowY: "auto", minWidth: 0 }}>
 
         {/* Header */}
         <div className="animate-fade-up" style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: 20 }}>
           <div>
-            <h1 style={{ fontSize: 22, fontWeight: 800, color: "#111827", margin: "0 0 4px", letterSpacing: "-0.02em" }}>My Leads</h1>
-            <p style={{ fontSize: 13, color: "#6B7280", margin: 0 }}>
+            <h1 className="page-title">My Leads</h1>
+            <p className="page-subtitle">
               {myLeads.length} leads assigned · {filtered.length} shown
             </p>
           </div>
           <a href="/rep/add-lead">
-            <button style={{ display: "flex", alignItems: "center", gap: 7, padding: "9px 18px", borderRadius: 10, background: "#111827", color: "#fff", fontSize: 13, fontWeight: 600, border: "none", cursor: "pointer" }}>
+            <button className="btn-primary">
               <Plus size={14} strokeWidth={2.5} /> Add Lead
             </button>
           </a>
@@ -86,23 +78,25 @@ export default function RepLeads() {
         <div className="animate-fade-up" style={{ display: "flex", flexDirection: "column", gap: 10, marginBottom: 18, animationDelay: "40ms" }}>
           <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
             <div style={{ position: "relative", flex: "0 0 260px" }}>
-              <Search size={13} style={{ position: "absolute", left: 10, top: "50%", transform: "translateY(-50%)", color: "#9CA3AF" }} />
+              <Search size={13} style={{ position: "absolute", left: 10, top: "50%", transform: "translateY(-50%)", color: "var(--text-muted)" }} />
               <input
-                style={{ width: "100%", padding: "8px 10px 8px 30px", fontSize: 13, borderRadius: 9, border: "1px solid #D1D5DB", background: "#fff", color: "#111827", boxSizing: "border-box", outline: "none" }}
+                className="input"
+                style={{ paddingLeft: 30 }}
                 placeholder="Search name, phone, course…"
                 value={search}
                 onChange={e => setSearch(e.target.value)}
               />
               {search && (
                 <button onClick={() => setSearch("")} style={{ position: "absolute", right: 8, top: "50%", transform: "translateY(-50%)", background: "none", border: "none", cursor: "pointer" }}>
-                  <X size={13} style={{ color: "#9CA3AF" }} />
+                  <X size={13} style={{ color: "var(--text-muted)" }} />
                 </button>
               )}
             </div>
             <div style={{ display: "flex", gap: 5 }}>
               {(["All", "Hot", "Warm", "Cold"] as const).map(s => (
                 <button key={s} onClick={() => setScoreFilter(s)}
-                  style={{ padding: "6px 12px", fontSize: 12, fontWeight: 600, borderRadius: 8, cursor: "pointer", background: scoreFilter === s ? "#111827" : "#fff", color: scoreFilter === s ? "#fff" : "#374151", border: `1.5px solid ${scoreFilter === s ? "#111827" : "#E5E7EB"}`, transition: "all 0.15s" }}>
+                  className={scoreFilter === s ? "btn-primary" : "btn-secondary"}
+                  style={{ padding: "6px 12px", fontSize: 12 }}>
                   {s}
                 </button>
               ))}
@@ -115,7 +109,15 @@ export default function RepLeads() {
               const active = statusFilter === s;
               return (
                 <button key={s} onClick={() => setStatusFilter(s as LeadStatus | "All")}
-                  style={{ display: "flex", alignItems: "center", gap: 5, padding: "5px 11px", fontSize: 12, fontWeight: 600, borderRadius: 99, cursor: "pointer", background: active ? "#111827" : "#fff", color: active ? "#fff" : "#374151", border: `1.5px solid ${active ? "#111827" : "#E5E7EB"}`, transition: "all 0.15s" }}>
+                  style={{
+                    display: "flex", alignItems: "center", gap: 5,
+                    padding: "5px 11px", fontSize: 12, fontWeight: 600,
+                    borderRadius: 99, cursor: "pointer",
+                    background: active ? "var(--text-primary)" : "var(--surface)",
+                    color: active ? "#fff" : "var(--text-secondary)",
+                    border: `1.5px solid ${active ? "var(--text-primary)" : "var(--border)"}`,
+                    transition: "all 0.15s",
+                  }}>
                   {s}<span style={{ fontSize: 11, opacity: 0.7 }}>({count})</span>
                 </button>
               );
@@ -124,12 +126,12 @@ export default function RepLeads() {
         </div>
 
         {/* Table */}
-        <div className="animate-fade-up" style={{ background: "#fff", border: "1px solid #E5E7EB", borderRadius: 14, overflow: "hidden", animationDelay: "80ms" }}>
+        <div className="animate-fade-up card" style={{ overflow: "hidden", animationDelay: "80ms" }}>
           <table style={{ width: "100%", borderCollapse: "collapse" }}>
             <thead>
-              <tr style={{ background: "#F9FAFB", borderBottom: "1px solid #E5E7EB" }}>
+              <tr style={{ background: "var(--surface-2)", borderBottom: "1px solid var(--border)" }}>
                 {["Lead", "Contact", "Program", "Source", "Score", "Status", "Follow-up"].map(h => (
-                  <th key={h} style={{ textAlign: "left", padding: "11px 16px", fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.05em", color: "#6B7280" }}>{h}</th>
+                  <th key={h} style={{ textAlign: "left", padding: "11px 16px", fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.05em", color: "var(--text-secondary)" }}>{h}</th>
                 ))}
               </tr>
             </thead>
@@ -140,24 +142,30 @@ export default function RepLeads() {
                   <tr key={lead.id}
                     onClick={() => handleSelectLead(lead)}
                     className="animate-fade-up"
-                    style={{ borderBottom: "1px solid #F9FAFB", cursor: "pointer", background: isSelected ? "#EFF6FF" : undefined, transition: "background 0.12s", animationDelay: `${Math.min(i, 10) * 30}ms` }}
-                    onMouseEnter={e => { if (!isSelected) (e.currentTarget as HTMLElement).style.background = "#F9FAFB"; }}
+                    style={{
+                      borderBottom: "1px solid var(--surface-2)",
+                      cursor: "pointer",
+                      background: isSelected ? "var(--accent-light)" : undefined,
+                      transition: "background 0.12s",
+                      animationDelay: `${Math.min(i, 10) * 30}ms`,
+                    }}
+                    onMouseEnter={e => { if (!isSelected) (e.currentTarget as HTMLElement).style.background = "var(--surface-2)"; }}
                     onMouseLeave={e => { if (!isSelected) (e.currentTarget as HTMLElement).style.background = ""; }}>
                     <td style={{ padding: "12px 16px" }}>
                       <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                         <PriorityDot priority={lead.priority} />
                         <div>
-                          <p style={{ fontSize: 13, fontWeight: 600, color: "#111827", margin: 0 }}>{lead.name}</p>
-                          <p style={{ fontSize: 11, color: "#6B7280", margin: 0 }}>{lead.city}</p>
+                          <p style={{ fontSize: 13, fontWeight: 600, color: "var(--text-primary)", margin: 0 }}>{lead.name}</p>
+                          <p style={{ fontSize: 11, color: "var(--text-secondary)", margin: 0 }}>{lead.city}</p>
                         </div>
                       </div>
                     </td>
-                    <td style={{ padding: "12px 16px", fontSize: 12, color: "#374151", fontFamily: "monospace" }}>{lead.phone}</td>
-                    <td style={{ padding: "12px 16px", fontSize: 12, color: "#374151" }}>{lead.service}</td>
-                    <td style={{ padding: "12px 16px", fontSize: 12, color: "#374151" }}>{lead.source}</td>
+                    <td style={{ padding: "12px 16px", fontSize: 12, color: "var(--text-secondary)", fontFamily: "monospace" }}>{lead.phone}</td>
+                    <td style={{ padding: "12px 16px", fontSize: 12, color: "var(--text-secondary)" }}>{lead.service}</td>
+                    <td style={{ padding: "12px 16px", fontSize: 12, color: "var(--text-secondary)" }}>{lead.source}</td>
                     <td style={{ padding: "12px 16px" }}><ScoreBadge score={lead.score} /></td>
                     <td style={{ padding: "12px 16px" }}><StatusBadge status={lead.status} /></td>
-                    <td style={{ padding: "12px 16px", fontSize: 12, fontFamily: "monospace", color: lead.followUpDate ? "#374151" : "#9CA3AF" }}>
+                    <td style={{ padding: "12px 16px", fontSize: 12, fontFamily: "monospace", color: lead.followUpDate ? "var(--text-secondary)" : "var(--text-muted)" }}>
                       {lead.followUpDate || "—"}
                     </td>
                   </tr>
@@ -166,7 +174,9 @@ export default function RepLeads() {
             </tbody>
           </table>
           {filtered.length === 0 && (
-            <div style={{ padding: "48px 0", textAlign: "center", color: "#9CA3AF", fontSize: 13 }}>No leads match your filters.</div>
+            <div style={{ padding: "48px 0", textAlign: "center", color: "var(--text-muted)", fontSize: 13 }}>
+              No leads match your filters.
+            </div>
           )}
         </div>
       </div>

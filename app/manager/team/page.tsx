@@ -15,8 +15,11 @@ const SORT_OPTIONS: { key: SortKey; label: string }[] = [
 
 function RankBadge({ rank }: { rank: number }) {
   return (
-    <span className="text-xs font-bold w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0"
-      style={{ background: "var(--surface-2)", color: "var(--text-secondary)" }}>
+    <span style={{
+      fontSize: 11, fontWeight: 700, width: 24, height: 24, borderRadius: "50%",
+      display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
+      background: "var(--surface-2)", color: "var(--text-secondary)",
+    }}>
       {rank}
     </span>
   );
@@ -26,7 +29,7 @@ function TrendArrow({ value, threshold }: { value: number; threshold: number }) 
   const isGood = value >= threshold;
   return (
     <svg width="12" height="12" viewBox="0 0 24 24" fill="none"
-      stroke={isGood ? "#059669" : "#DC2626"} strokeWidth="2.5"
+      stroke={isGood ? "var(--success)" : "var(--danger)"} strokeWidth="2.5"
       strokeLinecap="round" strokeLinejoin="round"
       style={{ transform: isGood ? "none" : "rotate(180deg)" }}>
       <polyline points="18 15 12 9 6 15" />
@@ -68,27 +71,30 @@ export default function ManagerTeam() {
     }));
   }
 
+  const convColor = (rate: number) =>
+    rate >= 35 ? "var(--success)" : rate >= 28 ? "var(--warning)" : "var(--danger)";
+
   return (
     <div style={{ display: "flex", height: "100%", overflow: "hidden" }}>
       <div style={{ flex: 1, overflowY: "auto", padding: 28 }}>
 
         {/* Header */}
-        <div className="animate-fade-up flex items-start justify-between mb-6">
+        <div className="animate-fade-up" style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: 24 }}>
           <div>
             <h1 className="page-title">Team Performance</h1>
             <p className="page-subtitle">
               {sorted.length} reps · Sorted by{" "}
-              <span className="font-medium" style={{ color: "var(--text-primary)" }}>
+              <span style={{ fontWeight: 500, color: "var(--text-primary)" }}>
                 {SORT_OPTIONS.find(s => s.key === sortKey)?.label}
               </span>{" "}
               · May 2025
             </p>
           </div>
-          <div className="flex gap-1.5">
+          <div style={{ display: "flex", gap: 6 }}>
             {teams.map(t => (
               <button key={t} onClick={() => setTeamFilter(t)}
-                className="px-3 py-1.5 rounded-lg text-xs font-semibold transition-all"
                 style={{
+                  padding: "6px 12px", borderRadius: 8, fontSize: 12, fontWeight: 600, cursor: "pointer", transition: "all .15s",
                   background: teamFilter === t ? "var(--accent)" : "var(--surface-2)",
                   color: teamFilter === t ? "#fff" : "var(--text-secondary)",
                   border: `1px solid ${teamFilter === t ? "var(--accent)" : "var(--border)"}`,
@@ -100,15 +106,15 @@ export default function ManagerTeam() {
         </div>
 
         {/* Sort tabs */}
-        <div className="animate-fade-up flex gap-2 mb-5" style={{ animationDelay: "40ms" }}>
-          <span className="text-xs font-medium self-center mr-1" style={{ color: "var(--text-secondary)" }}>Sort by:</span>
+        <div className="animate-fade-up" style={{ display: "flex", gap: 8, marginBottom: 20, animationDelay: "40ms" }}>
+          <span style={{ fontSize: 12, fontWeight: 500, alignSelf: "center", marginRight: 4, color: "var(--text-secondary)" }}>Sort by:</span>
           {SORT_OPTIONS.map(({ key, label }) => (
             <button key={key} onClick={() => toggleSort(key)}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all"
               style={{
-                background: sortKey === key ? "#E0F2FE" : "var(--surface-2)",
-                color: sortKey === key ? "#0369A1" : "var(--text-secondary)",
-                border: `1px solid ${sortKey === key ? "#BAE6FD" : "var(--border)"}`,
+                display: "flex", alignItems: "center", gap: 6, padding: "6px 12px", borderRadius: 8, fontSize: 12, fontWeight: 600, cursor: "pointer", transition: "all .15s",
+                background: sortKey === key ? "var(--info-light)" : "var(--surface-2)",
+                color: sortKey === key ? "var(--info)" : "var(--text-secondary)",
+                border: `1px solid ${sortKey === key ? "var(--info-border)" : "var(--border)"}`,
               }}>
               {label}
               {sortKey === key && (
@@ -123,37 +129,31 @@ export default function ManagerTeam() {
         </div>
 
         {/* Rep list */}
-        <div className="animate-fade-up card overflow-hidden" style={{ animationDelay: "80ms" }}>
+        <div className="animate-fade-up card" style={{ overflow: "hidden", animationDelay: "80ms" }}>
           {/* Table header */}
-          <div className="grid text-xs font-semibold uppercase tracking-wide px-5 py-3"
-            style={{
-              gridTemplateColumns: "2rem 1fr 6rem 6rem 6rem 6rem 10rem 7rem",
-              borderBottom: "1px solid var(--border)",
-              background: "var(--surface-2)",
-              color: "var(--text-secondary)",
-            }}>
-            <span>#</span><span>Rep</span>
-            <span className="text-right">Leads</span>
-            <span className="text-right">Calls</span>
-            <span className="text-right">Won</span>
-            <span className="text-right">Conv.</span>
-            <span className="px-2">Progress</span>
-            <span />
+          <div style={{
+            display: "grid",
+            gridTemplateColumns: "2rem 1fr 6rem 6rem 6rem 6rem 10rem 7rem",
+            borderBottom: "1px solid var(--border)",
+            background: "var(--surface-2)",
+            padding: "10px 20px",
+          }}>
+            {["#", "Rep", "Leads", "Calls", "Won", "Conv.", "Progress", ""].map((h, i) => (
+              <span key={i} style={{ fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.05em", color: "var(--text-secondary)", textAlign: i >= 2 && i <= 5 ? "right" : "left" }}>{h}</span>
+            ))}
           </div>
 
           {sorted.map((rep, i) => {
             const isExpanded = expanded === rep.id;
             const repLeads   = getRepLeads(rep.name);
             const openCount  = repLeads.filter(l => l.status === "New" || l.status === "Contacted").length;
-            const convColor  = rep.conversionRate >= 35 ? "#059669" : rep.conversionRate >= 28 ? "#D97706" : "#DC2626";
+            const color      = convColor(rep.conversionRate);
 
             return (
-              <div key={rep.id}
-                className="animate-fade-up"
-                style={{ borderBottom: "1px solid var(--border)", animationDelay: `${Math.min(i, 8) * 30}ms` }}>
+              <div key={rep.id} className="animate-fade-up" style={{ borderBottom: "1px solid var(--border)", animationDelay: `${Math.min(i, 8) * 30}ms` }}>
                 <div
-                  className="grid items-center px-5 py-3.5 cursor-pointer transition-colors"
                   style={{
+                    display: "grid", alignItems: "center", padding: "14px 20px", cursor: "pointer", transition: "background .14s",
                     gridTemplateColumns: "2rem 1fr 6rem 6rem 6rem 6rem 10rem 7rem",
                     background: isExpanded ? "var(--accent-light)" : undefined,
                   }}
@@ -164,42 +164,36 @@ export default function ManagerTeam() {
                     const fullRep = salesRepsExtended.find(r => r.name === rep.name);
                     if (fullRep) setSelectedRep({ ...fullRep, leadBreakdown: getLeadBreakdown(rep.name) });
                   }}>
-                  <div className="flex items-center"><RankBadge rank={i + 1} /></div>
+                  <div style={{ display: "flex", alignItems: "center" }}><RankBadge rank={i + 1} /></div>
 
-                  <div className="flex items-center gap-3">
-                    <div className="w-9 h-9 rounded-xl flex items-center justify-center font-bold text-sm flex-shrink-0"
-                      style={{ background: "#E0F2FE", color: "#0369A1" }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                    <div style={{ width: 36, height: 36, borderRadius: 11, display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 700, fontSize: 14, flexShrink: 0, background: "var(--info-light)", color: "var(--info)" }}>
                       {rep.avatar}
                     </div>
                     <div>
-                      <p className="font-semibold text-sm" style={{ color: "var(--text-primary)" }}>{rep.name}</p>
-                      <p className="text-xs" style={{ color: "var(--text-secondary)" }}>
-                        Team {rep.team} · <span style={{ color: openCount > 5 ? "#DC2626" : "#059669" }}>{openCount} open</span>
+                      <p style={{ fontWeight: 600, fontSize: 14, color: "var(--text-primary)", margin: 0 }}>{rep.name}</p>
+                      <p style={{ fontSize: 12, color: "var(--text-secondary)", margin: 0 }}>
+                        Team {rep.team} · <span style={{ color: openCount > 5 ? "var(--danger)" : "var(--success)" }}>{openCount} open</span>
                       </p>
                     </div>
                   </div>
 
-                  <span className="text-right text-sm font-semibold" style={{ color: "var(--text-primary)" }}>{rep.leadsAssigned}</span>
-                  <span className="text-right text-sm" style={{ color: "var(--text-secondary)" }}>{rep.callsToday}</span>
-                  <span className="text-right text-sm font-semibold" style={{ color: "#059669" }}>{rep.wonThisMonth}</span>
-                  <div className="flex items-center justify-end gap-1">
+                  <span style={{ textAlign: "right", fontSize: 14, fontWeight: 600, color: "var(--text-primary)" }}>{rep.leadsAssigned}</span>
+                  <span style={{ textAlign: "right", fontSize: 14, color: "var(--text-secondary)" }}>{rep.callsToday}</span>
+                  <span style={{ textAlign: "right", fontSize: 14, fontWeight: 600, color: "var(--success)" }}>{rep.wonThisMonth}</span>
+                  <div style={{ display: "flex", alignItems: "center", justifyContent: "flex-end", gap: 4 }}>
                     <TrendArrow value={rep.conversionRate} threshold={30} />
-                    <span className="text-sm font-bold" style={{ color: convColor }}>{rep.conversionRate}%</span>
+                    <span style={{ fontSize: 14, fontWeight: 700, color }}>{rep.conversionRate}%</span>
                   </div>
-                  <div className="px-2">
-                    <div className="h-2 rounded-full" style={{ background: "var(--border)" }}>
-                      <div className="h-full rounded-full transition-all duration-700"
-                        style={{ width: `${Math.min(rep.conversionRate, 100)}%`, background: convColor }} />
+                  <div style={{ padding: "0 8px" }}>
+                    <div style={{ height: 8, borderRadius: 99, background: "var(--border)" }}>
+                      <div style={{ height: "100%", borderRadius: 99, transition: "width 0.7s", width: `${Math.min(rep.conversionRate, 100)}%`, background: color }} />
                     </div>
                   </div>
-                  <div className="flex justify-end">
+                  <div style={{ display: "flex", justifyContent: "flex-end" }}>
                     <button
-                      className="text-xs px-3 py-1.5 rounded-lg font-medium transition-all flex items-center gap-1"
-                      style={{
-                        background: isExpanded ? "var(--accent)" : "var(--surface-2)",
-                        color: isExpanded ? "#fff" : "var(--text-secondary)",
-                        border: "1px solid var(--border)",
-                      }}
+                      className="btn-secondary"
+                      style={{ fontSize: 12, padding: "6px 12px", display: "flex", alignItems: "center", gap: 4, background: isExpanded ? "var(--accent)" : undefined, color: isExpanded ? "#fff" : undefined }}
                       onClick={e => {
                         e.stopPropagation();
                         const fullRep = salesRepsExtended.find(r => r.name === rep.name);
@@ -216,17 +210,15 @@ export default function ManagerTeam() {
                 </div>
 
                 {isExpanded && (
-                  <div className="px-5 pb-5 pt-3 animate-fade-in"
-                    style={{ background: "var(--accent-light)", borderTop: "1px solid var(--border)" }}>
-                    <div className="flex gap-3">
+                  <div className="animate-fade-in" style={{ padding: "12px 20px 20px", background: "var(--accent-light)", borderTop: "1px solid var(--border)" }}>
+                    <div style={{ display: "flex", gap: 12 }}>
                       {[
                         { label: `View Leads (${repLeads.length})`, icon: "M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2M9 7a4 4 0 1 0 0-8 4 4 0 0 0 0 8z", action: () => alert(`Viewing all leads for ${rep.name}`) },
                         { label: "Reassign Leads", icon: "M17 1l4 4-4 4M3 11V9a4 4 0 0 1 4-4h14M7 23l-4-4 4-4M21 13v2a4 4 0 0 1-4 4H3", action: () => setReassignModal(rep.id) },
                         { label: "Send Note", icon: "M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z", action: () => alert(`Sending coaching note to ${rep.name}`) },
                       ].map(btn => (
-                        <button key={btn.label} className="btn-secondary text-xs py-2 px-4 flex-1 justify-center"
-                          onClick={btn.action}>
-                          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-1">
+                        <button key={btn.label} className="btn-secondary" style={{ flex: 1, justifyContent: "center", fontSize: 12 }} onClick={btn.action}>
+                          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                             <path d={btn.icon} />
                           </svg>
                           {btn.label}
@@ -242,34 +234,31 @@ export default function ManagerTeam() {
 
         {/* Reassign modal */}
         {reassignModal && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center"
-            style={{ background: "rgba(0,0,0,0.35)" }}
+          <div style={{ position: "fixed", inset: 0, zIndex: 50, display: "flex", alignItems: "center", justifyContent: "center", background: "rgba(0,0,0,0.35)" }}
             onClick={() => setReassignModal(null)}>
-            <div className="card p-6 w-96 animate-fade-up" onClick={e => e.stopPropagation()}>
-              <h3 className="font-bold text-base mb-1" style={{ color: "var(--text-primary)" }}>Reassign Leads</h3>
-              <p className="text-sm mb-4" style={{ color: "var(--text-secondary)" }}>
+            <div className="card animate-fade-up" style={{ padding: 24, width: 384 }} onClick={e => e.stopPropagation()}>
+              <h3 style={{ fontWeight: 700, fontSize: 15, color: "var(--text-primary)", margin: "0 0 4px" }}>Reassign Leads</h3>
+              <p style={{ fontSize: 13, color: "var(--text-secondary)", marginBottom: 16 }}>
                 Select a rep to transfer <strong>{salesReps.find(r => r.id === reassignModal)?.name}'s</strong> leads to.
               </p>
-              <div className="flex flex-col gap-2 mb-5">
+              <div style={{ display: "flex", flexDirection: "column", gap: 8, marginBottom: 20 }}>
                 {salesReps.filter(r => r.id !== reassignModal).map(r => (
                   <button key={r.id}
-                    className="flex items-center gap-3 p-3 rounded-xl text-left transition-colors"
-                    style={{ border: "1px solid var(--border)", background: "var(--surface-2)" }}
+                    style={{ display: "flex", alignItems: "center", gap: 12, padding: 12, borderRadius: 11, textAlign: "left", cursor: "pointer", transition: "border-color .15s", border: "1px solid var(--border)", background: "var(--surface-2)" }}
                     onMouseEnter={e => (e.currentTarget.style.borderColor = "var(--accent)")}
                     onMouseLeave={e => (e.currentTarget.style.borderColor = "var(--border)")}
                     onClick={() => { alert(`Leads reassigned to ${r.name}`); setReassignModal(null); }}>
-                    <div className="w-8 h-8 rounded-lg flex items-center justify-center text-xs font-bold flex-shrink-0"
-                      style={{ background: "#E0F2FE", color: "#0369A1" }}>
+                    <div style={{ width: 32, height: 32, borderRadius: 8, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 12, fontWeight: 700, flexShrink: 0, background: "var(--info-light)", color: "var(--info)" }}>
                       {r.avatar}
                     </div>
                     <div>
-                      <p className="text-sm font-semibold" style={{ color: "var(--text-primary)" }}>{r.name}</p>
-                      <p className="text-xs" style={{ color: "var(--text-secondary)" }}>{r.leadsAssigned} leads currently</p>
+                      <p style={{ fontSize: 13, fontWeight: 600, color: "var(--text-primary)", margin: 0 }}>{r.name}</p>
+                      <p style={{ fontSize: 12, color: "var(--text-secondary)", margin: 0 }}>{r.leadsAssigned} leads currently</p>
                     </div>
                   </button>
                 ))}
               </div>
-              <button className="btn-secondary w-full justify-center text-sm" onClick={() => setReassignModal(null)}>
+              <button className="btn-secondary" style={{ width: "100%", justifyContent: "center" }} onClick={() => setReassignModal(null)}>
                 Cancel
               </button>
             </div>
