@@ -102,40 +102,69 @@ function StageRow({ stage, onChange, onDelete, isDeletable }: {
   );
 }
 
-function PipelinePreview({ activeStages, terminalStages }: { activeStages: Stage[]; terminalStages: Stage[] }) {
+function PipelinePreview({
+  activeStages,
+  terminalStages,
+}: {
+  activeStages: Stage[];
+  terminalStages: Stage[];
+}) {
   return (
     <div className="card">
-      <div style={{ padding: "11px 16px", borderBottom: "1px solid var(--border)" }}>
-        <p style={{ fontSize: 13, fontWeight: 700, color: "var(--text-primary)", margin: 0 }}>Preview</p>
+      <div style={{ padding: "12px 18px", borderBottom: "1px solid var(--border)", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+        <p style={{ fontSize: 13, fontWeight: 600, color: "var(--text-primary)", margin: 0 }}>Pipeline preview</p>
+        <span style={{ fontSize: 11, color: "var(--text-secondary)", background: "var(--bg-secondary)", border: "1px solid var(--border)", borderRadius: 20, padding: "2px 8px" }}>
+          {activeStages.length} active · {terminalStages.length} terminal
+        </span>
       </div>
-      <div style={{ padding: "14px 16px" }}>
-        <div style={{ display: "flex", alignItems: "center", flexWrap: "wrap", gap: 4 }}>
+
+      <div style={{ padding: "24px 20px 20px", overflowX: "auto" }}>
+        <div style={{ display: "flex", alignItems: "flex-start", flexWrap: "nowrap" }}>
+
           {activeStages.map((stage, i) => (
-            <div key={stage.id} style={{ display: "flex", alignItems: "center", gap: 4 }}>
-              <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 4 }}>
-                <div style={{ width: 26, height: 26, borderRadius: "50%", background: stage.color + "20", border: `2px solid ${stage.color}`, display: "flex", alignItems: "center", justifyContent: "center" }}>
-                  <span style={{ width: 8, height: 8, borderRadius: "50%", background: stage.color }} />
+            <div key={stage.id} style={{ display: "flex", alignItems: "flex-start" }}>
+              {/* Line touching previous circle */}
+              {i > 0 && (
+                <div style={{ display: "flex", alignItems: "center", height: 32, margin: "0 -1px", flexShrink: 0 }}>
+                  <div style={{ width: 36, height: 1.5, background: "var(--border)" }} />
                 </div>
-                <span style={{ fontSize: 8, fontWeight: 700, color: stage.color, textAlign: "center", maxWidth: 46, lineHeight: 1.2 }}>
-                  {stage.name}
-                </span>
-              </div>
-              {i < activeStages.length - 1 && (
-                <div style={{ width: 14, height: 1.5, background: "var(--border)", marginBottom: 14 }} />
               )}
+
+              {/* Circle + label */}
+              <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 7, flexShrink: 0, position: "relative", zIndex: 1 }}>
+                <div style={{
+                  width: 32, height: 32, borderRadius: "50%",
+                  border: `1.5px solid ${stage.color}`,
+                  background: "var(--bg-primary)",
+                  boxShadow: `0 0 0 3px ${stage.color}14`,
+                  display: "flex", alignItems: "center", justifyContent: "center",
+                  transition: "transform .15s",
+                }}>
+                  <div style={{ width: 10, height: 10, borderRadius: "50%", background: stage.color }} />
+                </div>
+                <div style={{ fontSize: 10, fontWeight: 500, color: stage.color, textAlign: "center", maxWidth: 54, lineHeight: 1.3, whiteSpace: "pre-line" }}>
+                  {stage.name}
+                </div>
+              </div>
             </div>
           ))}
-          <div style={{ display: "flex", alignItems: "center", marginBottom: 14, marginLeft: 4 }}>
-            <div style={{ height: 1.5, width: 12, background: "var(--border)" }} />
-          </div>
-          <div style={{ display: "flex", flexDirection: "column", gap: 3, marginBottom: 14 }}>
-            {terminalStages.map(s => (
-              <div key={s.id} style={{ display: "flex", alignItems: "center", gap: 4 }}>
-                <div style={{ width: 7, height: 7, borderRadius: "50%", background: s.color }} />
-                <span style={{ fontSize: 9, fontWeight: 700, color: s.color }}>{s.name}</span>
+
+          {/* Fork stub after last active stage */}
+          <div style={{ height: 1.5, width: 20, background: "var(--border)", alignSelf: "center", margin: "0 -1px", flexShrink: 0 }} />
+
+          {/* Vertical divider */}
+          <div style={{ width: 0.5, alignSelf: "stretch", background: "var(--border)", margin: "0 12px", flexShrink: 0 }} />
+
+          {/* Terminal stages */}
+          <div style={{ display: "flex", flexDirection: "column", gap: 7, alignSelf: "center" }}>
+            {terminalStages.map(t => (
+              <div key={t.id} style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                <div style={{ width: 9, height: 9, borderRadius: "50%", background: t.color, flexShrink: 0 }} />
+                <span style={{ fontSize: 10, fontWeight: 500, color: t.color }}>{t.name}</span>
               </div>
             ))}
           </div>
+
         </div>
       </div>
     </div>
