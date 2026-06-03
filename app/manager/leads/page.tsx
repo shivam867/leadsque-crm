@@ -3,7 +3,7 @@ import { useState } from "react";
 import { leads, salesReps } from "@/data/dummy";
 import { StatusBadge, ScoreBadge, PriorityDot } from "@/components/ui/Badges";
 import LeadDetailPanel from "@/components/ui/LeadDetailPanel";
-import LeadFullPage from "@/components/ui/LeadFullPage";
+import LeadDetailPage from "@/components/lead-detail/LeadDetailPage"; 
 import type { Lead } from "@/data/dummy";
 
 type View = "list" | "full";
@@ -30,8 +30,9 @@ export default function ManagerLeads() {
 
   const handleOpenFullPage = (lead: Lead) => { setSelected(lead); setView("full"); };
 
+  // ★ swapped — no avatarIndex prop needed
   if (view === "full" && selected) {
-    return <LeadFullPage lead={selected} onBack={() => setView("list")} avatarIndex={avatarIndex} />;
+    return <LeadDetailPage lead={selected} onBack={() => setView("list")} />;
   }
 
   return (
@@ -114,7 +115,8 @@ export default function ManagerLeads() {
         </div>
       </div>
 
-      {selected && (
+      {/* ★ guard — panel only in list view */}
+      {selected && view === "list" && (
         <LeadDetailPanel
           lead={selected}
           onClose={() => { setSelected(null); setView("list"); }}

@@ -2,7 +2,7 @@
 import { useState } from "react";
 import { leads, PIPELINE_STAGES, SCORE_CONFIG } from "@/data/dummy";
 import LeadDetailPanel from "@/components/ui/LeadDetailPanel";
-import LeadFullPage from "@/components/ui/LeadFullPage";
+import LeadDetailPage from "@/components/lead-detail/LeadDetailPage";
 import type { Lead } from "@/data/dummy";
 import { TrendingUp, Phone, DollarSign, MapPin, Calendar } from "lucide-react";
 
@@ -40,8 +40,8 @@ function KanbanCard({ lead, isSelected, onSelect, avatarIndex }: {
         transition: "all 0.15s",
       }}
       onMouseEnter={e => { if (!isSelected) (e.currentTarget as HTMLElement).style.background = "#F9FAFB"; }}
-      onMouseLeave={e => { if (!isSelected) (e.currentTarget as HTMLElement).style.background = "#fff"; }}>
-
+      onMouseLeave={e => { if (!isSelected) (e.currentTarget as HTMLElement).style.background = "#fff"; }}
+    >
       <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
         <div style={{ width: 6, height: 6, borderRadius: "50%", flexShrink: 0, background: PRIO_COLORS[lead.priority] ?? "#9CA3AF" }} />
         <div style={{ width: 24, height: 24, borderRadius: 7, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 10, fontWeight: 700, flexShrink: 0, background: palette.bg, color: palette.text }}>
@@ -55,7 +55,9 @@ function KanbanCard({ lead, isSelected, onSelect, avatarIndex }: {
         </span>
       </div>
 
-      <p style={{ fontSize: 11, color: "#6B7280", margin: "0 0 8px", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{lead.service}</p>
+      <p style={{ fontSize: 11, color: "#6B7280", margin: "0 0 8px", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+        {lead.service}
+      </p>
 
       <div style={{ display: "flex", gap: 8 }}>
         <span style={{ display: "flex", alignItems: "center", gap: 4, fontSize: 10, color: "#6B7280" }}>
@@ -98,7 +100,7 @@ function KanbanColumn({ stage, columnLeads, onSelect, selectedId, globalOffset }
       </div>
       <div style={{ display: "flex", flexDirection: "column", gap: 8, padding: 8, overflowY: "auto", flex: 1, maxHeight: "calc(100vh - 230px)" }}>
         {columnLeads.length === 0
-          ? <div style={{ textAlign: "center", fontSize: 12, color: "#9CA3AF", padding: "24px 0", border: "1.5px dashed #E5E7EB", borderRadius: 9 }}>Empty</div>
+          ? <div style={{ textAlign: "center" as const, fontSize: 12, color: "#9CA3AF", padding: "24px 0", border: "1.5px dashed #E5E7EB", borderRadius: 9 }}>Empty</div>
           : columnLeads.map((lead, i) => (
               <div key={lead.id} className="animate-fade-up" style={{ animationDelay: `${Math.min(i, 8) * 30}ms` }}>
                 <KanbanCard
@@ -116,9 +118,9 @@ function KanbanColumn({ stage, columnLeads, onSelect, selectedId, globalOffset }
 }
 
 export default function RepPipeline() {
-  const [selected, setSelected]       = useState<Lead | null>(null);
+  const [selected, setSelected] = useState<Lead | null>(null);
   const [avatarIndex, setAvatarIndex] = useState(0);
-  const [view, setView]               = useState<View>("list");
+  const [view, setView] = useState<View>("list");
 
   const handleSelect = (lead: Lead) => {
     const index = myLeads.indexOf(lead);
@@ -127,15 +129,30 @@ export default function RepPipeline() {
     setView("list");
   };
 
-  const handleOpenFullPage = (lead: Lead) => { setSelected(lead); setView("full"); };
+  // ★ Opens LeadDetailPage full screen
+  const handleOpenFullPage = (lead: Lead) => {
+    setSelected(lead);
+    setView("full");
+  };
+
+  const handleClosePanel = () => {
+    setSelected(null);
+    setView("list");
+  };
 
   const hot         = myLeads.filter(l => l.score === "Hot" && PIPELINE_STAGES.some(s => s.status === l.status)).length;
   const negotiation = myLeads.filter(l => l.status === "Negotiation").length;
   const enrolled    = myLeads.filter(l => l.status === "Enrolled").length;
   const active      = myLeads.filter(l => PIPELINE_STAGES.some(s => s.status === l.status)).length;
 
+  // ★ Full-page view
   if (view === "full" && selected) {
-    return <LeadFullPage lead={selected} onBack={() => setView("list")} avatarIndex={avatarIndex} />;
+    return (
+      <LeadDetailPage
+        lead={selected}
+        onBack={() => setView("list")}
+      />
+    );
   }
 
   return (
@@ -154,9 +171,9 @@ export default function RepPipeline() {
           {/* Stats */}
           <div className="animate-fade-up" style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 12, animationDelay: "40ms" }}>
             {[
-              { icon: <TrendingUp size={14} />, label: "Hot Leads",   value: hot,         color: "#BE123C", bg: "#FFF1F2" },
-              { icon: <Phone size={14} />,      label: "Negotiation", value: negotiation,  color: "#7E22CE", bg: "#FAF5FF" },
-              { icon: <DollarSign size={14} />, label: "Enrolled",    value: enrolled,     color: "#065F46", bg: "#ECFDF5" },
+              { icon: <TrendingUp size={14} />, label: "Hot Leads",   value: hot,        color: "#BE123C", bg: "#FFF1F2" },
+              { icon: <Phone size={14} />,      label: "Negotiation", value: negotiation, color: "#7E22CE", bg: "#FAF5FF" },
+              { icon: <DollarSign size={14} />, label: "Enrolled",    value: enrolled,    color: "#065F46", bg: "#ECFDF5" },
             ].map(stat => (
               <div key={stat.label} style={{ display: "flex", alignItems: "center", gap: 10, padding: "12px 14px", background: "#fff", borderRadius: 12, border: "1px solid #E5E7EB" }}>
                 <div style={{ width: 32, height: 32, borderRadius: 10, display: "flex", alignItems: "center", justifyContent: "center", background: stat.bg, color: stat.color, flexShrink: 0 }}>
@@ -194,10 +211,11 @@ export default function RepPipeline() {
         </div>
       </div>
 
-      {selected && (
+      {/* ★ Side panel — only in list view */}
+      {selected && view === "list" && (
         <LeadDetailPanel
           lead={selected}
-          onClose={() => { setSelected(null); setView("list"); }}
+          onClose={handleClosePanel}
           onOpenFullPage={handleOpenFullPage}
           avatarIndex={avatarIndex}
         />

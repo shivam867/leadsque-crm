@@ -3,7 +3,7 @@ import { useState } from "react";
 import { leads } from "@/data/dummy";
 import { ScoreBadge, StatusBadge } from "@/components/ui/Badges";
 import LeadDetailPanel from "@/components/ui/LeadDetailPanel";
-import LeadFullPage from "@/components/ui/LeadFullPage";
+import LeadDetailPage from "@/components/lead-detail/LeadDetailPage"; // ★ swapped
 import type { Lead } from "@/data/dummy";
 import { Phone, Calendar, Clock, CheckCheck, AlertCircle, ChevronRight } from "lucide-react";
 
@@ -28,13 +28,13 @@ function FollowUpSection({ title, subtitle, items, color, bg, icon, onSelect, se
     <div style={{ marginBottom: 24 }}>
       <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 10 }}>
         <span style={{ color }}>{icon}</span>
-        <h2 style={{ fontSize: 13, fontWeight: 800, color: "#374151", textTransform: "uppercase", letterSpacing: "0.05em", margin: 0 }}>{title}</h2>
+        <h2 style={{ fontSize: 13, fontWeight: 800, color: "#374151", textTransform: "uppercase" as const, letterSpacing: "0.05em", margin: 0 }}>{title}</h2>
         <span style={{ fontSize: 11, fontWeight: 700, padding: "2px 8px", borderRadius: 99, background: bg, color }}>
           {items.length}
         </span>
         <span style={{ fontSize: 12, color: "#6B7280" }}>{subtitle}</span>
       </div>
-      <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+      <div style={{ display: "flex", flexDirection: "column" as const, gap: 8 }}>
         {items.map((lead, i) => (
           <div key={lead.id} className="animate-fade-up" style={{ animationDelay: `${Math.min(i, 8) * 30}ms` }}>
             <FollowUpCard
@@ -78,7 +78,7 @@ function FollowUpCard({ lead, color, bg, isSelected, onSelect }: {
             {lead.service} · {lead.phone} · {lead.city}
           </p>
           {lead.followUps[0]?.remarks && (
-            <p style={{ fontSize: 11, color: "#9CA3AF", margin: "4px 0 0", fontStyle: "italic", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", maxWidth: 360 }}>
+            <p style={{ fontSize: 11, color: "#9CA3AF", margin: "4px 0 0", fontStyle: "italic" as const, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" as const, maxWidth: 360 }}>
               {lead.followUps[0].remarks}
             </p>
           )}
@@ -88,10 +88,9 @@ function FollowUpCard({ lead, color, bg, isSelected, onSelect }: {
           <div style={{ display: "flex", alignItems: "center", gap: 5, fontSize: 11, fontWeight: 700, color, background: bg, padding: "4px 8px", borderRadius: 7 }}>
             <Calendar size={10} />{lead.followUpDate}
           </div>
-          <button onClick={e => e.stopPropagation()} style={{
-            display: "flex", alignItems: "center", gap: 5, padding: "6px 12px", borderRadius: 8,
-            fontSize: 11, fontWeight: 600, background: color + "15", color, border: `1px solid ${color}30`, cursor: "pointer",
-          }}>
+          <button
+            onClick={e => e.stopPropagation()}
+            style={{ display: "flex", alignItems: "center", gap: 5, padding: "6px 12px", borderRadius: 8, fontSize: 11, fontWeight: 600, background: color + "15", color, border: `1px solid ${color}30`, cursor: "pointer" }}>
             <Phone size={10} /> Call
           </button>
           <button
@@ -118,8 +117,9 @@ export default function RepFollowUps() {
 
   const handleOpenFullPage = (lead: Lead) => { setSelected(lead); setView("full"); };
 
+  // ★ swapped — no avatarIndex prop needed
   if (view === "full" && selected) {
-    return <LeadFullPage lead={selected} onBack={() => setView("list")} avatarIndex={avatarIndex} />;
+    return <LeadDetailPage lead={selected} onBack={() => setView("list")} />;
   }
 
   return (
@@ -172,14 +172,15 @@ export default function RepFollowUps() {
         </div>
 
         {myLeads.length === 0 && (
-          <div style={{ textAlign: "center", padding: "64px 0" }}>
+          <div style={{ textAlign: "center" as const, padding: "64px 0" }}>
             <CheckCheck size={32} style={{ color: "#D1D5DB", margin: "0 auto 10px" }} />
             <p style={{ fontSize: 13, color: "#9CA3AF" }}>No follow-ups scheduled.</p>
           </div>
         )}
       </div>
 
-      {selected && (
+      {/* ★ guard — panel only in list view */}
+      {selected && view === "list" && (
         <LeadDetailPanel
           lead={selected}
           onClose={() => { setSelected(null); setView("list"); }}

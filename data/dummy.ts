@@ -14,7 +14,6 @@ export type LeadStatus =
 
 export type LeadScore = "Hot" | "Warm" | "Cold";
 export type LeadPriority = "High" | "Medium" | "Low";
-
 export type ActivityType = "call" | "note" | "status" | "followup" | "email" | "whatsapp" | "meeting";
 
 export interface ActivityItem {
@@ -54,6 +53,23 @@ export interface CounselingNote {
   createdBy: string;
 }
 
+// NEW: Intelligence interfaces
+export interface ObjectionEntry {
+  objection: string;
+  response: string;
+}
+
+export interface LeadIntelligence {
+  competitorIntel?: string;
+  bestTimeToCall?: string;
+  bestTimeNote?: string;
+  handlingObjections?: ObjectionEntry[];
+  languagePreference?: string[];
+  dealProbability?: number;
+  preBriefNote?: string;
+  aiKeyPoints?: string[];
+}
+
 export interface Lead {
   id: string;
   name: string;
@@ -76,14 +92,14 @@ export interface Lead {
   parentName?: string;
   parentPhone?: string;
   lostReason?: string;
-  // Generic lead scoring fields
   intakeTimeline?: "Immediate" | "1-3 months" | "3-6 months" | "6+ months";
   education?: "Graduate" | "Final Year" | "Working Professional" | "Post Graduate";
   engagementLevel?: "Just Exploring" | "Actively Researching" | "Ready to Enroll";
   budgetReadiness?: "High" | "Medium" | "Low";
   leadScore?: number;
-  // Course interest tracking
   courseInterests?: string[];
+  // NEW: Manager-set intelligence for this lead
+  intelligence?: LeadIntelligence;
 }
 
 export interface SalesRep {
@@ -108,7 +124,7 @@ export type LostReason = {
   examples: string[];
 };
 
-// ── PIPELINE STAGES ──────────────────────────────────────────────
+// PIPELINE STAGES
 export const PIPELINE_STAGES: {
   status: LeadStatus;
   label: string;
@@ -165,7 +181,42 @@ export const COURSE_OPTIONS = [
   "Interview Prep",
 ];
 
-// ── SALES REPS ──────────────────────────────────────────────────
+// NEW: Stage Opening Lines (Manager-configured per pipeline stage)
+// Manager updates these from settings. {name} and {service} interpolated at render time.
+export const STAGE_OPENING_LINES: Record<LeadStatus, string[]> = {
+  "New": [
+    "Hi {name}, I'm calling from Pinnacle — you'd shown interest in our {service}. Do you have 2 minutes?",
+    "Hello {name}, this is a quick follow-up on your enquiry about {service}. Is this a good time to talk?",
+  ],
+  "Contacted": [
+    "Hi {name}, we spoke briefly earlier — I wanted to share some details that might help you decide.",
+    "{name} ji, just following up on our last conversation. Have you had a chance to go through the brochure?",
+  ],
+  "Qualified": [
+    "{name} ji, based on what you shared, I think {service} is the perfect fit. Can I walk you through the structure?",
+    "Hi {name}, I've put together a personalised plan for you. Can I take 5 minutes to walk you through it?",
+  ],
+  "Proposal Sent": [
+    "Hi {name}, I sent over the proposal earlier — did you get a chance to look at the fee structure?",
+    "{name} ji, just checking in on the proposal. Our {service} batch starts soon — don't want you to miss your seat.",
+  ],
+  "Negotiation": [
+    "{name} ji, Aanya here from Pinnacle — just calling with the early-bird offer I promised. Five minutes to lock in your seat?",
+    "Hi {name}, I have some good news on the pricing front for {service}. Do you have a moment?",
+  ],
+  "Enrolled": [
+    "Hi {name}, welcome to the Pinnacle family! Calling to confirm your onboarding details for {service}.",
+    "{name} ji, your batch starts soon — just wanted to make sure everything is set for day one!",
+  ],
+  "Not Interested": [
+    "Hi {name}, I completely understand. Would it be okay if I reached out in a few months when the timing is better?",
+  ],
+  "Lost": [
+    "Hi {name}, I hope things worked out. If you ever reconsider {service}, we'd love to have you — no pressure at all.",
+  ],
+};
+
+// SALES REPS
 export const salesReps: SalesRep[] = [
   { id: "rep-1", name: "Aanya Sharma",  avatar: "AS", role: "rep",      team: "Alpha", leadsAssigned: 28, callsToday: 18, conversionRate: 34, wonThisMonth: 8  },
   { id: "rep-2", name: "Rohan Mehta",   avatar: "RM", role: "rep",      team: "Alpha", leadsAssigned: 31, callsToday: 22, conversionRate: 28, wonThisMonth: 9  },
@@ -182,7 +233,7 @@ export const managers: SalesRep[] = [
   { id: "mgr-3", name: "Amit Khanna",  avatar: "AK", role: "manager", team: "Gamma", leadsAssigned: 43, callsToday: 31, conversionRate: 37, wonThisMonth: 15 },
 ];
 
-// ── LEADS ────────────────────────────────────────────────────────
+// LEADS
 export const leads: Lead[] = [
   {
     id: "L-1001",
@@ -205,28 +256,46 @@ export const leads: Lead[] = [
     budgetReadiness: "Medium",
     leadScore: 72,
     courseInterests: ["Advanced Program", "Test Series"],
+    intelligence: {
+      competitorIntel: "No competitor named directly. As an IT professional he has likely browsed StudyIQ and Unacademy online — stress our structured offline-style evening batch and personal faculty access over app-based learning.",
+      bestTimeToCall: "Friday 11:00 AM - 1:00 PM",
+      bestTimeNote: "Call Friday 11 AM with early bird discount. Highlight evening batch and test series.",
+      handlingObjections: [
+        { objection: "Budget objection", response: "Offer early-bird discount + 2-installment split." },
+        { objection: "Time concern", response: "Emphasise 7-9 PM slot + recorded backup sessions so no class is ever missed." },
+        { objection: "Competitor comparison", response: "Stress offline-style teaching + personal faculty access vs app-based." },
+      ],
+      languagePreference: ["Hindi", "English"],
+      dealProbability: 72,
+      preBriefNote: "Deepak is a warm lead with a clear need. He's a working professional on his second attempt. Budget concern is temporary. High close probability if contacted Friday with a discount offer.",
+      aiKeyPoints: [
+        "2nd attempt — Prelims cleared in 2024, Mains was the gap",
+        "Working professional — needs evening/weekend batch",
+        "Budget concern is seasonal, not structural",
+      ],
+    },
     counselingNote: {
       targetProgram: "Advanced Program — Weekend Batch",
       courseInterest: "Advanced Program, Test Series Add-on",
       engagementLevel: "Ready to Enroll",
       previousExperience: "Self-study for 1 year",
-      budget: "₹40,000 – ₹50,000",
+      budget: "40,000 - 50,000",
       painPoints: "Needs structured curriculum. Weekend batch is a must. Budget slightly tight.",
       createdAt: "2025-05-20",
       createdBy: "Aanya Sharma",
     },
     activity: [
-      { time: "10:30 AM · 20 May", type: "call",     text: "First call placed — answered on 2nd ring", by: "Aanya Sharma" },
-      { time: "10:35 AM · 20 May", type: "note",     text: "Interested in Advanced batch, asked about weekend timings and study material", by: "Aanya Sharma" },
-      { time: "10:40 AM · 20 May", type: "status",   text: "Status updated: New → Contacted", by: "Aanya Sharma" },
-      { time: "11:00 AM · 22 May", type: "call",     text: "Follow-up call — discussed pricing, slight hesitation on budget", by: "Aanya Sharma" },
-      { time: "11:15 AM · 22 May", type: "whatsapp", text: "Sent brochure and fee structure on WhatsApp", by: "Aanya Sharma" },
-      { time: "9:00 AM  · 25 May", type: "followup", text: "Reminder set: call back with early bird discount offer", by: "Aanya Sharma" },
-      { time: "11:30 AM · 26 May", type: "status",   text: "Status updated: Qualified → Negotiation", by: "Aanya Sharma" },
+      { time: "10:30 AM . 20 May", type: "call",     text: "First call placed — answered on 2nd ring", by: "Aanya Sharma" },
+      { time: "10:35 AM . 20 May", type: "note",     text: "Interested in Advanced batch, asked about weekend timings and study material", by: "Aanya Sharma" },
+      { time: "10:40 AM . 20 May", type: "status",   text: "Status updated: New to Contacted", by: "Aanya Sharma" },
+      { time: "11:00 AM . 22 May", type: "call",     text: "Follow-up call — discussed pricing, slight hesitation on budget", by: "Aanya Sharma" },
+      { time: "11:15 AM . 22 May", type: "whatsapp", text: "Sent brochure and fee structure on WhatsApp", by: "Aanya Sharma" },
+      { time: "9:00 AM  . 25 May", type: "followup", text: "Reminder set: call back with early bird discount offer", by: "Aanya Sharma" },
+      { time: "11:30 AM . 26 May", type: "status",   text: "Status updated: Qualified to Negotiation", by: "Aanya Sharma" },
     ],
     callLogs: [
-      { id: "cl-1001-1", date: "2025-05-20", time: "10:30 AM", result: "Connected",     duration: "12 min", remarks: "Discussed batch timings and fee structure", by: "Aanya Sharma" },
-      { id: "cl-1001-2", date: "2025-05-22", time: "11:00 AM", result: "Connected",     duration: "8 min",  remarks: "Budget concern, considering early bird discount", by: "Aanya Sharma" },
+      { id: "cl-1001-1", date: "2025-05-20", time: "10:30 AM", result: "Connected", duration: "12 min", remarks: "Discussed batch timings and fee structure", by: "Aanya Sharma" },
+      { id: "cl-1001-2", date: "2025-05-22", time: "11:00 AM", result: "Connected", duration: "8 min",  remarks: "Budget concern, considering early bird discount", by: "Aanya Sharma" },
     ],
     followUps: [
       { id: "fu-1001-1", date: "2025-05-28", time: "11:00 AM", status: "Pending", remarks: "Call with early bird discount offer", createdBy: "Aanya Sharma" },
@@ -254,6 +323,23 @@ export const leads: Lead[] = [
     budgetReadiness: "High",
     leadScore: 85,
     courseInterests: ["Foundation Program", "One-on-One Mentorship", "Interview Prep"],
+    intelligence: {
+      competitorIntel: "Family has looked at two Delhi-based institutes. Main comparison is on batch size and faculty availability. Stress our 1:20 mentor ratio and dedicated doubt sessions.",
+      bestTimeToCall: "Saturday 10:00 AM - 12:00 PM",
+      bestTimeNote: "Family call best on weekends. Both student and parent available Saturday morning.",
+      handlingObjections: [
+        { objection: "Accommodation concern", response: "Share PG accommodation list near centre. Offer to connect with current students for guidance." },
+        { objection: "Parent wants to verify faculty", response: "Offer a 15-minute video call with head faculty before enrollment." },
+      ],
+      languagePreference: ["Marathi", "Hindi", "English"],
+      dealProbability: 85,
+      preBriefNote: "Sneha is a referral lead with high intent. Parent is the decision-maker. Next call must include parent. Proposal has been sent — follow up on fee split options.",
+      aiKeyPoints: [
+        "Referral from existing student — high trust already built",
+        "Fresh graduate, full-time focus — immediate intake",
+        "Parent needs to be on the next call to close",
+      ],
+    },
     parentName: "Mr. Kulkarni",
     parentPhone: "+91 99200 22340",
     counselingNote: {
@@ -261,18 +347,18 @@ export const leads: Lead[] = [
       courseInterest: "Foundation + Mentorship",
       engagementLevel: "Ready to Enroll",
       previousExperience: "None",
-      budget: "₹1,20,000 (Full program)",
+      budget: "1,20,000 (Full program)",
       painPoints: "Needs accommodation guidance. Parent wants to speak before finalising.",
       createdAt: "2025-05-19",
       createdBy: "Aanya Sharma",
     },
     activity: [
-      { time: "9:00 AM · 19 May",  type: "call",     text: "Introductory call — very focused, asked detailed curriculum questions", by: "Aanya Sharma" },
-      { time: "9:45 AM · 19 May",  type: "status",   text: "Status: New → Qualified", by: "Aanya Sharma" },
-      { time: "2:00 PM · 21 May",  type: "email",    text: "Sent full program brochure and faculty profiles", by: "Aanya Sharma" },
-      { time: "4:30 PM · 23 May",  type: "call",     text: "30-min call — discussed program structure, schedule", by: "Aanya Sharma" },
-      { time: "5:00 PM · 23 May",  type: "note",     text: "Parent will also join next call.", by: "Aanya Sharma" },
-      { time: "10:00 AM · 25 May", type: "status",   text: "Status: Qualified → Proposal Sent", by: "Aanya Sharma" },
+      { time: "9:00 AM . 19 May",  type: "call",   text: "Introductory call — very focused, asked detailed curriculum questions", by: "Aanya Sharma" },
+      { time: "9:45 AM . 19 May",  type: "status", text: "Status: New to Qualified", by: "Aanya Sharma" },
+      { time: "2:00 PM . 21 May",  type: "email",  text: "Sent full program brochure and faculty profiles", by: "Aanya Sharma" },
+      { time: "4:30 PM . 23 May",  type: "call",   text: "30-min call — discussed program structure, schedule", by: "Aanya Sharma" },
+      { time: "5:00 PM . 23 May",  type: "note",   text: "Parent will also join next call.", by: "Aanya Sharma" },
+      { time: "10:00 AM . 25 May", type: "status", text: "Status: Qualified to Proposal Sent", by: "Aanya Sharma" },
     ],
     callLogs: [
       { id: "cl-1002-1", date: "2025-05-19", time: "9:00 AM",  result: "Connected", duration: "25 min", remarks: "Curriculum discussion confirmed", by: "Aanya Sharma" },
@@ -297,29 +383,40 @@ export const leads: Lead[] = [
     priority: "Medium",
     createdAt: "2025-05-18",
     followUpDate: "2025-05-29",
-    notes: "Interested in online batch. Remote location, needs online-only mode. Budget is limited around ₹20,000-25,000.",
+    notes: "Interested in online batch. Remote location, needs online-only mode. Budget is limited around 20,000-25,000.",
     intakeTimeline: "1-3 months",
     education: "Graduate",
     engagementLevel: "Actively Researching",
     budgetReadiness: "Low",
     leadScore: 42,
     courseInterests: ["Online Live", "Recorded Course"],
+    intelligence: {
+      bestTimeToCall: "Weekday evenings 7:00 PM - 9:00 PM",
+      bestTimeNote: "Works during the day. Best reached after 7 PM IST.",
+      handlingObjections: [
+        { objection: "Budget too high", response: "Present EMI plan — 5,000/month over 5 months. Check if manager can approve." },
+        { objection: "Online quality concern", response: "Offer a free demo class. Share testimonials from other online students." },
+      ],
+      languagePreference: ["Malayalam", "English"],
+      dealProbability: 42,
+      preBriefNote: "Arjun is budget-constrained but genuinely interested. EMI plan is the likely path to close. Demo access could accelerate the decision.",
+    },
     counselingNote: {
       targetProgram: "Online Live Program",
       courseInterest: "Online Live, Recorded backup",
       engagementLevel: "Actively Researching",
       previousExperience: "None",
-      budget: "₹20,000 – ₹25,000",
+      budget: "20,000 - 25,000",
       painPoints: "Remote location, online only. Budget constraint. Needs EMI.",
       createdAt: "2025-05-18",
       createdBy: "Aanya Sharma",
     },
     activity: [
-      { time: "3:00 PM · 18 May",  type: "call",     text: "Cold call answered — showed initial interest in online batch", by: "Aanya Sharma" },
-      { time: "3:15 PM · 18 May",  type: "note",     text: "Needs online mode, budget ₹20-25k, EMI preferred", by: "Aanya Sharma" },
-      { time: "3:20 PM · 18 May",  type: "status",   text: "Status: New → Contacted", by: "Aanya Sharma" },
-      { time: "10:00 AM · 24 May", type: "call",     text: "Follow-up — asked about live vs recorded class options", by: "Aanya Sharma" },
-      { time: "10:30 AM · 24 May", type: "status",   text: "Status: Contacted → Qualified", by: "Aanya Sharma" },
+      { time: "3:00 PM . 18 May",  type: "call",   text: "Cold call answered — showed initial interest in online batch", by: "Aanya Sharma" },
+      { time: "3:15 PM . 18 May",  type: "note",   text: "Needs online mode, budget 20-25k, EMI preferred", by: "Aanya Sharma" },
+      { time: "3:20 PM . 18 May",  type: "status", text: "Status: New to Contacted", by: "Aanya Sharma" },
+      { time: "10:00 AM . 24 May", type: "call",   text: "Follow-up — asked about live vs recorded class options", by: "Aanya Sharma" },
+      { time: "10:30 AM . 24 May", type: "status", text: "Status: Contacted to Qualified", by: "Aanya Sharma" },
     ],
     callLogs: [
       { id: "cl-1003-1", date: "2025-05-18", time: "3:00 PM",  result: "Connected", duration: "6 min",  remarks: "Online batch interest, checking options", by: "Aanya Sharma" },
@@ -351,8 +448,13 @@ export const leads: Lead[] = [
     budgetReadiness: "Medium",
     leadScore: 35,
     courseInterests: ["Foundation Program", "Weekend Batch"],
+    intelligence: {
+      bestTimeToCall: "Weekday lunch 12:30 PM - 1:30 PM",
+      bestTimeNote: "Working professional — try lunch hour or after 7 PM.",
+      languagePreference: ["Telugu", "English", "Hindi"],
+    },
     activity: [
-      { time: "8:00 AM · 22 May", type: "note", text: "Lead captured via Instagram ad — filled enquiry form", by: "System" },
+      { time: "8:00 AM . 22 May", type: "note", text: "Lead captured via Instagram ad — filled enquiry form", by: "System" },
     ],
     callLogs: [],
     followUps: [
@@ -381,22 +483,27 @@ export const leads: Lead[] = [
     budgetReadiness: "High",
     leadScore: 92,
     courseInterests: ["Foundation Program", "Test Series"],
+    intelligence: {
+      dealProbability: 100,
+      preBriefNote: "Enrolled — on onboarding journey. Touch base in 3 months for Test Series upsell.",
+      languagePreference: ["Hindi", "English"],
+    },
     counselingNote: {
       targetProgram: "Foundation Program — Full Year",
       courseInterest: "Foundation + Test Series",
       engagementLevel: "Ready to Enroll",
       previousExperience: "Short term offline coaching",
-      budget: "₹72,000 (Full year, paid in full)",
+      budget: "72,000 (Full year, paid in full)",
       painPoints: "Wants structured curriculum. Seminar quality impressed him.",
       createdAt: "2025-05-12",
       createdBy: "Aanya Sharma",
     },
     activity: [
-      { time: "11:00 AM · 12 May", type: "call",   text: "Post-seminar follow-up — very positive response", by: "Aanya Sharma" },
-      { time: "2:00 PM  · 13 May", type: "email",  text: "Sent program brochure and enrollment form", by: "Aanya Sharma" },
-      { time: "11:30 AM · 15 May", type: "status", text: "Status: Proposal Sent → Negotiation", by: "Aanya Sharma" },
-      { time: "12:00 PM · 15 May", type: "status", text: "Status: Negotiation → Enrolled", by: "Aanya Sharma" },
-      { time: "12:05 PM · 15 May", type: "note",   text: "Fee paid in full ₹72,000. Onboarding scheduled for May 20.", by: "Aanya Sharma" },
+      { time: "11:00 AM . 12 May", type: "call",   text: "Post-seminar follow-up — very positive response", by: "Aanya Sharma" },
+      { time: "2:00 PM  . 13 May", type: "email",  text: "Sent program brochure and enrollment form", by: "Aanya Sharma" },
+      { time: "11:30 AM . 15 May", type: "status", text: "Status: Proposal Sent to Negotiation", by: "Aanya Sharma" },
+      { time: "12:00 PM . 15 May", type: "status", text: "Status: Negotiation to Enrolled", by: "Aanya Sharma" },
+      { time: "12:05 PM . 15 May", type: "note",   text: "Fee paid in full 72,000. Onboarding scheduled for May 20.", by: "Aanya Sharma" },
     ],
     callLogs: [
       { id: "cl-1005-1", date: "2025-05-12", time: "11:00 AM", result: "Connected", duration: "18 min", remarks: "Very positive, wants to enroll immediately", by: "Aanya Sharma" },
@@ -424,12 +531,16 @@ export const leads: Lead[] = [
     engagementLevel: "Actively Researching",
     budgetReadiness: "Low",
     leadScore: 18,
-    lostReason: "Joined Competitor — Price difference of ₹8,000 was deciding factor.",
+    lostReason: "Joined Competitor — Price difference of 8,000 was deciding factor.",
     courseInterests: ["Crash Course"],
+    intelligence: {
+      competitorIntel: "Joined a regional institute with lower fee. No specific name given.",
+      languagePreference: ["Hindi"],
+    },
     activity: [
-      { time: "2:00 PM · 08 May", type: "call",   text: "Final call — student declined", by: "Aanya Sharma" },
-      { time: "2:10 PM · 08 May", type: "status", text: "Status: Negotiation → Lost", by: "Aanya Sharma" },
-      { time: "2:15 PM · 08 May", type: "note",   text: "Chose competitor. Price difference was main factor.", by: "Aanya Sharma" },
+      { time: "2:00 PM . 08 May", type: "call",   text: "Final call — student declined", by: "Aanya Sharma" },
+      { time: "2:10 PM . 08 May", type: "status", text: "Status: Negotiation to Lost", by: "Aanya Sharma" },
+      { time: "2:15 PM . 08 May", type: "note",   text: "Chose competitor. Price difference was main factor.", by: "Aanya Sharma" },
     ],
     callLogs: [
       { id: "cl-1006-1", date: "2025-05-08", time: "2:00 PM", result: "Connected", duration: "5 min", remarks: "Chose competitor, price was main factor", by: "Aanya Sharma" },
@@ -458,10 +569,18 @@ export const leads: Lead[] = [
     budgetReadiness: "Medium",
     leadScore: 48,
     courseInterests: ["Foundation Program", "Recorded Course"],
+    intelligence: {
+      bestTimeToCall: "Evenings 6:00 PM - 8:00 PM",
+      languagePreference: ["Gujarati", "Hindi"],
+      handlingObjections: [
+        { objection: "Not sure about program fit", response: "Emphasise referral success — Rahul Saxena enrolled. Offer a counseling session to find best fit." },
+      ],
+      dealProbability: 48,
+    },
     activity: [
-      { time: "4:00 PM · 21 May", type: "call",     text: "First contact — positive, exploring program options", by: "Aanya Sharma" },
-      { time: "4:10 PM · 21 May", type: "status",   text: "Status: New → Contacted", by: "Aanya Sharma" },
-      { time: "4:30 PM · 21 May", type: "followup", text: "Counseling session scheduled May 30 at 3 PM", by: "Aanya Sharma" },
+      { time: "4:00 PM . 21 May", type: "call",     text: "First contact — positive, exploring program options", by: "Aanya Sharma" },
+      { time: "4:10 PM . 21 May", type: "status",   text: "Status: New to Contacted", by: "Aanya Sharma" },
+      { time: "4:30 PM . 21 May", type: "followup", text: "Counseling session scheduled May 30 at 3 PM", by: "Aanya Sharma" },
     ],
     callLogs: [
       { id: "cl-1007-1", date: "2025-05-21", time: "4:00 PM", result: "Connected", duration: "8 min", remarks: "Intro call, scheduling counseling session", by: "Aanya Sharma" },
@@ -489,10 +608,10 @@ export const leads: Lead[] = [
     lostReason: "No Response — 3 attempts made, number appears invalid.",
     courseInterests: [],
     activity: [
-      { time: "9:00 AM · 22 May",  type: "call",   text: "No answer — attempt 1", by: "Aanya Sharma" },
-      { time: "11:00 AM · 22 May", type: "call",   text: "No answer — attempt 2", by: "Aanya Sharma" },
-      { time: "2:00 PM  · 22 May", type: "call",   text: "No answer — attempt 3, number appears invalid", by: "Aanya Sharma" },
-      { time: "2:30 PM  · 22 May", type: "status", text: "Status: New → Not Interested", by: "Aanya Sharma" },
+      { time: "9:00 AM . 22 May",  type: "call",   text: "No answer — attempt 1", by: "Aanya Sharma" },
+      { time: "11:00 AM . 22 May", type: "call",   text: "No answer — attempt 2", by: "Aanya Sharma" },
+      { time: "2:00 PM  . 22 May", type: "call",   text: "No answer — attempt 3, number appears invalid", by: "Aanya Sharma" },
+      { time: "2:30 PM  . 22 May", type: "status", text: "Status: New to Not Interested", by: "Aanya Sharma" },
     ],
     callLogs: [
       { id: "cl-1008-1", date: "2025-05-22", time: "9:00 AM",  result: "Not Connected", remarks: "No answer", by: "Aanya Sharma" },
@@ -523,22 +642,39 @@ export const leads: Lead[] = [
     budgetReadiness: "High",
     leadScore: 76,
     courseInterests: ["Advanced Program", "One-on-One Mentorship"],
+    intelligence: {
+      competitorIntel: "Has compared our content with Unacademy Plus. Impressed our free YouTube content is better. Stress faculty depth and live interaction in paid program.",
+      bestTimeToCall: "Tuesday or Thursday 7:00 PM - 9:00 PM",
+      bestTimeNote: "Working professional in Bangalore. After-office hours work best. Avoid Monday.",
+      handlingObjections: [
+        { objection: "Why pay when YouTube is free", response: "Position live interaction, doubt-solving, and structured roadmap as the differentiator. Show him a sample module." },
+        { objection: "Unsure about mentorship value", response: "Offer 1 free session with mentor before committing to upsell." },
+      ],
+      languagePreference: ["Kannada", "English"],
+      dealProbability: 76,
+      preBriefNote: "Siddharth came in already sold on our content quality. Close call is about structured delivery and live access. Intro session on May 28 is the key moment.",
+      aiKeyPoints: [
+        "YouTube-originated — content quality already validated",
+        "IT professional — structured approach over theory-heavy teaching",
+        "High budget readiness — price is not the barrier",
+      ],
+    },
     counselingNote: {
       targetProgram: "Advanced Program — Intensive",
       courseInterest: "Advanced Program + Mentorship",
       engagementLevel: "Ready to Enroll",
       previousExperience: "Self-study via online content",
-      budget: "₹18,000 – ₹25,000",
+      budget: "18,000 - 25,000",
       painPoints: "Has knowledge but lacks structured delivery. Content quality is the key factor.",
       createdAt: "2025-05-23",
       createdBy: "Aanya Sharma",
     },
     activity: [
-      { time: "10:00 AM · 23 May", type: "call",     text: "First call — very engaged, asked detailed curriculum questions", by: "Aanya Sharma" },
-      { time: "10:40 AM · 23 May", type: "status",   text: "Status: New → Qualified", by: "Aanya Sharma" },
-      { time: "11:00 AM · 23 May", type: "email",    text: "Sent advanced program study plan and faculty profile", by: "Aanya Sharma" },
-      { time: "3:00 PM  · 26 May", type: "call",     text: "Second call — reviewed sample material, highly impressed", by: "Aanya Sharma" },
-      { time: "3:25 PM  · 26 May", type: "followup", text: "Session scheduled for May 28 at 11 AM", by: "Aanya Sharma" },
+      { time: "10:00 AM . 23 May", type: "call",     text: "First call — very engaged, asked detailed curriculum questions", by: "Aanya Sharma" },
+      { time: "10:40 AM . 23 May", type: "status",   text: "Status: New to Qualified", by: "Aanya Sharma" },
+      { time: "11:00 AM . 23 May", type: "email",    text: "Sent advanced program study plan and faculty profile", by: "Aanya Sharma" },
+      { time: "3:00 PM  . 26 May", type: "call",     text: "Second call — reviewed sample material, highly impressed", by: "Aanya Sharma" },
+      { time: "3:25 PM  . 26 May", type: "followup", text: "Session scheduled for May 28 at 11 AM", by: "Aanya Sharma" },
     ],
     callLogs: [
       { id: "cl-1009-1", date: "2025-05-23", time: "10:00 AM", result: "Connected", duration: "22 min", remarks: "Discussed program, sent study plan", by: "Aanya Sharma" },
@@ -570,6 +706,23 @@ export const leads: Lead[] = [
     budgetReadiness: "High",
     leadScore: 88,
     courseInterests: ["Foundation Program", "Test Series", "Interview Prep"],
+    intelligence: {
+      competitorIntel: "Compared two other institutes at the seminar. Both had larger batch sizes. Stress our small-batch, personal approach.",
+      bestTimeToCall: "Monday-Friday 9:00 AM - 11:00 AM",
+      bestTimeNote: "Student — mornings before college. Parent (Mr. Nambiar) available on Saturdays.",
+      handlingObjections: [
+        { objection: "Price negotiation", response: "June 1 batch seat is limited. Stress urgency. Can offer a 2,000 sibling/referral waiver if needed." },
+        { objection: "June 1 start too soon", response: "First week is orientation — no academic pressure. Confirm fees already approved." },
+      ],
+      languagePreference: ["Tamil", "English"],
+      dealProbability: 88,
+      preBriefNote: "Pooja is extremely close to enrolling. Sponsors have approved. The May 27 payment call is the closing call. Prepare the payment link and seat confirmation before calling.",
+      aiKeyPoints: [
+        "Sponsor-approved — money is not a barrier",
+        "June 1 batch seat is the urgency driver",
+        "Previous coaching was too generic — sell specificity",
+      ],
+    },
     parentName: "Mr. Nambiar",
     parentPhone: "+91 90100 10120",
     counselingNote: {
@@ -577,16 +730,16 @@ export const leads: Lead[] = [
       courseInterest: "Foundation + Test Series",
       engagementLevel: "Ready to Enroll",
       previousExperience: "2 years with another institute",
-      budget: "₹45,000",
+      budget: "45,000",
       painPoints: "Previous coaching was too generic. Needs specialized structured approach.",
       createdAt: "2025-05-16",
       createdBy: "Aanya Sharma",
     },
     activity: [
-      { time: "9:00 AM  · 16 May", type: "note",   text: "Met at seminar — very serious candidate", by: "Aanya Sharma" },
-      { time: "11:00 AM · 17 May", type: "call",   text: "Follow-up — sponsor approved, wants June batch", by: "Aanya Sharma" },
-      { time: "3:00 PM  · 20 May", type: "email",  text: "Sent enrollment form and payment details", by: "Aanya Sharma" },
-      { time: "10:00 AM · 23 May", type: "status", text: "Status: Proposal Sent → Negotiation", by: "Aanya Sharma" },
+      { time: "9:00 AM  . 16 May", type: "note",   text: "Met at seminar — very serious candidate", by: "Aanya Sharma" },
+      { time: "11:00 AM . 17 May", type: "call",   text: "Follow-up — sponsor approved, wants June batch", by: "Aanya Sharma" },
+      { time: "3:00 PM  . 20 May", type: "email",  text: "Sent enrollment form and payment details", by: "Aanya Sharma" },
+      { time: "10:00 AM . 23 May", type: "status", text: "Status: Proposal Sent to Negotiation", by: "Aanya Sharma" },
     ],
     callLogs: [
       { id: "cl-1010-1", date: "2025-05-17", time: "11:00 AM", result: "Connected", duration: "14 min", remarks: "Sponsor-approved, June 1 batch seat needed", by: "Aanya Sharma" },
@@ -617,8 +770,11 @@ export const leads: Lead[] = [
     budgetReadiness: "Medium",
     leadScore: 30,
     courseInterests: ["Foundation Program"],
+    intelligence: {
+      languagePreference: ["Hindi"],
+    },
     activity: [
-      { time: "2:30 PM · 26 May", type: "note", text: "Lead captured via website enquiry form", by: "System" },
+      { time: "2:30 PM . 26 May", type: "note", text: "Lead captured via website enquiry form", by: "System" },
     ],
     callLogs: [],
     followUps: [
@@ -640,20 +796,29 @@ export const leads: Lead[] = [
     priority: "Low",
     createdAt: "2025-05-15",
     followUpDate: "2025-06-02",
-    notes: "Student. Budget very limited — ₹10-12k max. Check if scholarship or installment plan is available.",
+    notes: "Student. Budget very limited — 10-12k max. Check if scholarship or installment plan is available.",
     intakeTimeline: "3-6 months",
     education: "Final Year",
     engagementLevel: "Just Exploring",
     budgetReadiness: "Low",
     leadScore: 22,
     courseInterests: ["Online Live", "Recorded Course"],
+    intelligence: {
+      bestTimeToCall: "Afternoons 2:00 PM - 5:00 PM",
+      bestTimeNote: "Final year student — avoid early mornings. Afternoons after college work best.",
+      handlingObjections: [
+        { objection: "Budget too low", response: "Flag for manager — scholarship or special installment plan may be available." },
+      ],
+      languagePreference: ["Hindi", "English"],
+      dealProbability: 22,
+    },
     activity: [
-      { time: "11:00 AM · 15 May", type: "call",   text: "First call — interested but budget constrained", by: "Aanya Sharma" },
-      { time: "11:20 AM · 15 May", type: "status", text: "Status: New → Contacted", by: "Aanya Sharma" },
-      { time: "11:30 AM · 15 May", type: "note",   text: "Flagged for scholarship check with manager", by: "Aanya Sharma" },
+      { time: "11:00 AM . 15 May", type: "call",   text: "First call — interested but budget constrained", by: "Aanya Sharma" },
+      { time: "11:20 AM . 15 May", type: "status", text: "Status: New to Contacted", by: "Aanya Sharma" },
+      { time: "11:30 AM . 15 May", type: "note",   text: "Flagged for scholarship check with manager", by: "Aanya Sharma" },
     ],
     callLogs: [
-      { id: "cl-1012-1", date: "2025-05-15", time: "11:00 AM", result: "Connected", duration: "7 min", remarks: "Budget ₹10-12k, needs scholarship or installment", by: "Aanya Sharma" },
+      { id: "cl-1012-1", date: "2025-05-15", time: "11:00 AM", result: "Connected", duration: "7 min", remarks: "Budget 10-12k, needs scholarship or installment", by: "Aanya Sharma" },
     ],
     followUps: [
       { id: "fu-1012-1", date: "2025-06-02", time: "11:00 AM", status: "Pending", remarks: "Scholarship decision — call back", createdBy: "Aanya Sharma" },
@@ -681,10 +846,16 @@ export const leads: Lead[] = [
     budgetReadiness: "Medium",
     leadScore: 38,
     courseInterests: ["Crash Course"],
+    intelligence: {
+      bestTimeToCall: "Monday 11:00 AM - 1:00 PM",
+      bestTimeNote: "Confirmed Monday callback. He will be back from travel by then.",
+      languagePreference: ["Hindi"],
+      dealProbability: 38,
+    },
     activity: [
-      { time: "2:00 PM · 20 May", type: "call",     text: "Cold call — answered, showed interest but travelling", by: "Aanya Sharma" },
-      { time: "2:20 PM · 20 May", type: "status",   text: "Status: New → Contacted", by: "Aanya Sharma" },
-      { time: "2:30 PM · 20 May", type: "followup", text: "Callback confirmed — Monday May 28 at 11 AM", by: "Aanya Sharma" },
+      { time: "2:00 PM . 20 May", type: "call",     text: "Cold call — answered, showed interest but travelling", by: "Aanya Sharma" },
+      { time: "2:20 PM . 20 May", type: "status",   text: "Status: New to Contacted", by: "Aanya Sharma" },
+      { time: "2:30 PM . 20 May", type: "followup", text: "Callback confirmed — Monday May 28 at 11 AM", by: "Aanya Sharma" },
     ],
     callLogs: [
       { id: "cl-1013-1", date: "2025-05-20", time: "2:00 PM", result: "Connected", duration: "5 min", remarks: "Travelling, confirmed Monday callback", by: "Aanya Sharma" },
@@ -715,6 +886,23 @@ export const leads: Lead[] = [
     budgetReadiness: "High",
     leadScore: 82,
     courseInterests: ["Foundation Program", "One-on-One Mentorship"],
+    intelligence: {
+      competitorIntel: "Visited two other institutes before walking in. Chose us for faculty quality. Do not discount unnecessarily — she has already decided on us.",
+      bestTimeToCall: "Mornings 10:00 AM - 12:00 PM",
+      bestTimeNote: "Parents available in the morning. Call before noon for joint decisions.",
+      handlingObjections: [
+        { objection: "Installment flexibility", response: "2-installment plan already approved. Confirm split: 50% now, 50% after 60 days." },
+        { objection: "Seat availability", response: "June 1 batch has limited seats — create urgency without pressuring." },
+      ],
+      languagePreference: ["Hindi", "English"],
+      dealProbability: 82,
+      preBriefNote: "Ananya has already shortlisted us. This is a closing call — send the payment link before calling. Parents are involved and supportive.",
+      aiKeyPoints: [
+        "Walk-in — already committed, shortlisted over 2 competitors",
+        "Parents approved 2-installment plan",
+        "June 1 seat urgency is the closer",
+      ],
+    },
     parentName: "Mr. & Mrs. Singh",
     parentPhone: "+91 86500 44560",
     counselingNote: {
@@ -722,18 +910,18 @@ export const leads: Lead[] = [
       courseInterest: "Foundation + Mentorship",
       engagementLevel: "Ready to Enroll",
       previousExperience: "None",
-      budget: "₹72,000 (2 installments preferred)",
+      budget: "72,000 (2 installments preferred)",
       painPoints: "No prior experience in this field. Needs complete handholding.",
       createdAt: "2025-05-12",
       createdBy: "Aanya Sharma",
     },
     activity: [
-      { time: "11:00 AM · 12 May", type: "note",   text: "Walk-in enquiry at centre", by: "Aanya Sharma" },
-      { time: "11:30 AM · 12 May", type: "status", text: "Status: New → Contacted", by: "Aanya Sharma" },
-      { time: "2:00 PM  · 14 May", type: "meeting", text: "Attended intro session — very impressed with faculty", by: "Aanya Sharma" },
-      { time: "10:00 AM · 20 May", type: "call",   text: "Follow-up — shortlisted us over two competitors", by: "Aanya Sharma" },
-      { time: "2:00 PM  · 24 May", type: "call",   text: "Parent joined call — approved enrollment", by: "Aanya Sharma" },
-      { time: "3:00 PM  · 24 May", type: "status", text: "Status: Proposal Sent → Negotiation", by: "Aanya Sharma" },
+      { time: "11:00 AM . 12 May", type: "note",    text: "Walk-in enquiry at centre", by: "Aanya Sharma" },
+      { time: "11:30 AM . 12 May", type: "status",  text: "Status: New to Contacted", by: "Aanya Sharma" },
+      { time: "2:00 PM  . 14 May", type: "meeting", text: "Attended intro session — very impressed with faculty", by: "Aanya Sharma" },
+      { time: "10:00 AM . 20 May", type: "call",    text: "Follow-up — shortlisted us over two competitors", by: "Aanya Sharma" },
+      { time: "2:00 PM  . 24 May", type: "call",    text: "Parent joined call — approved enrollment", by: "Aanya Sharma" },
+      { time: "3:00 PM  . 24 May", type: "status",  text: "Status: Proposal Sent to Negotiation", by: "Aanya Sharma" },
     ],
     callLogs: [
       { id: "cl-1014-1", date: "2025-05-20", time: "10:00 AM", result: "Connected", duration: "12 min", remarks: "Shortlisted us over competitors", by: "Aanya Sharma" },
@@ -765,8 +953,11 @@ export const leads: Lead[] = [
     budgetReadiness: "Medium",
     leadScore: 25,
     courseInterests: ["Advanced Program"],
+    intelligence: {
+      languagePreference: ["Hindi"],
+    },
     activity: [
-      { time: "6:00 PM · 27 May", type: "note", text: "Lead captured via Google Ad click", by: "System" },
+      { time: "6:00 PM . 27 May", type: "note", text: "Lead captured via Google Ad click", by: "System" },
     ],
     callLogs: [],
     followUps: [
@@ -795,21 +986,38 @@ export const leads: Lead[] = [
     budgetReadiness: "High",
     leadScore: 68,
     courseInterests: ["Foundation Program", "Weekend Batch", "Online Live"],
+    intelligence: {
+      competitorIntel: "No specific competitor. Location constraint means she cannot attend full offline. Hybrid is our unique selling point here.",
+      bestTimeToCall: "Weekends 9:00 AM - 11:00 AM",
+      bestTimeNote: "Working professional in Coimbatore. Weekday calls only after 7 PM. Weekend mornings preferred.",
+      handlingObjections: [
+        { objection: "Hybrid feasibility concern", response: "Confirm online weekday classes are fully live, not recorded. Weekend offline is once a month." },
+        { objection: "Distance to centre", response: "Monthly offline visit only — rest is online. Many students travel once a month successfully." },
+      ],
+      languagePreference: ["Tamil", "English"],
+      dealProbability: 68,
+      preBriefNote: "Preethi is a strong referral candidate with high intent. Hybrid model is the key ask — confirm availability before calling. Family discussion is pending.",
+      aiKeyPoints: [
+        "Referral from Rahul Saxena — high trust",
+        "Hybrid model is non-negotiable for her",
+        "Working professional — flexibility is the selling point",
+      ],
+    },
     counselingNote: {
       targetProgram: "Foundation Program — Hybrid",
       courseInterest: "Foundation Hybrid (Online + Weekend Offline)",
       engagementLevel: "Ready to Enroll",
       previousExperience: "None",
-      budget: "₹50,000 (Hybrid)",
+      budget: "50,000 (Hybrid)",
       painPoints: "Location constraint. Monthly travel to centre possible. Wants flexibility.",
       createdAt: "2025-05-24",
       createdBy: "Aanya Sharma",
     },
     activity: [
-      { time: "9:00 AM · 24 May",  type: "call",   text: "First call — already aware via referral, very positive", by: "Aanya Sharma" },
-      { time: "9:30 AM · 24 May",  type: "status", text: "Status: New → Qualified", by: "Aanya Sharma" },
-      { time: "10:00 AM · 24 May", type: "note",   text: "Interested in hybrid mode. Weekend offline if visiting monthly.", by: "Aanya Sharma" },
-      { time: "3:00 PM  · 26 May", type: "call",   text: "Second call — discussing hybrid structure", by: "Aanya Sharma" },
+      { time: "9:00 AM . 24 May",  type: "call",   text: "First call — already aware via referral, very positive", by: "Aanya Sharma" },
+      { time: "9:30 AM . 24 May",  type: "status", text: "Status: New to Qualified", by: "Aanya Sharma" },
+      { time: "10:00 AM . 24 May", type: "note",   text: "Interested in hybrid mode. Weekend offline if visiting monthly.", by: "Aanya Sharma" },
+      { time: "3:00 PM  . 26 May", type: "call",   text: "Second call — discussing hybrid structure", by: "Aanya Sharma" },
     ],
     callLogs: [
       { id: "cl-1016-1", date: "2025-05-24", time: "9:00 AM", result: "Connected", duration: "18 min", remarks: "Warm referral call — qualified", by: "Aanya Sharma" },
@@ -821,7 +1029,7 @@ export const leads: Lead[] = [
   },
 ];
 
-// ── DASHBOARDS ──────────────────────────────────────────────────
+// DASHBOARDS
 export const repDashboard = {
   leadsToday: 6,
   callsMade: 18,
@@ -829,7 +1037,7 @@ export const repDashboard = {
   overdueFollowUps: 1,
   conversionRate: 34,
   enrolledThisMonth: 8,
-  pipelineValue: "₹6.8L",
+  pipelineValue: "6.8L",
   wonThisMonth: 8,
 };
 
@@ -845,14 +1053,14 @@ export const managerDashboard = {
 };
 
 export const directorDashboard = {
-  totalRevenue: "₹62.4L",
+  totalRevenue: "62.4L",
   revenueGrowth: "+22%",
   totalLeads: 847,
   conversionRate: 33,
   enrolledDeals: 214,
   lostLeads: 58,
-  avgDealValue: "₹29,150",
-  forecastThisQuarter: "₹78L",
+  avgDealValue: "29,150",
+  forecastThisQuarter: "78L",
   teamHealth: 89,
 };
 
@@ -867,12 +1075,12 @@ export const revenueByMonth = [
 
 export const pipelineStages = [
   { stage: "New",           count: 47, value: ""  },
-  { stage: "Contacted",     count: 38, value: "" },
-  { stage: "Qualified",     count: 29, value: "" },
-  { stage: "Proposal Sent", count: 24, value: "" },
-  { stage: "Negotiation",   count: 12, value: "" },
-  { stage: "Enrolled",      count: 14, value: "" },
-  { stage: "Lost",          count: 9,  value: "—"       },
+  { stage: "Contacted",     count: 38, value: ""  },
+  { stage: "Qualified",     count: 29, value: ""  },
+  { stage: "Proposal Sent", count: 24, value: ""  },
+  { stage: "Negotiation",   count: 12, value: ""  },
+  { stage: "Enrolled",      count: 14, value: ""  },
+  { stage: "Lost",          count: 9,  value: "—" },
 ];
 
 export const escalations = [
@@ -892,8 +1100,6 @@ export const leadSources = [
   { source: "Cold Call",    leads: 7,  enrolled: 0, conversionRate: 0  },
 ];
 
-// Replace your existing lostReasons export in dummy.ts with this:
-
 export const lostReasons: LostReason[] = [
   {
     id: "lr-1",
@@ -908,7 +1114,7 @@ export const lostReasons: LostReason[] = [
       { repName: "Aryan Gupta",  avatar: "AG", count: 8  },
     ],
     examples: [
-      "Competitor offering similar course ₹8,000 cheaper",
+      "Competitor offering similar course 8,000 cheaper",
       "Student couldn't afford even with EMI plan",
       "Parent felt fee was too high for online mode",
     ],

@@ -17,10 +17,10 @@ export const DEFAULT_SOURCES: LeadSource[] = [
   { id: "ls3", name: "Cold Call",    enabled: true  },
   { id: "ls4", name: "Instagram Ad", enabled: true  },
   { id: "ls5", name: "Google Ad",    enabled: true  },
-  { id: "ls6", name: "YouTube",      enabled: true  },
-  { id: "ls7", name: "Seminar",      enabled: true  },
-  { id: "ls8", name: "Walk-in",      enabled: true  },
-  { id: "ls9", name: "WhatsApp",     enabled: false },
+  // { id: "ls6", name: "YouTube",      enabled: true  },
+  // { id: "ls7", name: "Seminar",      enabled: true  },
+  // { id: "ls8", name: "Walk-in",      enabled: true  },
+  // { id: "ls9", name: "WhatsApp",     enabled: false },
 ];
 
 // ─── Shared styles ────────────────────────────────────────────────
