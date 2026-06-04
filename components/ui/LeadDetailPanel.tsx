@@ -10,7 +10,6 @@ import {
   AtSign, Users, Zap, Edit3,
 } from "lucide-react";
 
-// ─── Types ──────────────────────────────────────────────────────
 interface ActivityEntry {
   id: string;
   type: "call" | "note" | "status" | "followup" | "whatsapp" | "email" | "meeting" | "sms";
@@ -71,13 +70,12 @@ function Divider() {
 
 function SLabel({ children }: { children: React.ReactNode }) {
   return (
-    <p style={{ fontSize: 10, fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.07em", color: "#6b7280", margin: "0 0 8px" }}>
+    <p style={{ fontSize: 10, fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.07em", color: "#525252", margin: "0 0 8px" }}>
       {children}
     </p>
   );
 }
 
-// ─── Pipeline strip ──────────────────────────────────────────────
 function PipelineStrip({ current }: { current: LeadStatus }) {
   const idx = ORDERED_STAGES.indexOf(current);
   const isTerminal = current === "Lost" || current === "Not Interested";
@@ -135,7 +133,6 @@ function PipelineStrip({ current }: { current: LeadStatus }) {
   );
 }
 
-// ─── Main ────────────────────────────────────────────────────────
 export default function LeadDetailPanel({
   lead, onClose, onOpenFullPage, avatarIndex = 0,
 }: {
@@ -215,7 +212,17 @@ export default function LeadDetailPanel({
   };
 
   return (
-    <aside style={{ width: 360, flexShrink: 0, borderLeft: "1px solid #e5e7eb", background: "#ffffff", display: "flex", flexDirection: "column", height: "100%", overflow: "hidden" }}>
+    <aside style={{
+      width: 360,
+      flexShrink: 0,
+      borderLeft: "1px solid #e5e7eb",
+      background: "#ffffff",
+      display: "flex",
+      flexDirection: "column",
+      height: "100%",
+      overflow: "hidden",
+      boxShadow: "-8px 0 32px rgba(0,0,0,0.12)",
+    }}>
 
       {/* ══ HEADER ══ */}
       <div style={{ padding: "13px 16px", borderBottom: "1px solid #e5e7eb", flexShrink: 0 }}>
@@ -273,7 +280,7 @@ export default function LeadDetailPanel({
             { icon: <Mail size={10} />,     value: lead.source  },
           ].map((item, i) => (
             <span key={i} style={{ display: "flex", alignItems: "center", gap: 4, fontSize: 11, color: "#374151", overflow: "hidden" }}>
-              <span style={{ color: "#6b7280", flexShrink: 0 }}>{item.icon}</span>
+              <span style={{ color: "#525252", flexShrink: 0 }}>{item.icon}</span>
               <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{item.value}</span>
             </span>
           ))}
@@ -283,7 +290,7 @@ export default function LeadDetailPanel({
         <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
           {typeof lead.leadScore === "number" && (
             <div style={{ flex: 1, display: "flex", alignItems: "center", gap: 7, padding: "5px 9px", background: "#f3f4f6", borderRadius: 7, border: "1px solid #e5e7eb" }}>
-              <span style={{ fontSize: 10, fontWeight: 700, color: "#6b7280" }}>Score</span>
+              <span style={{ fontSize: 10, fontWeight: 700, color: "#525252" }}>Score</span>
               <div style={{ flex: 1, height: 4, background: "#e5e7eb", borderRadius: 99, overflow: "hidden" }}>
                 <div style={{ height: "100%", width: `${lead.leadScore}%`, background: leadScoreColor(lead.leadScore), borderRadius: 99 }} />
               </div>
@@ -291,9 +298,9 @@ export default function LeadDetailPanel({
             </div>
           )}
           {lead.followUpDate && (
-            <div style={{ display: "flex", alignItems: "center", gap: 4, padding: "5px 9px", background: "#fef3c7", borderRadius: 7, border: "1px solid #fcd34d", flexShrink: 0 }}>
-              <CalendarDays size={10} style={{ color: "#d97706" }} />
-              <span style={{ fontSize: 11, fontWeight: 700, color: "#92400e" }}>{lead.followUpDate}</span>
+            <div style={{ display: "flex", alignItems: "center", gap: 4, padding: "5px 9px", background: "#f3f4f6", borderRadius: 7, border: "1px solid #e5e7eb", flexShrink: 0 }}>
+              <CalendarDays size={10} style={{ color: "#525252" }} />
+              <span style={{ fontSize: 11, fontWeight: 700, color: "#374151" }}>{lead.followUpDate}</span>
             </div>
           )}
         </div>
@@ -311,7 +318,7 @@ export default function LeadDetailPanel({
             padding: "11px 4px", fontSize: 12, fontWeight: tab === t.key ? 700 : 500,
             border: "none", cursor: "pointer", transition: "all .15s",
             borderBottom: tab === t.key ? "2px solid #111827" : "2px solid transparent",
-            color: tab === t.key ? "#111827" : "#6b7280",
+            color: tab === t.key ? "#111827" : "#525252",
             background: "transparent",
           }}>
             {t.icon}{t.label}
@@ -333,7 +340,7 @@ export default function LeadDetailPanel({
                   <option key={s} value={s}>{s}</option>
                 ))}
               </select>
-              <ChevronDown size={14} style={{ position: "absolute", right: 10, top: "50%", transform: "translateY(-50%)", color: "#6b7280", pointerEvents: "none" }} />
+              <ChevronDown size={14} style={{ position: "absolute", right: 10, top: "50%", transform: "translateY(-50%)", color: "#525252", pointerEvents: "none" }} />
             </div>
             <button onClick={saveStage} style={{
               width: "100%", padding: "8px 0", borderRadius: 8, fontSize: 12, fontWeight: 700, border: "none", cursor: "pointer",
@@ -355,11 +362,11 @@ export default function LeadDetailPanel({
                     flex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: 4,
                     padding: "9px 4px", borderRadius: 9, fontSize: 10, fontWeight: 700, cursor: "pointer",
                     background: sel ? o.bg : "#f3f4f6",
-                    color: sel ? o.color : "#6b7280",
+                    color: sel ? o.color : "#525252",
                     border: `1.5px solid ${sel ? o.border : "#e5e7eb"}`,
                     transition: "all .15s",
                   }}>
-                    <span style={{ color: sel ? o.color : "#6b7280" }}>{o.icon}</span>
+                    <span style={{ color: sel ? o.color : "#525252" }}>{o.icon}</span>
                     {o.label}
                   </button>
                 );
@@ -371,7 +378,7 @@ export default function LeadDetailPanel({
             <button onClick={logCall} disabled={!callOutcome} style={{
               width: "100%", padding: "9px 0", borderRadius: 9, fontSize: 12, fontWeight: 700, border: "none",
               cursor: callOutcome ? "pointer" : "not-allowed",
-              background: callLogged ? "#d1fae5" : callOutcome ? "#7c3aed" : "#f3f4f6",
+              background: callLogged ? "#d1fae5" : callOutcome ? "#111827" : "#f3f4f6",
               color: callLogged ? "#065f46" : callOutcome ? "#fff" : "#9ca3af",
               display: "flex", alignItems: "center", justifyContent: "center", gap: 5, transition: "all .15s", marginTop: 8,
             }}>
@@ -428,14 +435,14 @@ export default function LeadDetailPanel({
                     { label: "Experience", value: lead.counselingNote.previousExperience },
                   ].map((row, i, arr) => (
                     <div key={row.label} style={{ display: "flex", justifyContent: "space-between", padding: "8px 12px", borderBottom: i < arr.length - 1 ? "1px solid #e5e7eb" : "none" }}>
-                      <span style={{ fontSize: 12, color: "#374151" }}>{row.label}</span>
+                      <span style={{ fontSize: 12, color: "#525252" }}>{row.label}</span>
                       <span style={{ fontSize: 12, color: "#111827", fontWeight: 700, textAlign: "right", maxWidth: "58%" }}>{row.value}</span>
                     </div>
                   ))}
                 </div>
                 {lead.counselingNote.painPoints && (
-                  <div style={{ marginTop: 8, padding: "9px 12px", background: "#fef3c7", border: "1px solid #fcd34d", borderRadius: 9 }}>
-                    <p style={{ fontSize: 10, fontWeight: 800, color: "#92400e", textTransform: "uppercase", letterSpacing: "0.06em", margin: "0 0 3px" }}>Pain Points</p>
+                  <div style={{ marginTop: 8, padding: "9px 12px", background: "#f3f4f6", border: "1px solid #e5e7eb", borderRadius: 9 }}>
+                    <p style={{ fontSize: 10, fontWeight: 800, color: "#525252", textTransform: "uppercase", letterSpacing: "0.06em", margin: "0 0 3px" }}>Pain Points</p>
                     <p style={{ fontSize: 12, color: "#374151", margin: 0, lineHeight: 1.5 }}>{lead.counselingNote.painPoints}</p>
                   </div>
                 )}
@@ -466,11 +473,11 @@ export default function LeadDetailPanel({
                     display: "flex", alignItems: "center", gap: 5, padding: "6px 10px",
                     borderRadius: 8, fontSize: 11, fontWeight: 700, cursor: "pointer",
                     background: sel ? at.color + "15" : "#f3f4f6",
-                    color: sel ? at.color : "#6b7280",
+                    color: sel ? at.color : "#525252",
                     border: `1.5px solid ${sel ? at.color + "40" : "#e5e7eb"}`,
                     transition: "all .15s",
                   }}>
-                    <span style={{ color: sel ? at.color : "#6b7280" }}>{at.icon}</span>
+                    <span style={{ color: sel ? at.color : "#525252" }}>{at.icon}</span>
                     {at.label}
                   </button>
                 );
@@ -494,7 +501,7 @@ export default function LeadDetailPanel({
 
             <SLabel>Activity Timeline ({allActivity.length})</SLabel>
             {allActivity.length === 0
-              ? <p style={{ fontSize: 12, color: "#6b7280", textAlign: "center", padding: "24px 0" }}>No activity yet.</p>
+              ? <p style={{ fontSize: 12, color: "#525252", textAlign: "center", padding: "24px 0" }}>No activity yet.</p>
               : (
                 <ol style={{ position: "relative", borderLeft: "2px solid #e5e7eb", marginLeft: 6, padding: 0, listStyle: "none" }}>
                   {allActivity.map(item => {
@@ -507,10 +514,10 @@ export default function LeadDetailPanel({
                             <span style={{ fontSize: 10, fontWeight: 800, color, textTransform: "uppercase", letterSpacing: "0.06em" }}>
                               {ACTIVITY_LABELS[item.type] ?? item.type}
                             </span>
-                            <span style={{ fontSize: 9, color: "#6b7280" }}>{item.time}</span>
+                            <span style={{ fontSize: 9, color: "#525252" }}>{item.time}</span>
                           </div>
                           <p style={{ fontSize: 12, color: "#374151", margin: 0, lineHeight: 1.45 }}>{item.text}</p>
-                          <p style={{ fontSize: 10, color: "#6b7280", margin: "3px 0 0" }}>by {item.by}</p>
+                          <p style={{ fontSize: 10, color: "#525252", margin: "3px 0 0" }}>by {item.by}</p>
                         </div>
                       </li>
                     );
@@ -525,7 +532,6 @@ export default function LeadDetailPanel({
   );
 }
 
-// ─── Shared micro-styles ────────────────────────────────────────
 const inputStyle: React.CSSProperties = {
   fontSize: 12, padding: "8px 10px", borderRadius: 8,
   border: "1px solid #e5e7eb", color: "#111827", background: "#ffffff", outline: "none",

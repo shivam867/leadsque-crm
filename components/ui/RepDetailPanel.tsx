@@ -1,7 +1,7 @@
 "use client";
 import { useState } from "react";
 import {
-  X, Phone, Clock, Users, Star, AlertTriangle,
+  X, Phone, Star, AlertTriangle,
   MessageSquare, BarChart2, ChevronRight, Plus,
   CheckCircle2, Trash2, CalendarDays, Edit3, Save,
 } from "lucide-react";
@@ -10,7 +10,6 @@ import {
   ResponsiveContainer, Cell,
 } from "recharts";
 
-// ─── Extended SalesRep type ───────────────────────────────────────
 export interface SalesRepExtended {
   id: string;
   name: string;
@@ -28,7 +27,6 @@ export interface SalesRepExtended {
   overallRating?: 1 | 2 | 3 | 4 | 5;
 }
 
-// ─── Extended dummy data ──────────────────────────────────────────
 export const salesRepsExtended: SalesRepExtended[] = [
   {
     id: "rep-1", name: "Aanya Sharma", avatar: "AS", role: "rep", team: "Alpha",
@@ -63,7 +61,7 @@ export const salesRepsExtended: SalesRepExtended[] = [
     id: "rep-3", name: "Priya Nair", avatar: "PN", role: "rep", team: "Beta",
     leadsAssigned: 19, callsToday: 14, conversionRate: 41, wonThisMonth: 8,
     managerNotes: [
-      { id: "n1", text: "Best conversion rate on the team. Encourage her to increase lead intake — she can handle more.", date: "26 May", pinned: true },
+      { id: "n1", text: "Best conversion rate on the team. Encourage her to increase lead intake.", date: "26 May", pinned: true },
     ],
     coachingActions: [
       { id: "ca1", label: "Assign 8 more leads from cold pool", done: false, dueDate: "2025-06-01" },
@@ -130,7 +128,6 @@ export const salesRepsExtended: SalesRepExtended[] = [
   },
 ];
 
-// ─── Helpers ──────────────────────────────────────────────────────
 const AVATAR_PALETTE = [
   { bg: "#dbeafe", text: "#1d4ed8" },
   { bg: "#d1fae5", text: "#065f46" },
@@ -172,7 +169,7 @@ function StarRating({ value, onChange }: { value: number; onChange: (v: number) 
         </button>
       ))}
       {(hover || value) > 0 && (
-        <span style={{ fontSize: 10, fontWeight: 600, color: "#6b7280", marginLeft: 4 }}>
+        <span style={{ fontSize: 10, fontWeight: 600, color: "#525252", marginLeft: 4 }}>
           {STAR_LABELS[hover || value]}
         </span>
       )}
@@ -182,7 +179,7 @@ function StarRating({ value, onChange }: { value: number; onChange: (v: number) 
 
 function SectionLabel({ children }: { children: React.ReactNode }) {
   return (
-    <p style={{ fontSize: 10, fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.07em", color: "#6b7280", margin: "0 0 8px" }}>
+    <p style={{ fontSize: 10, fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.07em", color: "#525252", margin: "0 0 8px" }}>
       {children}
     </p>
   );
@@ -192,7 +189,6 @@ function Divider() {
   return <div style={{ height: 1, background: "#e5e7eb", margin: "14px 0" }} />;
 }
 
-// ─── Main Component ───────────────────────────────────────────────
 export default function RepDetailPanel({
   rep: propRep,
   leadBreakdown,
@@ -203,17 +199,14 @@ export default function RepDetailPanel({
   onClose: () => void;
 }) {
   const [tab, setTab] = useState<"overview" | "coaching">("overview");
-
   const [rep, setRep] = useState(propRep);
-  const [newNote, setNewNote]   = useState("");
-  const [noteAdded, setNoteAdded] = useState(false);
+  const [newNote, setNewNote]         = useState("");
+  const [noteAdded, setNoteAdded]     = useState(false);
   const [editingNoteId, setEditingNoteId] = useState<string | null>(null);
-  const [editNoteText, setEditNoteText] = useState("");
-
-  const [newAction, setNewAction]     = useState("");
-  const [newActionDue, setNewActionDue] = useState("");
-  const [actionAdded, setActionAdded] = useState(false);
-
+  const [editNoteText, setEditNoteText]   = useState("");
+  const [newAction, setNewAction]         = useState("");
+  const [newActionDue, setNewActionDue]   = useState("");
+  const [actionAdded, setActionAdded]     = useState(false);
   const [newTag, setNewTag] = useState("");
 
   const av = AVATAR_PALETTE[salesRepsExtended.findIndex(r => r.id === rep.id) % AVATAR_PALETTE.length];
@@ -224,7 +217,6 @@ export default function RepDetailPanel({
     color: STATUS_COLORS[item.status] || "#6B7280",
   }));
 
-  // ── Note actions ──
   const addNote = () => {
     if (!newNote.trim()) return;
     const note = { id: `n${Date.now()}`, text: newNote.trim(), date: "Today" };
@@ -247,7 +239,6 @@ export default function RepDetailPanel({
     setEditNoteText("");
   };
 
-  // ── Action actions ──
   const addAction = () => {
     if (!newAction.trim()) return;
     const action = { id: `ca${Date.now()}`, label: newAction.trim(), done: false, dueDate: newActionDue || undefined };
@@ -264,7 +255,6 @@ export default function RepDetailPanel({
   const deleteAction = (id: string) =>
     setRep(r => ({ ...r, coachingActions: r.coachingActions.filter(a => a.id !== id) }));
 
-  // ── Tag actions ──
   const addTag = () => {
     if (!newTag.trim() || rep.repTags.includes(newTag.trim())) return;
     setRep(r => ({ ...r, repTags: [...r.repTags, newTag.trim()] }));
@@ -280,15 +270,20 @@ export default function RepDetailPanel({
 
   return (
     <aside style={{
-      width: 360, flexShrink: 0,
+      width: 360,
+      flexShrink: 0,
       borderLeft: "1px solid #e5e7eb",
       background: "#ffffff",
-      display: "flex", flexDirection: "column",
-      height: "100%", overflow: "hidden",
+      display: "flex",
+      flexDirection: "column",
+      height: "100%",
+      overflow: "hidden",
+      boxShadow: "-8px 0 32px rgba(0,0,0,0.12)",
     }}>
 
       {/* ── Header ── */}
       <div style={{ padding: 14, borderBottom: "1px solid #e5e7eb", flexShrink: 0 }}>
+
         {/* Top row */}
         <div style={{ display: "flex", alignItems: "flex-start", gap: 10, marginBottom: 12 }}>
           <div style={{ width: 40, height: 40, borderRadius: 11, flexShrink: 0, background: av.bg, display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 700, fontSize: 13, color: av.text, border: "1px solid #e5e7eb", letterSpacing: "0.04em" }}>
@@ -298,7 +293,7 @@ export default function RepDetailPanel({
             <p style={{ fontWeight: 700, fontSize: 14, color: "#111827", margin: 0, lineHeight: 1.2 }}>{rep.name}</p>
             <p style={{ fontSize: 11, color: "#374151", margin: "3px 0 0" }}>Team {rep.team} · {rep.role}</p>
             {rep.lastReviewDate && (
-              <p style={{ fontSize: 10, color: "#6b7280", margin: "2px 0 0" }}>Last reviewed: {rep.lastReviewDate}</p>
+              <p style={{ fontSize: 10, color: "#525252", margin: "2px 0 0" }}>Last reviewed: {rep.lastReviewDate}</p>
             )}
           </div>
           <button onClick={onClose}
@@ -327,7 +322,7 @@ export default function RepDetailPanel({
           ].map(({ label, value, color }) => (
             <div key={label} style={{ textAlign: "center", padding: "8px 6px", borderRadius: 8, background: "#f3f4f6", border: "1px solid #e5e7eb" }}>
               <p style={{ margin: 0, fontSize: 17, fontWeight: 800, color }}>{value}</p>
-              <p style={{ margin: "2px 0 0", fontSize: 9, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.06em", color: "#6b7280" }}>{label}</p>
+              <p style={{ margin: "2px 0 0", fontSize: 9, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.06em", color: "#525252" }}>{label}</p>
             </div>
           ))}
         </div>
@@ -359,9 +354,9 @@ export default function RepDetailPanel({
             <button key={t} onClick={() => setTab(t)} style={{
               background: "none", border: "none", padding: "6px 0 8px 0",
               fontSize: 13, fontWeight: tab === t ? 700 : 500,
-              color: tab === t ? "#7c3aed" : "#374151",
+              color: tab === t ? "#111827" : "#525252",
               cursor: "pointer",
-              borderBottom: tab === t ? "2px solid #7c3aed" : "2px solid transparent",
+              borderBottom: tab === t ? "2px solid #111827" : "2px solid transparent",
               transition: "color .1s, border-color .1s",
               textTransform: "capitalize",
             }}>
@@ -377,7 +372,6 @@ export default function RepDetailPanel({
         {/* ════ OVERVIEW TAB ════ */}
         {tab === "overview" && (
           <>
-            {/* Lead pipeline chart */}
             {chartData.length > 0 && (
               <div style={{ padding: "12px 14px", borderBottom: "1px solid #e5e7eb" }}>
                 <SectionLabel>Lead Pipeline</SectionLabel>
@@ -385,7 +379,7 @@ export default function RepDetailPanel({
                   <ResponsiveContainer>
                     <BarChart data={chartData} layout="vertical" margin={{ left: 20, right: 10, top: 4, bottom: 4 }}>
                       <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="#e5e7eb" />
-                      <XAxis type="number" tick={{ fontSize: 10, fill: "#6b7280" }} axisLine={false} tickLine={false} />
+                      <XAxis type="number" tick={{ fontSize: 10, fill: "#525252" }} axisLine={false} tickLine={false} />
                       <YAxis type="category" dataKey="name" tick={{ fontSize: 11, fontWeight: 500, fill: "#374151" }} width={68} axisLine={false} tickLine={false} />
                       <Tooltip
                         formatter={(v) => [`${v} leads`, "Count"]}
@@ -400,15 +394,14 @@ export default function RepDetailPanel({
               </div>
             )}
 
-            {/* Performance stats */}
             <div style={{ padding: "12px 14px", borderBottom: "1px solid #e5e7eb" }}>
               <SectionLabel>Performance</SectionLabel>
               <div style={{ display: "flex", flexDirection: "column", gap: 7 }}>
                 {[
                   { label: "Conversion Rate", value: `${rep.conversionRate}%`, pct: rep.conversionRate, color: convColor(rep.conversionRate) },
                   { label: "Won This Month",  value: `${rep.wonThisMonth}`,    pct: (rep.wonThisMonth / 15) * 100, color: "#059669" },
-                  { label: "Leads Assigned",  value: `${rep.leadsAssigned}`,  pct: (rep.leadsAssigned / 40) * 100, color: "#1d4ed8" },
-                  { label: "Calls Today",     value: `${rep.callsToday}`,     pct: (rep.callsToday / 30) * 100, color: "#7c3aed" },
+                  { label: "Leads Assigned",  value: `${rep.leadsAssigned}`,   pct: (rep.leadsAssigned / 40) * 100, color: "#1d4ed8" },
+                  { label: "Calls Today",     value: `${rep.callsToday}`,      pct: (rep.callsToday / 30) * 100, color: "#7c3aed" },
                 ].map(s => (
                   <div key={s.label} style={{ display: "flex", alignItems: "center", gap: 8 }}>
                     <span style={{ fontSize: 11, color: "#374151", minWidth: 110 }}>{s.label}</span>
@@ -421,7 +414,6 @@ export default function RepDetailPanel({
               </div>
             </div>
 
-            {/* Coaching action progress summary */}
             <div style={{ padding: "12px 14px" }}>
               <SectionLabel>Coaching Progress</SectionLabel>
               <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "10px 12px", background: "#f3f4f6", borderRadius: 9, border: "1px solid #e5e7eb" }}>
@@ -434,11 +426,11 @@ export default function RepDetailPanel({
                   <p style={{ fontSize: 12, fontWeight: 700, color: "#111827", margin: 0 }}>
                     {doneActions === rep.coachingActions.length && rep.coachingActions.length > 0 ? "All actions complete!" : `${rep.coachingActions.length - doneActions} action${rep.coachingActions.length - doneActions !== 1 ? "s" : ""} pending`}
                   </p>
-                  <p style={{ fontSize: 11, color: "#6b7280", margin: "2px 0 0" }}>
+                  <p style={{ fontSize: 11, color: "#525252", margin: "2px 0 0" }}>
                     Switch to Coaching tab to manage
                   </p>
                 </div>
-                <button onClick={() => setTab("coaching")} style={{ marginLeft: "auto", background: "none", border: "none", cursor: "pointer", color: "#7c3aed", display: "flex" }}>
+                <button onClick={() => setTab("coaching")} style={{ marginLeft: "auto", background: "none", border: "none", cursor: "pointer", color: "#374151", display: "flex" }}>
                   <ChevronRight size={14} />
                 </button>
               </div>
@@ -450,7 +442,6 @@ export default function RepDetailPanel({
         {tab === "coaching" && (
           <div style={{ padding: "14px" }}>
 
-            {/* ─ Manager Notes ─ */}
             <SectionLabel>Manager Notes</SectionLabel>
 
             {pinnedNotes.map(note => (
@@ -478,10 +469,9 @@ export default function RepDetailPanel({
               />
             ))}
             {rep.managerNotes.length === 0 && (
-              <p style={{ fontSize: 12, color: "#6b7280", fontStyle: "italic", marginBottom: 8 }}>No notes yet.</p>
+              <p style={{ fontSize: 12, color: "#525252", fontStyle: "italic", marginBottom: 8 }}>No notes yet.</p>
             )}
 
-            {/* Add note */}
             <div style={{ display: "flex", flexDirection: "column", gap: 6, padding: 10, background: "#f3f4f6", borderRadius: 9, border: "1px dashed #9ca3af", marginBottom: 4 }}>
               <textarea
                 value={newNote}
@@ -505,7 +495,6 @@ export default function RepDetailPanel({
 
             <Divider />
 
-            {/* ─ Coaching Actions ─ */}
             <SectionLabel>Coaching Actions ({doneActions}/{rep.coachingActions.length} done)</SectionLabel>
 
             <div style={{ display: "flex", flexDirection: "column", gap: 6, marginBottom: 8 }}>
@@ -522,7 +511,7 @@ export default function RepDetailPanel({
                       {action.label}
                     </p>
                     {action.dueDate && (
-                      <p style={{ fontSize: 10, color: "#6b7280", margin: "2px 0 0", display: "flex", alignItems: "center", gap: 3 }}>
+                      <p style={{ fontSize: 10, color: "#525252", margin: "2px 0 0", display: "flex", alignItems: "center", gap: 3 }}>
                         <CalendarDays size={9} /> Due {action.dueDate}
                       </p>
                     )}
@@ -536,7 +525,6 @@ export default function RepDetailPanel({
               ))}
             </div>
 
-            {/* Add action */}
             <div style={{ display: "flex", flexDirection: "column", gap: 6, padding: 10, background: "#f3f4f6", borderRadius: 9, border: "1px dashed #9ca3af", marginBottom: 4 }}>
               <input
                 value={newAction}
@@ -568,11 +556,10 @@ export default function RepDetailPanel({
 
             <Divider />
 
-            {/* ─ Quick actions ─ */}
             <SectionLabel>Quick Actions</SectionLabel>
             {[
-              { icon: <MessageSquare size={11} />, label: "Send coaching message", color: "#1d4ed8",    bg: "#dbeafe",    border: "#bfdbfe" },
-              { icon: <Phone size={11} />,         label: "Schedule 1:1 call",    color: "#065f46", bg: "#d1fae5", border: "#6ee7b7" },
+              { icon: <MessageSquare size={11} />, label: "Send coaching message", color: "#1d4ed8", bg: "#dbeafe", border: "#bfdbfe" },
+              { icon: <Phone size={11} />,         label: "Schedule 1:1 call",     color: "#065f46", bg: "#d1fae5", border: "#6ee7b7" },
               { icon: <BarChart2 size={11} />,     label: "View full lead table",  color: "#374151", bg: "#f3f4f6", border: "#e5e7eb" },
             ].map(({ icon, label, color, bg, border }) => (
               <button key={label} onClick={() => alert(`${label} for ${rep.name}`)}
@@ -590,7 +577,6 @@ export default function RepDetailPanel({
   );
 }
 
-// ─── NoteCard sub-component ───────────────────────────────────────
 function NoteCard({ note, isEditing, editText, onEditChange, onEditStart, onEditSave, onEditCancel, onTogglePin, onDelete }: {
   note: { id: string; text: string; date: string; pinned?: boolean };
   isEditing: boolean;
@@ -603,7 +589,7 @@ function NoteCard({ note, isEditing, editText, onEditChange, onEditStart, onEdit
   onDelete: () => void;
 }) {
   return (
-    <div style={{ marginBottom: 6, padding: "9px 11px", borderRadius: 8, background: note.pinned ? "#fef3c7" : "#f3f4f6", border: `1px solid ${note.pinned ? "#fcd34d" : "#e5e7eb"}`, transition: "all .15s" }}>
+    <div style={{ marginBottom: 6, padding: "9px 11px", borderRadius: 8, background: note.pinned ? "#fef9ee" : "#f3f4f6", border: `1px solid ${note.pinned ? "#fcd34d" : "#e5e7eb"}`, transition: "all .15s" }}>
       {isEditing ? (
         <>
           <textarea
@@ -629,12 +615,12 @@ function NoteCard({ note, isEditing, editText, onEditChange, onEditStart, onEdit
             <p style={{ fontSize: 12, color: "#111827", lineHeight: 1.5, margin: 0, flex: 1 }}>{note.text}</p>
           </div>
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-            <span style={{ fontSize: 10, color: "#6b7280" }}>{note.date}</span>
+            <span style={{ fontSize: 10, color: "#525252" }}>{note.date}</span>
             <div style={{ display: "flex", gap: 6 }}>
-              <button onClick={onTogglePin} title={note.pinned ? "Unpin" : "Pin"} style={{ background: "none", border: "none", cursor: "pointer", color: note.pinned ? "#d97706" : "#6b7280", display: "flex", padding: 0 }}>
+              <button onClick={onTogglePin} title={note.pinned ? "Unpin" : "Pin"} style={{ background: "none", border: "none", cursor: "pointer", color: note.pinned ? "#d97706" : "#525252", display: "flex", padding: 0 }}>
                 <Star size={11} fill={note.pinned ? "#d97706" : "none"} />
               </button>
-              <button onClick={onEditStart} style={{ background: "none", border: "none", cursor: "pointer", color: "#6b7280", display: "flex", padding: 0 }}>
+              <button onClick={onEditStart} style={{ background: "none", border: "none", cursor: "pointer", color: "#525252", display: "flex", padding: 0 }}>
                 <Edit3 size={11} />
               </button>
               <button onClick={onDelete} style={{ background: "none", border: "none", cursor: "pointer", color: "#dc2626", display: "flex", padding: 0, opacity: 0.6 }}
