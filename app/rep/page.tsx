@@ -2,10 +2,7 @@
 import { leads, repDashboard } from "@/data/dummy";
 import { StatusBadge, ScoreBadge, PriorityDot } from "@/components/ui/Badges";
 import Link from "next/link";
-import {
-  Calendar, CheckCircle, AlertCircle,
-  Users, Phone, Plus, ArrowRight, Clock,
-} from "lucide-react";
+import { Calendar, CheckCircle, AlertCircle, Users, Phone, Plus, ArrowRight, Clock } from "lucide-react";
 
 const myLeads = leads.filter(l => l.assignedTo === "Aanya Sharma");
 const today = "2025-05-28";
@@ -20,7 +17,6 @@ const callOutcomes = [
   { label: "Call Later", color: "#0070F3", count: 2 },
   { label: "Wrong #",    color: "#EE0000", count: 1 },
 ];
-
 const totalCalls = callOutcomes.reduce((a, b) => a + b.count, 0);
 
 const PIPELINE_STAGES = [
@@ -39,15 +35,15 @@ function FollowSection({ title, leads: items, accentColor, icon, viewAllHref }: 
     <div className="card" style={{ flex: 1, padding: "16px 18px", display: "flex", flexDirection: "column" }}>
       <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 12 }}>
         <span style={{ color: accentColor }}>{icon}</span>
-        <span style={{ fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.06em", color: "var(--text-secondary)" }}>{title}</span>
-        <span style={{ fontSize: 10, fontWeight: 700, padding: "2px 7px", borderRadius: 99, background: items.length > 0 ? accentColor + "15" : "var(--surface-2)", color: items.length > 0 ? accentColor : "var(--text-muted)" }}>
+        <span style={{ fontSize: 12, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.06em", color: "var(--text-secondary)" }}>{title}</span>
+        <span style={{ fontSize: 11, fontWeight: 700, padding: "2px 7px", borderRadius: 99, background: items.length > 0 ? accentColor + "15" : "var(--surface-2)", color: items.length > 0 ? accentColor : "var(--text-muted)" }}>
           {items.length}
         </span>
       </div>
       {items.length === 0 ? (
         <div style={{ padding: "20px 0", textAlign: "center", flex: 1 }}>
           <CheckCircle size={18} style={{ color: "var(--text-muted)", margin: "0 auto 6px", display: "block" }} />
-          <p style={{ fontSize: 12, color: "var(--text-muted)", margin: 0 }}>All clear</p>
+          <p style={{ fontSize: 13, color: "var(--text-muted)", margin: 0 }}>All clear</p>
         </div>
       ) : (
         <>
@@ -56,15 +52,15 @@ function FollowSection({ title, leads: items, accentColor, icon, viewAllHref }: 
               <div key={lead.id} style={{ display: "flex", alignItems: "center", gap: 10, padding: "9px 12px", background: "var(--surface-2)", borderRadius: 6 }}>
                 <PriorityDot priority={lead.priority} />
                 <div style={{ flex: 1, minWidth: 0 }}>
-                  <p style={{ fontSize: 12, fontWeight: 600, color: "var(--text-primary)", margin: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{lead.name}</p>
-                  <p style={{ fontSize: 10, color: "var(--text-secondary)", margin: 0 }}>{lead.service} · {lead.city}</p>
+                  <p style={{ fontSize: 13, fontWeight: 600, color: "var(--text-primary)", margin: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{lead.name}</p>
+                  <p style={{ fontSize: 12, color: "var(--text-secondary)", margin: 0 }}>{lead.service} · {lead.city}</p>
                 </div>
                 <ScoreBadge score={lead.score} />
               </div>
             ))}
           </div>
           {items.length > 3 && (
-            <Link href={viewAllHref} style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 4, marginTop: 10, paddingTop: 10, borderTop: "1px solid var(--border)", fontSize: 11, fontWeight: 600, color: "var(--text-secondary)", textDecoration: "none" }}>
+            <Link href={viewAllHref} style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 4, marginTop: 10, paddingTop: 10, borderTop: "1px solid var(--border)", fontSize: 12, fontWeight: 600, color: "var(--text-secondary)", textDecoration: "none" }}>
               View all {items.length} <ArrowRight size={11} />
             </Link>
           )}
@@ -81,14 +77,14 @@ export default function RepDashboard() {
   return (
     <div style={{ padding: "24px 28px", background: "var(--bg)", minHeight: "100%" }}>
 
-      {/* ── Header ── */}
+      {/* Header */}
       <div className="animate-fade-up" style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: 24 }}>
         <div>
-          <p style={{ fontSize: 11, fontWeight: 600, color: "var(--text-muted)", margin: "0 0 3px", textTransform: "uppercase", letterSpacing: "0.07em" }}>
+          <p style={{ fontSize: 12, fontWeight: 600, color: "var(--text-muted)", margin: "0 0 3px", textTransform: "uppercase", letterSpacing: "0.07em" }}>
             Wednesday, 28 May 2025
           </p>
           <h1 className="page-title" style={{ margin: "0 0 4px" }}>Good morning, Aanya 👋</h1>
-          <p style={{ fontSize: 13, color: "var(--text-secondary)", margin: 0 }}>
+          <p style={{ fontSize: 14, color: "var(--text-secondary)", margin: 0 }}>
             {repDashboard.pendingFollowUps} follow-ups due today
             {repDashboard.overdueFollowUps > 0 && (
               <> · <span style={{ color: "var(--danger)", fontWeight: 700 }}>{repDashboard.overdueFollowUps} overdue</span></>
@@ -102,7 +98,7 @@ export default function RepDashboard() {
         </Link>
       </div>
 
-      {/* ── Top 4 Stat Cards ── */}
+      {/* Top 4 Stat Cards */}
       <div className="animate-fade-up" style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 12, marginBottom: 16, animationDelay: "40ms" }}>
         {[
           { label: "Leads Today",      value: repDashboard.leadsToday,      icon: <Users size={15} /> },
@@ -116,20 +112,20 @@ export default function RepDashboard() {
             </div>
             <div>
               <p style={{ fontSize: 24, fontWeight: 800, color: "var(--text-primary)", margin: "0 0 1px", letterSpacing: "-0.04em", lineHeight: 1 }}>{s.value}</p>
-              <p style={{ fontSize: 11, color: "var(--text-secondary)", margin: 0 }}>{s.label}</p>
+              <p style={{ fontSize: 12, color: "var(--text-secondary)", margin: 0 }}>{s.label}</p>
             </div>
           </div>
         ))}
       </div>
 
-      {/* ── Main 2-col grid ── */}
+      {/* Main 2-col grid */}
       <div style={{ display: "grid", gridTemplateColumns: "1fr 296px", gap: 12, marginBottom: 12 }}>
 
         {/* LEFT: My Leads table */}
         <div className="animate-fade-up card" style={{ overflow: "hidden", animationDelay: "80ms" }}>
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "14px 18px", borderBottom: "1px solid var(--border)" }}>
-            <span style={{ fontSize: 13, fontWeight: 700, color: "var(--text-primary)" }}>My Leads</span>
-            <Link href="/rep/leads" style={{ fontSize: 11, fontWeight: 600, color: "var(--text-primary)", display: "flex", alignItems: "center", gap: 4, textDecoration: "none" }}>
+            <span style={{ fontSize: 14, fontWeight: 700, color: "var(--text-primary)" }}>My Leads</span>
+            <Link href="/rep/leads" style={{ fontSize: 12, fontWeight: 600, color: "var(--text-primary)", display: "flex", alignItems: "center", gap: 4, textDecoration: "none" }}>
               View all <ArrowRight size={11} />
             </Link>
           </div>
@@ -137,7 +133,7 @@ export default function RepDashboard() {
             <thead>
               <tr style={{ background: "var(--surface-2)" }}>
                 {["Lead", "Program", "Score", "Status", "Follow-up"].map(h => (
-                  <th key={h} style={{ textAlign: "left", padding: "9px 18px", fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.06em", color: "var(--text-muted)" }}>{h}</th>
+                  <th key={h} style={{ textAlign: "left", padding: "9px 18px", fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.06em", color: "var(--text-muted)" }}>{h}</th>
                 ))}
               </tr>
             </thead>
@@ -150,15 +146,15 @@ export default function RepDashboard() {
                     <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                       <PriorityDot priority={lead.priority} />
                       <div>
-                        <p style={{ fontSize: 12, fontWeight: 600, color: "var(--text-primary)", margin: 0 }}>{lead.name}</p>
-                        <p style={{ fontSize: 11, color: "var(--text-secondary)", margin: 0 }}>{lead.city}</p>
+                        <p style={{ fontSize: 13, fontWeight: 600, color: "var(--text-primary)", margin: 0 }}>{lead.name}</p>
+                        <p style={{ fontSize: 12, color: "var(--text-secondary)", margin: 0 }}>{lead.city}</p>
                       </div>
                     </div>
                   </td>
-                  <td style={{ padding: "10px 18px", fontSize: 11, color: "var(--text-secondary)" }}>{lead.service}</td>
+                  <td style={{ padding: "10px 18px", fontSize: 12, color: "var(--text-secondary)" }}>{lead.service}</td>
                   <td style={{ padding: "10px 18px" }}><ScoreBadge score={lead.score} /></td>
                   <td style={{ padding: "10px 18px" }}><StatusBadge status={lead.status} /></td>
-                  <td style={{ padding: "10px 18px", fontSize: 11, fontFamily: "monospace", color: lead.followUpDate ? "var(--text-secondary)" : "var(--text-muted)" }}>
+                  <td style={{ padding: "10px 18px", fontSize: 12, fontFamily: "monospace", color: lead.followUpDate ? "var(--text-secondary)" : "var(--text-muted)" }}>
                     {lead.followUpDate || "—"}
                   </td>
                 </tr>
@@ -172,7 +168,7 @@ export default function RepDashboard() {
 
           {/* Quick Stats */}
           <div className="animate-fade-up card" style={{ padding: "14px 16px", animationDelay: "80ms" }}>
-            <p style={{ fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.07em", color: "var(--text-muted)", margin: "0 0 10px" }}>Quick Stats</p>
+            <p style={{ fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.07em", color: "var(--text-muted)", margin: "0 0 10px" }}>Quick Stats</p>
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
               {[
                 { label: "Hot Leads", value: hotLeads,        color: "var(--text-primary)" },
@@ -182,7 +178,7 @@ export default function RepDashboard() {
               ].map(s => (
                 <div key={s.label} style={{ padding: "11px 12px", background: "var(--surface-2)", borderRadius: 6, textAlign: "center", border: "1px solid var(--border)" }}>
                   <p style={{ fontSize: 22, fontWeight: 800, color: s.color, margin: "0 0 1px", letterSpacing: "-0.03em", lineHeight: 1 }}>{s.value}</p>
-                  <p style={{ fontSize: 10, color: "var(--text-secondary)", margin: 0 }}>{s.label}</p>
+                  <p style={{ fontSize: 11, color: "var(--text-secondary)", margin: 0 }}>{s.label}</p>
                 </div>
               ))}
             </div>
@@ -190,21 +186,21 @@ export default function RepDashboard() {
 
           {/* Today's Calls */}
           <div className="animate-fade-up card" style={{ padding: "14px 16px", animationDelay: "120ms" }}>
-            <p style={{ fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.07em", color: "var(--text-muted)", margin: "0 0 10px" }}>Today's Calls</p>
+            <p style={{ fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.07em", color: "var(--text-muted)", margin: "0 0 10px" }}>Today's Calls</p>
             <div style={{ display: "flex", flexDirection: "column", gap: 7 }}>
               {callOutcomes.map(o => (
                 <div key={o.label} style={{ display: "flex", alignItems: "center", gap: 9 }}>
                   <div style={{ width: 6, height: 6, borderRadius: "50%", background: o.color, flexShrink: 0 }} />
-                  <span style={{ fontSize: 12, color: "var(--text-secondary)", flex: 1 }}>{o.label}</span>
+                  <span style={{ fontSize: 13, color: "var(--text-secondary)", flex: 1 }}>{o.label}</span>
                   <div style={{ width: 52, height: 3, background: "var(--surface-3)", borderRadius: 99, overflow: "hidden" }}>
                     <div style={{ height: "100%", width: `${(o.count / totalCalls) * 100}%`, background: o.color, borderRadius: 99 }} />
                   </div>
-                  <span style={{ fontSize: 12, fontWeight: 700, color: "var(--text-primary)", width: 16, textAlign: "right" }}>{o.count}</span>
+                  <span style={{ fontSize: 13, fontWeight: 700, color: "var(--text-primary)", width: 16, textAlign: "right" }}>{o.count}</span>
                 </div>
               ))}
               <div style={{ display: "flex", justifyContent: "space-between", paddingTop: 9, borderTop: "1px solid var(--border)", marginTop: 2 }}>
-                <span style={{ fontSize: 11, color: "var(--text-muted)" }}>Total calls</span>
-                <span style={{ fontSize: 13, fontWeight: 800, color: "var(--text-primary)" }}>{totalCalls}</span>
+                <span style={{ fontSize: 12, color: "var(--text-muted)" }}>Total calls</span>
+                <span style={{ fontSize: 14, fontWeight: 800, color: "var(--text-primary)" }}>{totalCalls}</span>
               </div>
             </div>
           </div>
@@ -212,8 +208,8 @@ export default function RepDashboard() {
           {/* Pipeline */}
           <div className="animate-fade-up card" style={{ padding: "14px 16px", animationDelay: "160ms" }}>
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
-              <p style={{ fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.07em", color: "var(--text-muted)", margin: 0 }}>My Pipeline</p>
-              <Link href="/rep/pipeline" style={{ fontSize: 11, fontWeight: 600, color: "var(--text-primary)", display: "flex", alignItems: "center", gap: 3, textDecoration: "none" }}>
+              <p style={{ fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.07em", color: "var(--text-muted)", margin: 0 }}>My Pipeline</p>
+              <Link href="/rep/pipeline" style={{ fontSize: 12, fontWeight: 600, color: "var(--text-primary)", display: "flex", alignItems: "center", gap: 3, textDecoration: "none" }}>
                 View <ArrowRight size={10} />
               </Link>
             </div>
@@ -223,11 +219,11 @@ export default function RepDashboard() {
                 const pct = myLeads.length ? Math.round((count / myLeads.length) * 100) : 0;
                 return (
                   <div key={stage.label} style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                    <span style={{ fontSize: 11, color: "var(--text-secondary)", minWidth: 96 }}>{stage.label}</span>
+                    <span style={{ fontSize: 12, color: "var(--text-secondary)", minWidth: 96 }}>{stage.label}</span>
                     <div style={{ flex: 1, height: 4, background: "var(--surface-3)", borderRadius: 99, overflow: "hidden" }}>
                       <div style={{ height: "100%", width: `${Math.max(pct, 2)}%`, background: stage.color, borderRadius: 99 }} />
                     </div>
-                    <span style={{ fontSize: 11, fontWeight: 700, color: "var(--text-primary)", minWidth: 16, textAlign: "right" }}>{count}</span>
+                    <span style={{ fontSize: 12, fontWeight: 700, color: "var(--text-primary)", minWidth: 16, textAlign: "right" }}>{count}</span>
                   </div>
                 );
               })}
@@ -236,11 +232,11 @@ export default function RepDashboard() {
         </div>
       </div>
 
-      {/* ── Bottom even row: Overdue | Due Today | Upcoming ── */}
+      {/* Bottom row: Overdue | Due Today | Upcoming */}
       <div className="animate-fade-up" style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 12, animationDelay: "200ms" }}>
-        <FollowSection title="Overdue"   leads={overdue}   accentColor="var(--danger)"  icon={<AlertCircle size={12} />} viewAllHref="/rep/followups" />
-        <FollowSection title="Due Today" leads={dueToday}  accentColor="var(--text-primary)" icon={<Clock size={12} />} viewAllHref="/rep/followups" />
-        <FollowSection title="Upcoming"  leads={upcoming}  accentColor="#16A34A"         icon={<Calendar size={12} />} viewAllHref="/rep/followups" />
+        <FollowSection title="Overdue"   leads={overdue}   accentColor="var(--danger)"       icon={<AlertCircle size={12} />} viewAllHref="/rep/followups" />
+        <FollowSection title="Due Today" leads={dueToday}  accentColor="var(--text-primary)" icon={<Clock size={12} />}       viewAllHref="/rep/followups" />
+        <FollowSection title="Upcoming"  leads={upcoming}  accentColor="#16A34A"             icon={<Calendar size={12} />}    viewAllHref="/rep/followups" />
       </div>
 
     </div>
