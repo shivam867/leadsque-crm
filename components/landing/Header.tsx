@@ -26,10 +26,10 @@ export default function Header() {
       <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between gap-4">
         {/* Logo */}
         <Link href="/" className="flex items-center gap-2.5 flex-shrink-0">
-          <div className="w-8 h-8 rounded-lg bg-indigo-600 flex items-center justify-center">
+          <div className="w-8 h-8 rounded-lg bg-neutral-900 flex items-center justify-center">
             <Activity size={15} color="white" strokeWidth={2.5} />
           </div>
-          <span className="font-bold text-lg text-gray-900 tracking-tight">LeadQueue</span>
+          <span className="font-bold text-lg text-gray-900 tracking-tight">LeadsQueue</span>
         </Link>
 
         {/* Center nav — desktop */}
@@ -47,15 +47,9 @@ export default function Header() {
 
         {/* Right */}
         <div className="flex items-center gap-3 flex-shrink-0">
-          {/* <Link
-            href="/sign-in"
-            className="hidden md:inline-flex items-center px-4 py-2 rounded-lg text-sm font-medium text-gray-600 hover:text-gray-900 hover:bg-gray-100 transition-colors"
-          >
-            Sign In
-          </Link> */}
           <Link
             href="/"
-            className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-indigo-600 text-white text-sm font-semibold hover:bg-indigo-700 transition-colors"
+            className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-neutral-900 text-white text-sm font-semibold hover:bg-neutral-700 transition-colors focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-neutral-900"
           >
             Demo Mode
           </Link>

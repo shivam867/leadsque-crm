@@ -14,7 +14,7 @@ const roleButtons = [
     href: "/rep",
     title: "Sales Rep",
     className:
-      "bg-indigo-600 hover:bg-indigo-700 text-white shadow-lg shadow-indigo-100",
+      "bg-neutral-900 hover:bg-neutral-700 text-white shadow-lg shadow-neutral-200",
   },
   {
     href: "/manager",
@@ -44,9 +44,9 @@ export default function CTA() {
 
       <div className="relative max-w-4xl mx-auto px-6 text-center">
         {/* Eyebrow */}
-        <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-indigo-50 border border-indigo-100 mb-8">
-          <span className="w-1.5 h-1.5 rounded-full bg-indigo-500 animate-pulse inline-block" />
-          <span className="text-xs font-bold tracking-widest uppercase text-indigo-700">
+        <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-neutral-100 border border-neutral-200 mb-8">
+          <span className="w-1.5 h-1.5 rounded-full bg-neutral-900 animate-pulse inline-block" />
+          <span className="text-xs font-bold tracking-widest uppercase text-neutral-700">
             Stop the leakage today
           </span>
         </div>
@@ -54,7 +54,7 @@ export default function CTA() {
         <h2 className="text-4xl sm:text-5xl font-extrabold text-gray-900 leading-[1.1] tracking-tight mb-5">
           98% of your leads are leaving.
           <br />
-          <span className="text-indigo-600">LeadFlow brings them back.</span>
+          <span className="text-neutral-900">LeadFlow brings them back.</span>
         </h2>
 
         <p className="text-lg text-gray-500 leading-relaxed max-w-2xl mx-auto mb-10">
@@ -65,8 +65,8 @@ export default function CTA() {
         {/* Trust points */}
         <div className="flex flex-wrap items-center justify-center gap-6 mb-12">
           {trustPoints.map(({ icon: Icon, text }) => (
-            <div key={text} className="flex items-center gap-2 text-sm text-gray-500">
-              <Icon size={15} className="text-indigo-600 flex-shrink-0" />
+            <div key={text} className="flex items-center gap-2 text-sm text-gray-500 min-w-0">
+              <Icon size={15} className="text-neutral-900 flex-shrink-0" />
               {text}
             </div>
           ))}
@@ -78,16 +78,14 @@ export default function CTA() {
         </p>
 
         {/* Role buttons */}
-        {/* Role buttons */}
         <div className="flex flex-wrap gap-3 justify-center mb-6">
           {roleButtons.map(({ href, title, className }) => (
             <Link
               key={href}
               href={href}
-              className={`inline-flex items-center gap-2 px-7 py-3 rounded-xl font-semibold text-[15px] transition-all duration-200 ${className}`}
+              className={`inline-flex items-center gap-2 px-7 py-3 rounded-xl font-semibold text-[15px] transition-all duration-200 focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-neutral-900 ${className}`}
             >
               <span>{title}</span>
-
               <svg
                 width="15"
                 height="15"

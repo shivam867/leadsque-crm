@@ -1,61 +1,72 @@
-import type { LeadStatus, LeadScore, LeadPriority } from "@/data/dummy";
-import { STATUS_CONFIG, SCORE_CONFIG } from "@/data/dummy";
+"use client";
 
-export function StatusBadge({ status }: { status: LeadStatus }) {
-  const c = STATUS_CONFIG[status] ?? STATUS_CONFIG["New"];
+export type LeadScore  = "Hot" | "Warm" | "Cold";
+export type LeadStatus =
+  | "New" | "Contacted" | "Qualified" | "Proposal Sent"
+  | "Negotiation" | "Enrolled" | "Not Interested" | "Lost";
+export type Priority   = "High" | "Medium" | "Low";
+
+/* ── Score badge ── */
+const SCORE_STYLES: Record<LeadScore, { bg: string; color: string; border: string }> = {
+  Hot:  { bg: "var(--danger-light)",  color: "var(--danger)",  border: "var(--danger-border)" },
+  Warm: { bg: "var(--warning-light)", color: "var(--warning)", border: "var(--warning-border)" },
+  Cold: { bg: "var(--surface-2)",     color: "var(--text-secondary)", border: "var(--border-strong)" },
+};
+
+export function ScoreBadge({ score }: { score: LeadScore }) {
+  const s = SCORE_STYLES[score] ?? SCORE_STYLES.Cold;
   return (
     <span style={{
       display: "inline-flex", alignItems: "center", gap: 4,
-      fontSize: 11, fontWeight: 600, padding: "2px 9px",
-      borderRadius: 99, background: c.bg, color: c.text,
-      border: `1px solid ${c.border}`, whiteSpace: "nowrap" as const,
+      padding: "1px 7px", borderRadius: 4,
+      fontSize: 10, fontWeight: 700, whiteSpace: "nowrap",
+      background: s.bg, color: s.color, border: `1px solid ${s.border}`,
+    }}>
+      {score === "Hot" && <span style={{ fontSize: 9 }}>●</span>}
+      {score}
+    </span>
+  );
+}
+
+/* ── Status badge ── */
+const STATUS_STYLES: Record<LeadStatus, { bg: string; color: string; border: string }> = {
+  "New":           { bg: "var(--info-light)",    color: "var(--info)",           border: "var(--info-border)" },
+  "Contacted":     { bg: "var(--surface-2)",     color: "var(--text-secondary)", border: "var(--border)" },
+  "Qualified":     { bg: "var(--accent-light)",  color: "var(--accent)",         border: "var(--accent-border)" },
+  "Proposal Sent": { bg: "var(--accent-light)",  color: "var(--accent)",         border: "var(--accent-border)" },
+  "Negotiation":   { bg: "var(--warning-light)", color: "var(--warning)",        border: "var(--warning-border)" },
+  "Enrolled":      { bg: "var(--success-light)", color: "var(--success)",        border: "var(--success-border)" },
+  "Not Interested":{ bg: "var(--surface-2)",     color: "var(--text-muted)",     border: "var(--border)" },
+  "Lost":          { bg: "var(--danger-light)",  color: "var(--danger)",         border: "var(--danger-border)" },
+};
+
+export function StatusBadge({ status }: { status: LeadStatus }) {
+  const s = STATUS_STYLES[status] ?? STATUS_STYLES["Contacted"];
+  return (
+    <span style={{
+      display: "inline-flex", alignItems: "center",
+      padding: "1px 7px", borderRadius: 4,
+      fontSize: 10, fontWeight: 600, whiteSpace: "nowrap",
+      background: s.bg, color: s.color, border: `1px solid ${s.border}`,
     }}>
       {status}
     </span>
   );
 }
 
-export function ScoreBadge({ score }: { score: LeadScore }) {
-  const c = SCORE_CONFIG[score] ?? SCORE_CONFIG.Cold;
-  return (
-    <span style={{
-      display: "inline-flex", alignItems: "center", gap: 4,
-      fontSize: 11, fontWeight: 600, padding: "2px 8px",
-      borderRadius: 99, background: c.bg, color: c.text,
-    }}>
-      <span style={{ width: 5, height: 5, borderRadius: "50%", background: c.dot }} />
-      {score}
-    </span>
-  );
-}
-
-const PRIORITY_COLORS: Record<LeadPriority, string> = {
-  High:   "#E24B4A",
-  Medium: "#EF9F27",
-  Low:    "#9CA3AF",
+/* ── Priority dot ── */
+const PRIORITY_COLORS: Record<Priority, string> = {
+  High:   "var(--danger)",
+  Medium: "var(--warning)",
+  Low:    "var(--text-muted)",
 };
 
-export function PriorityDot({ priority }: { priority: LeadPriority }) {
+export function PriorityDot({ priority }: { priority: Priority }) {
   return (
-    <span
-      title={`Priority: ${priority}`}
-      style={{
-        display: "inline-block",
-        width: 8, height: 8, borderRadius: "50%", flexShrink: 0,
-        background: PRIORITY_COLORS[priority] ?? "#9CA3AF",
-      }}
-    />
-  );
-}
-
-export function ScoreBar({ score }: { score: number }) {
-  const color = score >= 70 ? "#059669" : score >= 40 ? "#D97706" : "#9CA3AF";
-  return (
-    <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-      <div style={{ flex: 1, height: 4, background: "#E5E7EB", borderRadius: 99, overflow: "hidden" }}>
-        <div style={{ height: "100%", width: `${score}%`, background: color, borderRadius: 99 }} />
-      </div>
-      <span style={{ fontSize: 12, fontWeight: 700, color, minWidth: 24, textAlign: "right" as const }}>{score}</span>
-    </div>
+    <span style={{
+      display: "inline-block",
+      width: 7, height: 7, borderRadius: "50%", flexShrink: 0,
+      background: PRIORITY_COLORS[priority] ?? "var(--text-muted)",
+    }} />
   );
 }

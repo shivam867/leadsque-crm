@@ -11,7 +11,6 @@ import {
 } from "recharts";
 
 // ─── Extended SalesRep type ───────────────────────────────────────
-// Removed AI-generated fields. All data is manager-entered or derived from real CRM activity.
 export interface SalesRepExtended {
   id: string;
   name: string;
@@ -22,17 +21,14 @@ export interface SalesRepExtended {
   callsToday: number;
   conversionRate: number;
   wonThisMonth: number;
-  // Manager-authored fields
   managerNotes: { id: string; text: string; date: string; pinned?: boolean }[];
   coachingActions: { id: string; label: string; done: boolean; dueDate?: string }[];
-  repTags: string[];                 // e.g. "Top Closer", "Needs Coaching", "High Volume"
+  repTags: string[];
   lastReviewDate?: string;
-  overallRating?: 1 | 2 | 3 | 4 | 5; // manager-set
+  overallRating?: 1 | 2 | 3 | 4 | 5;
 }
 
 // ─── Extended dummy data ──────────────────────────────────────────
-// All performance numbers derived from real lead activity.
-// Manager notes + coaching actions are pre-seeded as realistic examples.
 export const salesRepsExtended: SalesRepExtended[] = [
   {
     id: "rep-1", name: "Aanya Sharma", avatar: "AS", role: "rep", team: "Alpha",
@@ -136,16 +132,15 @@ export const salesRepsExtended: SalesRepExtended[] = [
 
 // ─── Helpers ──────────────────────────────────────────────────────
 const AVATAR_PALETTE = [
-  { bg: "var(--info-light)",    text: "var(--info)"    },
-  { bg: "var(--success-light)", text: "var(--success)" },
-  { bg: "var(--warning-light)", text: "var(--warning)" },
-  { bg: "var(--accent-light)",  text: "var(--accent)"  },
-  { bg: "var(--danger-light)",  text: "var(--danger)"  },
-  { bg: "var(--success-light)", text: "var(--success)" },
-  { bg: "var(--warning-light)", text: "var(--warning)" },
+  { bg: "#dbeafe", text: "#1d4ed8" },
+  { bg: "#d1fae5", text: "#065f46" },
+  { bg: "#fef3c7", text: "#92400e" },
+  { bg: "#ede9fe", text: "#5b21b6" },
+  { bg: "#fee2e2", text: "#991b1b" },
+  { bg: "#d1fae5", text: "#065f46" },
+  { bg: "#fef3c7", text: "#92400e" },
 ];
 
-// Data-driven chart colors — kept as hex for recharts SVG
 const STATUS_COLORS: Record<string, string> = {
   New:              "#0369A1",
   Contacted:        "#D97706",
@@ -158,7 +153,7 @@ const STATUS_COLORS: Record<string, string> = {
 };
 
 const convColor = (rate: number) =>
-  rate >= 35 ? "var(--success)" : rate >= 28 ? "var(--warning)" : "var(--danger)";
+  rate >= 35 ? "#059669" : rate >= 28 ? "#d97706" : "#dc2626";
 
 const STAR_LABELS = ["", "Poor", "Fair", "Good", "Great", "Excellent"];
 
@@ -172,12 +167,12 @@ function StarRating({ value, onChange }: { value: number; onChange: (v: number) 
           onMouseLeave={() => setHover(0)}
           onClick={() => onChange(i)}
           style={{ background: "none", border: "none", cursor: "pointer", padding: 1 }}>
-          <Star size={14} fill={(hover || value) >= i ? "var(--warning)" : "none"}
-            style={{ color: (hover || value) >= i ? "var(--warning)" : "var(--border-strong)" }} />
+          <Star size={14} fill={(hover || value) >= i ? "#d97706" : "none"}
+            style={{ color: (hover || value) >= i ? "#d97706" : "#d1d5db" }} />
         </button>
       ))}
       {(hover || value) > 0 && (
-        <span style={{ fontSize: 10, fontWeight: 600, color: "var(--text-muted)", marginLeft: 4 }}>
+        <span style={{ fontSize: 10, fontWeight: 600, color: "#6b7280", marginLeft: 4 }}>
           {STAR_LABELS[hover || value]}
         </span>
       )}
@@ -187,14 +182,14 @@ function StarRating({ value, onChange }: { value: number; onChange: (v: number) 
 
 function SectionLabel({ children }: { children: React.ReactNode }) {
   return (
-    <p style={{ fontSize: 10, fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.07em", color: "var(--text-muted)", margin: "0 0 8px" }}>
+    <p style={{ fontSize: 10, fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.07em", color: "#6b7280", margin: "0 0 8px" }}>
       {children}
     </p>
   );
 }
 
 function Divider() {
-  return <div style={{ height: 1, background: "var(--surface-3)", margin: "14px 0" }} />;
+  return <div style={{ height: 1, background: "#e5e7eb", margin: "14px 0" }} />;
 }
 
 // ─── Main Component ───────────────────────────────────────────────
@@ -209,7 +204,6 @@ export default function RepDetailPanel({
 }) {
   const [tab, setTab] = useState<"overview" | "coaching">("overview");
 
-  // ── Editable state (all manager-authored) ──
   const [rep, setRep] = useState(propRep);
   const [newNote, setNewNote]   = useState("");
   const [noteAdded, setNoteAdded] = useState(false);
@@ -287,29 +281,29 @@ export default function RepDetailPanel({
   return (
     <aside style={{
       width: 360, flexShrink: 0,
-      borderLeft: "1px solid var(--border)",
-      background: "var(--surface)",
+      borderLeft: "1px solid #e5e7eb",
+      background: "#ffffff",
       display: "flex", flexDirection: "column",
       height: "100%", overflow: "hidden",
     }}>
 
       {/* ── Header ── */}
-      <div style={{ padding: 14, borderBottom: "1px solid var(--border)", flexShrink: 0 }}>
+      <div style={{ padding: 14, borderBottom: "1px solid #e5e7eb", flexShrink: 0 }}>
         {/* Top row */}
         <div style={{ display: "flex", alignItems: "flex-start", gap: 10, marginBottom: 12 }}>
-          <div style={{ width: 40, height: 40, borderRadius: 11, flexShrink: 0, background: av.bg, display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 700, fontSize: 13, color: av.text, border: "1px solid var(--border)", letterSpacing: "0.04em" }}>
+          <div style={{ width: 40, height: 40, borderRadius: 11, flexShrink: 0, background: av.bg, display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 700, fontSize: 13, color: av.text, border: "1px solid #e5e7eb", letterSpacing: "0.04em" }}>
             {rep.avatar}
           </div>
           <div style={{ flex: 1, minWidth: 0 }}>
-            <p style={{ fontWeight: 700, fontSize: 14, color: "var(--text-primary)", margin: 0, lineHeight: 1.2 }}>{rep.name}</p>
-            <p style={{ fontSize: 11, color: "var(--text-secondary)", margin: "3px 0 0" }}>Team {rep.team} · {rep.role}</p>
+            <p style={{ fontWeight: 700, fontSize: 14, color: "#111827", margin: 0, lineHeight: 1.2 }}>{rep.name}</p>
+            <p style={{ fontSize: 11, color: "#374151", margin: "3px 0 0" }}>Team {rep.team} · {rep.role}</p>
             {rep.lastReviewDate && (
-              <p style={{ fontSize: 10, color: "var(--text-muted)", margin: "2px 0 0" }}>Last reviewed: {rep.lastReviewDate}</p>
+              <p style={{ fontSize: 10, color: "#6b7280", margin: "2px 0 0" }}>Last reviewed: {rep.lastReviewDate}</p>
             )}
           </div>
           <button onClick={onClose}
-            style={{ width: 26, height: 26, borderRadius: 7, display: "flex", alignItems: "center", justifyContent: "center", border: "1px solid var(--border)", background: "transparent", color: "var(--text-secondary)", cursor: "pointer", flexShrink: 0 }}
-            onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = "var(--surface-2)"; }}
+            style={{ width: 26, height: 26, borderRadius: 7, display: "flex", alignItems: "center", justifyContent: "center", border: "1px solid #e5e7eb", background: "transparent", color: "#374151", cursor: "pointer", flexShrink: 0 }}
+            onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = "#f3f4f6"; }}
             onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = "transparent"; }}>
             <X size={12} strokeWidth={2} />
           </button>
@@ -317,7 +311,7 @@ export default function RepDetailPanel({
 
         {/* Manager rating */}
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
-          <span style={{ fontSize: 11, fontWeight: 600, color: "var(--text-secondary)" }}>Manager Rating</span>
+          <span style={{ fontSize: 11, fontWeight: 600, color: "#374151" }}>Manager Rating</span>
           <StarRating
             value={rep.overallRating ?? 0}
             onChange={v => setRep(r => ({ ...r, overallRating: v as SalesRepExtended["overallRating"] }))}
@@ -328,12 +322,12 @@ export default function RepDetailPanel({
         <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 6, marginBottom: 12 }}>
           {[
             { label: "Conv. Rate",  value: `${rep.conversionRate}%`, color: convColor(rep.conversionRate) },
-            { label: "Won / Mo.",   value: rep.wonThisMonth,         color: "var(--success)" },
-            { label: "Calls Today", value: rep.callsToday,           color: "var(--text-primary)" },
+            { label: "Won / Mo.",   value: rep.wonThisMonth,         color: "#059669" },
+            { label: "Calls Today", value: rep.callsToday,           color: "#111827" },
           ].map(({ label, value, color }) => (
-            <div key={label} style={{ textAlign: "center", padding: "8px 6px", borderRadius: 8, background: "var(--surface-2)", border: "1px solid var(--border)" }}>
+            <div key={label} style={{ textAlign: "center", padding: "8px 6px", borderRadius: 8, background: "#f3f4f6", border: "1px solid #e5e7eb" }}>
               <p style={{ margin: 0, fontSize: 17, fontWeight: 800, color }}>{value}</p>
-              <p style={{ margin: "2px 0 0", fontSize: 9, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.06em", color: "var(--text-muted)" }}>{label}</p>
+              <p style={{ margin: "2px 0 0", fontSize: 9, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.06em", color: "#6b7280" }}>{label}</p>
             </div>
           ))}
         </div>
@@ -341,9 +335,9 @@ export default function RepDetailPanel({
         {/* Tags */}
         <div style={{ display: "flex", flexWrap: "wrap", gap: 5, marginBottom: 12 }}>
           {rep.repTags.map(tag => (
-            <span key={tag} style={{ display: "inline-flex", alignItems: "center", gap: 4, fontSize: 10, fontWeight: 700, padding: "3px 8px", borderRadius: 99, background: "var(--accent-light)", color: "var(--accent)", border: "1px solid var(--accent-border)" }}>
+            <span key={tag} style={{ display: "inline-flex", alignItems: "center", gap: 4, fontSize: 10, fontWeight: 700, padding: "3px 8px", borderRadius: 99, background: "#ede9fe", color: "#5b21b6", border: "1px solid #c4b5fd" }}>
               {tag}
-              <button onClick={() => removeTag(tag)} style={{ background: "none", border: "none", cursor: "pointer", color: "var(--accent)", padding: 0, display: "flex", lineHeight: 1 }}>
+              <button onClick={() => removeTag(tag)} style={{ background: "none", border: "none", cursor: "pointer", color: "#5b21b6", padding: 0, display: "flex", lineHeight: 1 }}>
                 <X size={9} />
               </button>
             </span>
@@ -354,20 +348,20 @@ export default function RepDetailPanel({
               onChange={e => setNewTag(e.target.value)}
               onKeyDown={e => e.key === "Enter" && addTag()}
               placeholder="+ tag"
-              style={{ fontSize: 10, fontWeight: 600, padding: "3px 7px", borderRadius: 99, border: "1px dashed var(--border-strong)", background: "transparent", color: "var(--text-secondary)", outline: "none", width: 56 }}
+              style={{ fontSize: 10, fontWeight: 600, padding: "3px 7px", borderRadius: 99, border: "1px dashed #9ca3af", background: "transparent", color: "#374151", outline: "none", width: 56 }}
             />
           </div>
         </div>
 
         {/* Tabs */}
-        <div style={{ display: "flex", gap: 20, borderBottom: "1px solid var(--border)", marginTop: 4 }}>
+        <div style={{ display: "flex", gap: 20, borderBottom: "1px solid #e5e7eb", marginTop: 4 }}>
           {(["overview", "coaching"] as const).map(t => (
             <button key={t} onClick={() => setTab(t)} style={{
               background: "none", border: "none", padding: "6px 0 8px 0",
               fontSize: 13, fontWeight: tab === t ? 700 : 500,
-              color: tab === t ? "var(--accent)" : "var(--text-secondary)",
+              color: tab === t ? "#7c3aed" : "#374151",
               cursor: "pointer",
-              borderBottom: tab === t ? "2px solid var(--accent)" : "2px solid transparent",
+              borderBottom: tab === t ? "2px solid #7c3aed" : "2px solid transparent",
               transition: "color .1s, border-color .1s",
               textTransform: "capitalize",
             }}>
@@ -385,17 +379,17 @@ export default function RepDetailPanel({
           <>
             {/* Lead pipeline chart */}
             {chartData.length > 0 && (
-              <div style={{ padding: "12px 14px", borderBottom: "1px solid var(--border)" }}>
+              <div style={{ padding: "12px 14px", borderBottom: "1px solid #e5e7eb" }}>
                 <SectionLabel>Lead Pipeline</SectionLabel>
                 <div style={{ height: 180, width: "100%" }}>
                   <ResponsiveContainer>
                     <BarChart data={chartData} layout="vertical" margin={{ left: 20, right: 10, top: 4, bottom: 4 }}>
-                      <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="var(--border)" />
-                      <XAxis type="number" tick={{ fontSize: 10, fill: "var(--text-muted)" }} axisLine={false} tickLine={false} />
-                      <YAxis type="category" dataKey="name" tick={{ fontSize: 11, fontWeight: 500, fill: "var(--text-secondary)" }} width={68} axisLine={false} tickLine={false} />
+                      <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="#e5e7eb" />
+                      <XAxis type="number" tick={{ fontSize: 10, fill: "#6b7280" }} axisLine={false} tickLine={false} />
+                      <YAxis type="category" dataKey="name" tick={{ fontSize: 11, fontWeight: 500, fill: "#374151" }} width={68} axisLine={false} tickLine={false} />
                       <Tooltip
                         formatter={(v) => [`${v} leads`, "Count"]}
-                        contentStyle={{ fontSize: 11, borderRadius: 8, borderColor: "var(--border)", background: "var(--surface)" }}
+                        contentStyle={{ fontSize: 11, borderRadius: 8, borderColor: "#e5e7eb", background: "#ffffff", color: "#111827" }}
                       />
                       <Bar dataKey="count" radius={[0, 4, 4, 0]}>
                         {chartData.map((entry, i) => <Cell key={i} fill={entry.color} />)}
@@ -407,18 +401,18 @@ export default function RepDetailPanel({
             )}
 
             {/* Performance stats */}
-            <div style={{ padding: "12px 14px", borderBottom: "1px solid var(--border)" }}>
+            <div style={{ padding: "12px 14px", borderBottom: "1px solid #e5e7eb" }}>
               <SectionLabel>Performance</SectionLabel>
               <div style={{ display: "flex", flexDirection: "column", gap: 7 }}>
                 {[
                   { label: "Conversion Rate", value: `${rep.conversionRate}%`, pct: rep.conversionRate, color: convColor(rep.conversionRate) },
-                  { label: "Won This Month",  value: `${rep.wonThisMonth}`,    pct: (rep.wonThisMonth / 15) * 100, color: "var(--success)" },
-                  { label: "Leads Assigned",  value: `${rep.leadsAssigned}`,  pct: (rep.leadsAssigned / 40) * 100, color: "var(--info)" },
-                  { label: "Calls Today",     value: `${rep.callsToday}`,     pct: (rep.callsToday / 30) * 100, color: "var(--accent)" },
+                  { label: "Won This Month",  value: `${rep.wonThisMonth}`,    pct: (rep.wonThisMonth / 15) * 100, color: "#059669" },
+                  { label: "Leads Assigned",  value: `${rep.leadsAssigned}`,  pct: (rep.leadsAssigned / 40) * 100, color: "#1d4ed8" },
+                  { label: "Calls Today",     value: `${rep.callsToday}`,     pct: (rep.callsToday / 30) * 100, color: "#7c3aed" },
                 ].map(s => (
                   <div key={s.label} style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                    <span style={{ fontSize: 11, color: "var(--text-secondary)", minWidth: 110 }}>{s.label}</span>
-                    <div style={{ flex: 1, height: 5, background: "var(--surface-3)", borderRadius: 99, overflow: "hidden" }}>
+                    <span style={{ fontSize: 11, color: "#374151", minWidth: 110 }}>{s.label}</span>
+                    <div style={{ flex: 1, height: 5, background: "#e5e7eb", borderRadius: 99, overflow: "hidden" }}>
                       <div style={{ height: "100%", width: `${Math.min(s.pct, 100)}%`, background: s.color, borderRadius: 99, transition: "width .5s" }} />
                     </div>
                     <span style={{ fontSize: 11, fontWeight: 700, color: s.color, minWidth: 28, textAlign: "right" }}>{s.value}</span>
@@ -430,21 +424,21 @@ export default function RepDetailPanel({
             {/* Coaching action progress summary */}
             <div style={{ padding: "12px 14px" }}>
               <SectionLabel>Coaching Progress</SectionLabel>
-              <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "10px 12px", background: "var(--surface-2)", borderRadius: 9, border: "1px solid var(--border)" }}>
-                <div style={{ width: 36, height: 36, borderRadius: "50%", background: doneActions === rep.coachingActions.length && rep.coachingActions.length > 0 ? "var(--success-light)" : "var(--surface-3)", border: `2px solid ${doneActions === rep.coachingActions.length && rep.coachingActions.length > 0 ? "var(--success)" : "var(--border-strong)"}`, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                  <span style={{ fontSize: 13, fontWeight: 800, color: doneActions === rep.coachingActions.length && rep.coachingActions.length > 0 ? "var(--success)" : "var(--text-secondary)" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "10px 12px", background: "#f3f4f6", borderRadius: 9, border: "1px solid #e5e7eb" }}>
+                <div style={{ width: 36, height: 36, borderRadius: "50%", background: doneActions === rep.coachingActions.length && rep.coachingActions.length > 0 ? "#d1fae5" : "#e5e7eb", border: `2px solid ${doneActions === rep.coachingActions.length && rep.coachingActions.length > 0 ? "#059669" : "#9ca3af"}`, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                  <span style={{ fontSize: 13, fontWeight: 800, color: doneActions === rep.coachingActions.length && rep.coachingActions.length > 0 ? "#059669" : "#374151" }}>
                     {doneActions}/{rep.coachingActions.length}
                   </span>
                 </div>
                 <div>
-                  <p style={{ fontSize: 12, fontWeight: 700, color: "var(--text-primary)", margin: 0 }}>
+                  <p style={{ fontSize: 12, fontWeight: 700, color: "#111827", margin: 0 }}>
                     {doneActions === rep.coachingActions.length && rep.coachingActions.length > 0 ? "All actions complete!" : `${rep.coachingActions.length - doneActions} action${rep.coachingActions.length - doneActions !== 1 ? "s" : ""} pending`}
                   </p>
-                  <p style={{ fontSize: 11, color: "var(--text-muted)", margin: "2px 0 0" }}>
+                  <p style={{ fontSize: 11, color: "#6b7280", margin: "2px 0 0" }}>
                     Switch to Coaching tab to manage
                   </p>
                 </div>
-                <button onClick={() => setTab("coaching")} style={{ marginLeft: "auto", background: "none", border: "none", cursor: "pointer", color: "var(--accent)", display: "flex" }}>
+                <button onClick={() => setTab("coaching")} style={{ marginLeft: "auto", background: "none", border: "none", cursor: "pointer", color: "#7c3aed", display: "flex" }}>
                   <ChevronRight size={14} />
                 </button>
               </div>
@@ -459,7 +453,6 @@ export default function RepDetailPanel({
             {/* ─ Manager Notes ─ */}
             <SectionLabel>Manager Notes</SectionLabel>
 
-            {/* Pinned notes */}
             {pinnedNotes.map(note => (
               <NoteCard key={note.id} note={note}
                 isEditing={editingNoteId === note.id}
@@ -485,25 +478,25 @@ export default function RepDetailPanel({
               />
             ))}
             {rep.managerNotes.length === 0 && (
-              <p style={{ fontSize: 12, color: "var(--text-muted)", fontStyle: "italic", marginBottom: 8 }}>No notes yet.</p>
+              <p style={{ fontSize: 12, color: "#6b7280", fontStyle: "italic", marginBottom: 8 }}>No notes yet.</p>
             )}
 
             {/* Add note */}
-            <div style={{ display: "flex", flexDirection: "column", gap: 6, padding: 10, background: "var(--surface-2)", borderRadius: 9, border: "1px dashed var(--border-strong)", marginBottom: 4 }}>
+            <div style={{ display: "flex", flexDirection: "column", gap: 6, padding: 10, background: "#f3f4f6", borderRadius: 9, border: "1px dashed #9ca3af", marginBottom: 4 }}>
               <textarea
                 value={newNote}
                 onChange={e => setNewNote(e.target.value)}
                 onKeyDown={e => e.key === "Enter" && e.metaKey && addNote()}
                 placeholder="Add a manager note… (⌘+Enter to save)"
                 rows={2}
-                style={{ fontSize: 12, padding: "6px 8px", borderRadius: 7, border: "1px solid var(--border)", background: "var(--surface)", color: "var(--text-primary)", resize: "none", outline: "none", lineHeight: 1.5, width: "100%", boxSizing: "border-box" }}
+                style={{ fontSize: 12, padding: "6px 8px", borderRadius: 7, border: "1px solid #e5e7eb", background: "#ffffff", color: "#111827", resize: "none", outline: "none", lineHeight: 1.5, width: "100%", boxSizing: "border-box" }}
               />
               <button onClick={addNote} disabled={!newNote.trim()}
                 style={{
                   display: "flex", alignItems: "center", justifyContent: "center", gap: 5,
                   padding: "7px 12px", borderRadius: 7, fontSize: 11, fontWeight: 700, border: "none", cursor: newNote.trim() ? "pointer" : "not-allowed",
-                  background: noteAdded ? "var(--success-light)" : newNote.trim() ? "var(--text-primary)" : "var(--surface-3)",
-                  color: noteAdded ? "var(--success)" : newNote.trim() ? "#fff" : "var(--text-muted)",
+                  background: noteAdded ? "#d1fae5" : newNote.trim() ? "#111827" : "#e5e7eb",
+                  color: noteAdded ? "#065f46" : newNote.trim() ? "#fff" : "#9ca3af",
                   transition: "all .15s",
                 }}>
                 {noteAdded ? <><CheckCircle2 size={12} />Note Saved</> : <><Plus size={12} />Add Note</>}
@@ -517,24 +510,24 @@ export default function RepDetailPanel({
 
             <div style={{ display: "flex", flexDirection: "column", gap: 6, marginBottom: 8 }}>
               {rep.coachingActions.map(action => (
-                <div key={action.id} style={{ display: "flex", alignItems: "flex-start", gap: 8, padding: "9px 10px", borderRadius: 8, background: action.done ? "var(--success-light)" : "var(--surface-2)", border: `1px solid ${action.done ? "var(--success-border)" : "var(--border)"}`, transition: "all .15s" }}>
+                <div key={action.id} style={{ display: "flex", alignItems: "flex-start", gap: 8, padding: "9px 10px", borderRadius: 8, background: action.done ? "#d1fae5" : "#f3f4f6", border: `1px solid ${action.done ? "#6ee7b7" : "#e5e7eb"}`, transition: "all .15s" }}>
                   <button onClick={() => toggleAction(action.id)} style={{ background: "none", border: "none", cursor: "pointer", flexShrink: 0, marginTop: 1, display: "flex" }}>
                     {action.done
-                      ? <CheckCircle2 size={15} style={{ color: "var(--success)" }} />
-                      : <div style={{ width: 15, height: 15, borderRadius: "50%", border: "1.5px solid var(--border-strong)" }} />
+                      ? <CheckCircle2 size={15} style={{ color: "#059669" }} />
+                      : <div style={{ width: 15, height: 15, borderRadius: "50%", border: "1.5px solid #9ca3af" }} />
                     }
                   </button>
                   <div style={{ flex: 1, minWidth: 0 }}>
-                    <p style={{ fontSize: 12, fontWeight: 600, color: action.done ? "var(--success)" : "var(--text-primary)", margin: 0, textDecoration: action.done ? "line-through" : "none", lineHeight: 1.4 }}>
+                    <p style={{ fontSize: 12, fontWeight: 600, color: action.done ? "#065f46" : "#111827", margin: 0, textDecoration: action.done ? "line-through" : "none", lineHeight: 1.4 }}>
                       {action.label}
                     </p>
                     {action.dueDate && (
-                      <p style={{ fontSize: 10, color: "var(--text-muted)", margin: "2px 0 0", display: "flex", alignItems: "center", gap: 3 }}>
+                      <p style={{ fontSize: 10, color: "#6b7280", margin: "2px 0 0", display: "flex", alignItems: "center", gap: 3 }}>
                         <CalendarDays size={9} /> Due {action.dueDate}
                       </p>
                     )}
                   </div>
-                  <button onClick={() => deleteAction(action.id)} style={{ background: "none", border: "none", cursor: "pointer", color: "var(--danger)", flexShrink: 0, display: "flex", padding: 0, opacity: 0.6 }}
+                  <button onClick={() => deleteAction(action.id)} style={{ background: "none", border: "none", cursor: "pointer", color: "#dc2626", flexShrink: 0, display: "flex", padding: 0, opacity: 0.6 }}
                     onMouseEnter={e => (e.currentTarget as HTMLElement).style.opacity = "1"}
                     onMouseLeave={e => (e.currentTarget as HTMLElement).style.opacity = "0.6"}>
                     <Trash2 size={11} />
@@ -544,27 +537,27 @@ export default function RepDetailPanel({
             </div>
 
             {/* Add action */}
-            <div style={{ display: "flex", flexDirection: "column", gap: 6, padding: 10, background: "var(--surface-2)", borderRadius: 9, border: "1px dashed var(--border-strong)", marginBottom: 4 }}>
+            <div style={{ display: "flex", flexDirection: "column", gap: 6, padding: 10, background: "#f3f4f6", borderRadius: 9, border: "1px dashed #9ca3af", marginBottom: 4 }}>
               <input
                 value={newAction}
                 onChange={e => setNewAction(e.target.value)}
                 onKeyDown={e => e.key === "Enter" && addAction()}
                 placeholder="New coaching action…"
-                style={{ fontSize: 12, padding: "7px 9px", borderRadius: 7, border: "1px solid var(--border)", background: "var(--surface)", color: "var(--text-primary)", outline: "none", width: "100%", boxSizing: "border-box" }}
+                style={{ fontSize: 12, padding: "7px 9px", borderRadius: 7, border: "1px solid #e5e7eb", background: "#ffffff", color: "#111827", outline: "none", width: "100%", boxSizing: "border-box" }}
               />
               <div style={{ display: "flex", gap: 6 }}>
                 <input
                   type="date"
                   value={newActionDue}
                   onChange={e => setNewActionDue(e.target.value)}
-                  style={{ flex: 1, fontSize: 11, padding: "6px 8px", borderRadius: 7, border: "1px solid var(--border)", background: "var(--surface)", color: "var(--text-secondary)", outline: "none" }}
+                  style={{ flex: 1, fontSize: 11, padding: "6px 8px", borderRadius: 7, border: "1px solid #e5e7eb", background: "#ffffff", color: "#374151", outline: "none" }}
                 />
                 <button onClick={addAction} disabled={!newAction.trim()}
                   style={{
                     display: "flex", alignItems: "center", gap: 4, padding: "6px 12px", borderRadius: 7, fontSize: 11, fontWeight: 700, border: "none",
                     cursor: newAction.trim() ? "pointer" : "not-allowed", flexShrink: 0,
-                    background: actionAdded ? "var(--success-light)" : newAction.trim() ? "var(--text-primary)" : "var(--surface-3)",
-                    color: actionAdded ? "var(--success)" : newAction.trim() ? "#fff" : "var(--text-muted)",
+                    background: actionAdded ? "#d1fae5" : newAction.trim() ? "#111827" : "#e5e7eb",
+                    color: actionAdded ? "#065f46" : newAction.trim() ? "#fff" : "#9ca3af",
                     transition: "all .15s",
                   }}>
                   {actionAdded ? <CheckCircle2 size={11} /> : <Plus size={11} />}
@@ -578,9 +571,9 @@ export default function RepDetailPanel({
             {/* ─ Quick actions ─ */}
             <SectionLabel>Quick Actions</SectionLabel>
             {[
-              { icon: <MessageSquare size={11} />, label: "Send coaching message", color: "var(--info)",    bg: "var(--info-light)",    border: "var(--info-border)" },
-              { icon: <Phone size={11} />,         label: "Schedule 1:1 call",    color: "var(--success)", bg: "var(--success-light)", border: "var(--success-border)" },
-              { icon: <BarChart2 size={11} />,     label: "View full lead table",  color: "var(--text-secondary)", bg: "var(--surface-2)", border: "var(--border)" },
+              { icon: <MessageSquare size={11} />, label: "Send coaching message", color: "#1d4ed8",    bg: "#dbeafe",    border: "#bfdbfe" },
+              { icon: <Phone size={11} />,         label: "Schedule 1:1 call",    color: "#065f46", bg: "#d1fae5", border: "#6ee7b7" },
+              { icon: <BarChart2 size={11} />,     label: "View full lead table",  color: "#374151", bg: "#f3f4f6", border: "#e5e7eb" },
             ].map(({ icon, label, color, bg, border }) => (
               <button key={label} onClick={() => alert(`${label} for ${rep.name}`)}
                 style={{ width: "100%", display: "flex", alignItems: "center", gap: 8, padding: "9px 12px", borderRadius: 8, marginBottom: 6, background: bg, border: `1px solid ${border}`, color, fontSize: 12, fontWeight: 600, cursor: "pointer", textAlign: "left", transition: "opacity .12s" }}
@@ -610,7 +603,7 @@ function NoteCard({ note, isEditing, editText, onEditChange, onEditStart, onEdit
   onDelete: () => void;
 }) {
   return (
-    <div style={{ marginBottom: 6, padding: "9px 11px", borderRadius: 8, background: note.pinned ? "var(--warning-light)" : "var(--surface-2)", border: `1px solid ${note.pinned ? "var(--warning-border)" : "var(--border)"}`, transition: "all .15s" }}>
+    <div style={{ marginBottom: 6, padding: "9px 11px", borderRadius: 8, background: note.pinned ? "#fef3c7" : "#f3f4f6", border: `1px solid ${note.pinned ? "#fcd34d" : "#e5e7eb"}`, transition: "all .15s" }}>
       {isEditing ? (
         <>
           <textarea
@@ -618,13 +611,13 @@ function NoteCard({ note, isEditing, editText, onEditChange, onEditStart, onEdit
             onChange={e => onEditChange(e.target.value)}
             rows={3}
             autoFocus
-            style={{ fontSize: 12, padding: "5px 7px", borderRadius: 6, border: "1px solid var(--border)", background: "var(--surface)", color: "var(--text-primary)", resize: "none", outline: "none", lineHeight: 1.5, width: "100%", boxSizing: "border-box", marginBottom: 6 }}
+            style={{ fontSize: 12, padding: "5px 7px", borderRadius: 6, border: "1px solid #e5e7eb", background: "#ffffff", color: "#111827", resize: "none", outline: "none", lineHeight: 1.5, width: "100%", boxSizing: "border-box", marginBottom: 6 }}
           />
           <div style={{ display: "flex", gap: 6 }}>
-            <button onClick={onEditSave} style={{ display: "flex", alignItems: "center", gap: 4, padding: "4px 10px", borderRadius: 6, fontSize: 11, fontWeight: 700, border: "none", cursor: "pointer", background: "var(--text-primary)", color: "#fff" }}>
+            <button onClick={onEditSave} style={{ display: "flex", alignItems: "center", gap: 4, padding: "4px 10px", borderRadius: 6, fontSize: 11, fontWeight: 700, border: "none", cursor: "pointer", background: "#111827", color: "#fff" }}>
               <Save size={11} /> Save
             </button>
-            <button onClick={onEditCancel} style={{ padding: "4px 10px", borderRadius: 6, fontSize: 11, fontWeight: 600, border: "1px solid var(--border)", background: "var(--surface)", color: "var(--text-secondary)", cursor: "pointer" }}>
+            <button onClick={onEditCancel} style={{ padding: "4px 10px", borderRadius: 6, fontSize: 11, fontWeight: 600, border: "1px solid #e5e7eb", background: "#ffffff", color: "#374151", cursor: "pointer" }}>
               Cancel
             </button>
           </div>
@@ -632,19 +625,19 @@ function NoteCard({ note, isEditing, editText, onEditChange, onEditStart, onEdit
       ) : (
         <>
           <div style={{ display: "flex", alignItems: "flex-start", gap: 6, marginBottom: 4 }}>
-            {note.pinned && <AlertTriangle size={10} style={{ color: "var(--warning)", flexShrink: 0, marginTop: 2 }} />}
-            <p style={{ fontSize: 12, color: "var(--text-primary)", lineHeight: 1.5, margin: 0, flex: 1 }}>{note.text}</p>
+            {note.pinned && <AlertTriangle size={10} style={{ color: "#d97706", flexShrink: 0, marginTop: 2 }} />}
+            <p style={{ fontSize: 12, color: "#111827", lineHeight: 1.5, margin: 0, flex: 1 }}>{note.text}</p>
           </div>
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-            <span style={{ fontSize: 10, color: "var(--text-muted)" }}>{note.date}</span>
+            <span style={{ fontSize: 10, color: "#6b7280" }}>{note.date}</span>
             <div style={{ display: "flex", gap: 6 }}>
-              <button onClick={onTogglePin} title={note.pinned ? "Unpin" : "Pin"} style={{ background: "none", border: "none", cursor: "pointer", color: note.pinned ? "var(--warning)" : "var(--text-muted)", display: "flex", padding: 0 }}>
-                <Star size={11} fill={note.pinned ? "var(--warning)" : "none"} />
+              <button onClick={onTogglePin} title={note.pinned ? "Unpin" : "Pin"} style={{ background: "none", border: "none", cursor: "pointer", color: note.pinned ? "#d97706" : "#6b7280", display: "flex", padding: 0 }}>
+                <Star size={11} fill={note.pinned ? "#d97706" : "none"} />
               </button>
-              <button onClick={onEditStart} style={{ background: "none", border: "none", cursor: "pointer", color: "var(--text-muted)", display: "flex", padding: 0 }}>
+              <button onClick={onEditStart} style={{ background: "none", border: "none", cursor: "pointer", color: "#6b7280", display: "flex", padding: 0 }}>
                 <Edit3 size={11} />
               </button>
-              <button onClick={onDelete} style={{ background: "none", border: "none", cursor: "pointer", color: "var(--danger)", display: "flex", padding: 0, opacity: 0.6 }}
+              <button onClick={onDelete} style={{ background: "none", border: "none", cursor: "pointer", color: "#dc2626", display: "flex", padding: 0, opacity: 0.6 }}
                 onMouseEnter={e => (e.currentTarget as HTMLElement).style.opacity = "1"}
                 onMouseLeave={e => (e.currentTarget as HTMLElement).style.opacity = "0.6"}>
                 <Trash2 size={11} />

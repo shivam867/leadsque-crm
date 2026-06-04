@@ -14,7 +14,7 @@ const leakPoints = [
     pct: 100,
     label: "Leads Captured",
     sublabel: "Total inbound this month",
-    value: "1,200",
+    value: "",
     color: "#4F46E5",
     leak: null,
   },
@@ -22,7 +22,7 @@ const leakPoints = [
     pct: 68,
     label: "Actually Contacted",
     sublabel: "Counselors reached out",
-    value: "816",
+    value: "",
     color: "#0EA5E9",
     leak: "32% never called",
   },
@@ -30,7 +30,7 @@ const leakPoints = [
     pct: 41,
     label: "Responded at Least Once",
     sublabel: "Parent picked up the phone",
-    value: "492",
+    value: "",
     color: "#10B981",
     leak: "27% unreachable — wrong timing",
   },
@@ -38,7 +38,7 @@ const leakPoints = [
     pct: 18,
     label: "Followed Up Properly",
     sublabel: "More than 1 structured touchpoint",
-    value: "216",
+    value: "",
     color: "#F59E0B",
     leak: "23% dropped after first call",
   },
@@ -46,7 +46,7 @@ const leakPoints = [
     pct: 6,
     label: "Reached Proposal Stage",
     sublabel: "Pricing or batch discussed",
-    value: "72",
+    value: "",
     color: "#EF4444",
     leak: "12% lost to no context, wrong pitch",
   },
@@ -54,7 +54,7 @@ const leakPoints = [
     pct: 2,
     label: "Enrolled",
     sublabel: "Revenue actually collected",
-    value: "24",
+    value: "",
     color: "#8B5CF6",
     leak: "4% closed — 98% of budget wasted",
   },
@@ -122,7 +122,7 @@ export default function Statement() {
         <div className="text-center mb-16">
           <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-red-50 border border-red-100 mb-6">
             <span className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse" />
-            <span className="text-xs font-semibold tracking-widest uppercase text-red-600">
+            <span className="text-xs font-semibold tracking-widest uppercase text-black-600">
               The Real Problem
             </span>
           </div>
@@ -130,7 +130,7 @@ export default function Statement() {
           <h2 className="text-3xl md:text-5xl font-extrabold text-gray-900 mb-4 tracking-tight">
             You're not losing leads.
             <br />
-            <span className="text-red-500">
+            <span className="text-black-500">
               You're hemorrhaging revenue.
             </span>
           </h2>

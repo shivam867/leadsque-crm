@@ -13,89 +13,97 @@ export default function IntelStrip({ lead, currentStatus }: IntelStripProps) {
   const intel = lead.intelligence ?? {};
   const lines = STAGE_OPENING_LINES[currentStatus] ?? [];
   const [lineIdx, setLineIdx] = useState(0);
-
-  // Pre-call brief — editable by manager/rep, seeded from intel if present
-  const [brief, setBrief] = useState(intel.preBriefNote ?? "");
+  const [brief,   setBrief]   = useState(intel.preBriefNote ?? "");
   const [editing, setEditing] = useState(false);
-  const [saved, setSaved] = useState(false);
+  const [saved,   setSaved]   = useState(false);
 
   const safeIdx = lineIdx < lines.length ? lineIdx : 0;
   const cfg = STATUS_CONFIG[currentStatus];
 
-  const saveBrief = () => {
-    setSaved(true);
-    setEditing(false);
-    setTimeout(() => setSaved(false), 2000);
+  const saveBrief = () => { setSaved(true); setEditing(false); setTimeout(() => setSaved(false), 2000); };
+
+  const cardBase: React.CSSProperties = {
+    background: "var(--surface)", border: "1px solid var(--border)",
+    borderRadius: 10, overflow: "hidden",
+    display: "flex", flexDirection: "column",
+  };
+
+  const cardHeaderBase: React.CSSProperties = {
+    padding: "10px 14px", borderBottom: "1px solid var(--border)",
+    display: "flex", alignItems: "center", justifyContent: "space-between",
+    background: "var(--surface-2)", flexShrink: 0,
+  };
+
+  const labelBase: React.CSSProperties = {
+    fontSize: 10, fontWeight: 800, letterSpacing: "0.07em",
+    textTransform: "uppercase",
   };
 
   return (
-    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 12, padding: "14px 24px 0" }}>
+    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 12, padding: "16px 24px 0" }}>
 
       {/* ── Suggested Opening ── */}
-      <div style={{ background: cfg.bg, border: `1px solid ${cfg.border}`, borderRadius: 10, padding: "12px 14px" }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 5, marginBottom: 7 }}>
-          <Sparkles size={11} style={{ color: cfg.text }} />
-          <span style={{ fontSize: 9, fontWeight: 800, letterSpacing: "0.08em", textTransform: "uppercase" as const, color: cfg.text }}>
-            Suggested Opening · {currentStatus}
-          </span>
-        </div>
-        <p style={{ fontSize: 12, lineHeight: 1.6, margin: "0 0 10px", fontStyle: "italic" as const, color: "#374151" }}>
-          &ldquo;{interpolate(lines[safeIdx] ?? "No opening line set for this stage.", lead.name, lead.service)}&rdquo;
-        </p>
-        {lines.length > 1 && (
-          <div style={{ display: "flex", gap: 4, alignItems: "center" }}>
-            {lines.map((_, i) => (
-              <button key={i} onClick={() => setLineIdx(i)} style={{ width: i === safeIdx ? 16 : 5, height: 5, borderRadius: 99, background: i === safeIdx ? cfg.text : `${cfg.text}40`, border: "none", cursor: "pointer", padding: 0, transition: "all .2s" }} />
-            ))}
-            <span style={{ fontSize: 10, color: "#6B7280", marginLeft: 4 }}>{safeIdx + 1}/{lines.length}</span>
-          </div>
-        )}
-      </div>
-
-      {/* ── Pre-Call Brief (editable) ── */}
-      <div style={{ background: "#FFFBEB", border: "1px solid #FDE68A", borderRadius: 10, overflow: "hidden" }}>
-        {/* Header */}
-        <div style={{ padding: "9px 12px", borderBottom: "1px solid #FEF3C7", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 5 }}>
-            <StickyNote size={11} style={{ color: "#B45309" }} />
-            <span style={{ fontSize: 9, fontWeight: 800, letterSpacing: "0.08em", textTransform: "uppercase" as const, color: "#B45309" }}>
-              Pre-Call Brief
+      <div style={{ ...cardBase, borderTop: `3px solid ${cfg.text}` }}>
+        <div style={cardHeaderBase}>
+          <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+            <Sparkles size={12} style={{ color: cfg.text }} />
+            <span style={{ ...labelBase, color: cfg.text }}>
+              Suggested Opening
             </span>
           </div>
-          <div style={{ display: "flex", alignItems: "center", gap: 5 }}>
+          <span style={{ fontSize: 10, color: "var(--text-muted)", background: cfg.bg, padding: "2px 7px", borderRadius: 99, border: `1px solid ${cfg.border}`, fontWeight: 600 }}>
+            {currentStatus}
+          </span>
+        </div>
+        <div style={{ padding: "12px 14px", flex: 1, display: "flex", flexDirection: "column", justifyContent: "space-between" }}>
+          <p style={{ fontSize: 12, lineHeight: 1.65, margin: "0 0 12px", fontStyle: "italic", color: "var(--text-primary)" }}>
+            &ldquo;{interpolate(lines[safeIdx] ?? "No opening line set for this stage.", lead.name, lead.service)}&rdquo;
+          </p>
+          {lines.length > 1 && (
+            <div style={{ display: "flex", gap: 4, alignItems: "center" }}>
+              {lines.map((_, i) => (
+                <button key={i} onClick={() => setLineIdx(i)}
+                  style={{ width: i === safeIdx ? 14 : 5, height: 5, borderRadius: 99, background: i === safeIdx ? cfg.text : `${cfg.text}40`, border: "none", cursor: "pointer", padding: 0, transition: "all .2s" }} />
+              ))}
+              <span style={{ fontSize: 10, color: "var(--text-muted)", marginLeft: 4 }}>{safeIdx + 1}/{lines.length}</span>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* ── Pre-Call Brief ── */}
+      <div style={{ ...cardBase, borderTop: "3px solid var(--warning)" }}>
+        <div style={cardHeaderBase}>
+          <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+            <StickyNote size={12} style={{ color: "var(--warning)" }} />
+            <span style={{ ...labelBase, color: "var(--warning)" }}>Pre-Call Brief</span>
+          </div>
+          <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
             {saved && (
-              <span style={{ fontSize: 10, color: "#059669", fontWeight: 700, display: "flex", alignItems: "center", gap: 3 }}>
+              <span style={{ fontSize: 10, color: "var(--success)", fontWeight: 700, display: "flex", alignItems: "center", gap: 3 }}>
                 <Check size={10} /> Saved
               </span>
             )}
             {editing ? (
               <>
-                <button
-                  onClick={() => setEditing(false)}
-                  style={{ fontSize: 10, padding: "2px 7px", borderRadius: 5, border: "1px solid #FDE68A", background: "#fff", color: "#B45309", cursor: "pointer" }}
-                >
+                <button onClick={() => setEditing(false)}
+                  style={{ fontSize: 10, padding: "3px 7px", borderRadius: 5, border: "1px solid var(--border-strong)", background: "var(--surface)", color: "var(--text-secondary)", cursor: "pointer" }}>
                   Cancel
                 </button>
-                <button
-                  onClick={saveBrief}
-                  style={{ fontSize: 10, padding: "2px 7px", borderRadius: 5, border: "none", background: "#B45309", color: "#fff", cursor: "pointer", fontWeight: 700 }}
-                >
+                <button onClick={saveBrief}
+                  style={{ fontSize: 10, padding: "3px 7px", borderRadius: 5, border: "none", background: "var(--warning)", color: "#fff", cursor: "pointer", fontWeight: 700 }}>
                   Save
                 </button>
               </>
             ) : (
-              <button
-                onClick={() => setEditing(true)}
-                style={{ display: "flex", alignItems: "center", gap: 3, fontSize: 10, padding: "2px 7px", borderRadius: 5, border: "1px solid #FDE68A", background: "transparent", color: "#B45309", cursor: "pointer" }}
-              >
+              <button onClick={() => setEditing(true)}
+                style={{ display: "flex", alignItems: "center", gap: 3, fontSize: 10, padding: "3px 7px", borderRadius: 5, border: "1px solid var(--border-strong)", background: "transparent", color: "var(--text-secondary)", cursor: "pointer" }}>
                 <Edit3 size={9} /> Edit
               </button>
             )}
           </div>
         </div>
-
-        {/* Body */}
-        <div style={{ padding: "10px 12px" }}>
+        <div style={{ padding: "12px 14px", flex: 1 }}>
           {editing ? (
             <textarea
               value={brief}
@@ -103,15 +111,13 @@ export default function IntelStrip({ lead, currentStatus }: IntelStripProps) {
               placeholder="Add notes for the rep before this call — student background, key concerns, what to highlight..."
               rows={4}
               autoFocus
-              style={{ width: "100%", fontSize: 12, padding: "7px 9px", borderRadius: 7, border: "1.5px solid #FDE68A", background: "#fff", color: "#78350F", resize: "none" as const, boxSizing: "border-box" as const, outline: "none", lineHeight: 1.55, fontFamily: "inherit" }}
+              style={{ width: "100%", fontSize: 12, padding: "7px 9px", borderRadius: 7, border: "1px solid var(--border-strong)", background: "var(--surface)", color: "var(--text-primary)", resize: "none", boxSizing: "border-box", outline: "none", lineHeight: 1.55, fontFamily: "inherit" }}
             />
           ) : brief ? (
-            <p style={{ fontSize: 12, color: "#78350F", lineHeight: 1.6, margin: 0 }}>{brief}</p>
+            <p style={{ fontSize: 12, color: "var(--text-primary)", lineHeight: 1.65, margin: 0 }}>{brief}</p>
           ) : (
-            <p
-              onClick={() => setEditing(true)}
-              style={{ fontSize: 12, color: "#D97706", lineHeight: 1.55, margin: 0, fontStyle: "italic" as const, cursor: "pointer" }}
-            >
+            <p onClick={() => setEditing(true)}
+              style={{ fontSize: 12, color: "var(--text-muted)", lineHeight: 1.55, margin: 0, fontStyle: "italic", cursor: "pointer" }}>
               Click Edit to add a pre-call brief for this lead...
             </p>
           )}
@@ -119,37 +125,42 @@ export default function IntelStrip({ lead, currentStatus }: IntelStripProps) {
       </div>
 
       {/* ── Best Time to Call ── */}
-      <div style={{ background: "#F0FDF4", border: "1px solid #86EFAC", borderRadius: 10, padding: "12px 14px" }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 5, marginBottom: 7 }}>
-          <Clock size={12} style={{ color: "#16A34A" }} />
-          <span style={{ fontSize: 9, fontWeight: 800, letterSpacing: "0.08em", textTransform: "uppercase" as const, color: "#16A34A" }}>
-            Best Time to Call
-          </span>
-        </div>
-        <p style={{ fontSize: 15, fontWeight: 800, color: "#15803D", margin: "0 0 5px", lineHeight: 1.3 }}>
-          {intel.bestTimeToCall ?? (
-            <span style={{ fontSize: 12, fontWeight: 400, color: "#9CA3AF", fontStyle: "italic" as const }}>Not set</span>
-          )}
-        </p>
-        {intel.bestTimeNote && (
-          <p style={{ fontSize: 11, color: "#166534", margin: 0, lineHeight: 1.5, display: "flex", gap: 5 }}>
-            <ChevronRight size={11} style={{ color: "#16A34A", marginTop: 1, flexShrink: 0 }} />
-            {intel.bestTimeNote}
-          </p>
-        )}
-        {intel.dealProbability != null && (
-          <div style={{ marginTop: 10, paddingTop: 10, borderTop: "1px solid #BBF7D0" }}>
-            <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 4 }}>
-              <span style={{ fontSize: 10, color: "#16A34A", fontWeight: 700 }}>Deal Probability</span>
-              <span style={{ fontSize: 14, fontWeight: 900, color: intel.dealProbability >= 70 ? "#15803D" : intel.dealProbability >= 40 ? "#B45309" : "#6B7280" }}>
-                {intel.dealProbability}%
-              </span>
-            </div>
-            <div style={{ height: 4, background: "#D1FAE5", borderRadius: 99, overflow: "hidden" }}>
-              <div style={{ height: "100%", width: `${intel.dealProbability}%`, background: "#16A34A", borderRadius: 99, transition: "width 0.4s ease" }} />
-            </div>
+      <div style={{ ...cardBase, borderTop: "3px solid var(--success)" }}>
+        <div style={cardHeaderBase}>
+          <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+            <Clock size={12} style={{ color: "var(--success)" }} />
+            <span style={{ ...labelBase, color: "var(--success)" }}>Best Time to Call</span>
           </div>
-        )}
+        </div>
+        <div style={{ padding: "12px 14px", flex: 1, display: "flex", flexDirection: "column", justifyContent: "space-between" }}>
+          <div>
+            <p style={{ fontSize: 16, fontWeight: 800, color: "var(--success)", margin: "0 0 5px", letterSpacing: "-0.02em", lineHeight: 1.3 }}>
+              {intel.bestTimeToCall ?? (
+                <span style={{ fontSize: 12, fontWeight: 400, color: "var(--text-muted)", fontStyle: "italic" }}>Not set</span>
+              )}
+            </p>
+            {intel.bestTimeNote && (
+              <p style={{ fontSize: 11, color: "var(--text-secondary)", margin: 0, lineHeight: 1.5, display: "flex", gap: 5, alignItems: "flex-start" }}>
+                <ChevronRight size={11} style={{ color: "var(--success)", marginTop: 1, flexShrink: 0 }} />
+                {intel.bestTimeNote}
+              </p>
+            )}
+          </div>
+
+          {intel.dealProbability != null && (
+            <div style={{ marginTop: 14, paddingTop: 12, borderTop: "1px solid var(--border)" }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: 6 }}>
+                <span style={{ fontSize: 10, color: "var(--text-secondary)", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.06em" }}>Deal Probability</span>
+                <span style={{ fontSize: 16, fontWeight: 800, letterSpacing: "-0.02em", color: intel.dealProbability >= 70 ? "var(--success)" : intel.dealProbability >= 40 ? "var(--warning)" : "var(--text-secondary)" }}>
+                  {intel.dealProbability}%
+                </span>
+              </div>
+              <div style={{ height: 4, background: "var(--surface-3)", borderRadius: 99, overflow: "hidden" }}>
+                <div style={{ height: "100%", width: `${intel.dealProbability}%`, borderRadius: 99, background: intel.dealProbability >= 70 ? "var(--success)" : intel.dealProbability >= 40 ? "var(--warning)" : "var(--text-muted)", transition: "width 0.4s ease" }} />
+              </div>
+            </div>
+          )}
+        </div>
       </div>
 
     </div>

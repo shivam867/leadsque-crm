@@ -4,7 +4,7 @@ import { useRouter } from "next/navigation";
 import {
   UserPlus, Upload, X, CheckCircle2, AlertCircle,
   FileText, Phone, Mail, MapPin, BookOpen,
-  Megaphone, StickyNote, ChevronDown,
+  Megaphone, StickyNote, ChevronDown, ArrowLeft,
 } from "lucide-react";
 
 const sources  = ["Website","Referral","Cold Call","Instagram Ad","Google Ad","YouTube","Seminar","Walk-in","WhatsApp","Other"];
@@ -43,20 +43,10 @@ function parseCsv(text: string): CsvRow[] {
 
 function FieldLabel({ icon, children, required }: { icon: React.ReactNode; children: React.ReactNode; required?: boolean }) {
   return (
-    <label style={{ display: "flex", alignItems: "center", gap: 5, fontSize: 11, fontWeight: 700, color: "var(--text-secondary)", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 5 }}>
-      <span style={{ color: "var(--text-muted)" }}>{icon}</span>
-      {children}
+    <label style={{ display: "flex", alignItems: "center", gap: 5, fontSize: 10, fontWeight: 700, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: 5 }}>
+      {icon}{children}
       {required && <span style={{ color: "var(--danger)", marginLeft: 1 }}>*</span>}
     </label>
-  );
-}
-
-function SelectWrap({ children }: { children: React.ReactNode }) {
-  return (
-    <div style={{ position: "relative" }}>
-      {children}
-      <ChevronDown size={14} style={{ position: "absolute", right: 10, top: "50%", transform: "translateY(-50%)", color: "var(--text-muted)", pointerEvents: "none" }} />
-    </div>
   );
 }
 
@@ -94,9 +84,9 @@ export default function AddLead() {
     reader.readAsText(file);
   };
 
-  const handleFile   = (e: React.ChangeEvent<HTMLInputElement>) => { const f = e.target.files?.[0]; if (f) processFile(f); };
-  const handleDrop   = (e: React.DragEvent) => { e.preventDefault(); setDragOver(false); const f = e.dataTransfer.files?.[0]; if (f) processFile(f); };
-  const handleCsvSubmit = () => { if (!validCount) return; setCsvSubmitted(true); setTimeout(() => router.push("/rep/leads"), 2000); };
+  const handleFile       = (e: React.ChangeEvent<HTMLInputElement>) => { const f = e.target.files?.[0]; if (f) processFile(f); };
+  const handleDrop       = (e: React.DragEvent) => { e.preventDefault(); setDragOver(false); const f = e.dataTransfer.files?.[0]; if (f) processFile(f); };
+  const handleCsvSubmit  = () => { if (!validCount) return; setCsvSubmitted(true); setTimeout(() => router.push("/rep/leads"), 2000); };
 
   const validCount = csvRows.filter(r => r._valid).length;
 
@@ -106,10 +96,10 @@ export default function AddLead() {
     return (
       <div style={{ height: "100%", display: "flex", alignItems: "center", justifyContent: "center", background: "var(--bg)" }}>
         <div style={{ textAlign: "center" }}>
-          <div style={{ width: 64, height: 64, borderRadius: "50%", background: "var(--success-light)", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 16px" }}>
-            <CheckCircle2 size={28} color="var(--success)" strokeWidth={2.5} />
+          <div style={{ width: 60, height: 60, borderRadius: "50%", background: "var(--success-light)", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 16px" }}>
+            <CheckCircle2 size={26} color="var(--success)" strokeWidth={2.5} />
           </div>
-          <h2 style={{ fontSize: 22, fontWeight: 800, color: "var(--text-primary)", margin: "0 0 6px", letterSpacing: "-0.02em" }}>
+          <h2 style={{ fontSize: 20, fontWeight: 800, color: "var(--text-primary)", margin: "0 0 5px", letterSpacing: "-0.02em" }}>
             {count === 1 ? "Lead Added!" : `${count} Leads Imported!`}
           </h2>
           <p style={{ fontSize: 13, color: "var(--text-secondary)", margin: 0 }}>Redirecting to your leads…</p>
@@ -119,206 +109,222 @@ export default function AddLead() {
   }
 
   return (
-    <div style={{ padding: "24px 28px", maxWidth: 680, background: "var(--bg)", minHeight: "100%" }}>
+    <div style={{ display: "flex", flexDirection: "column", height: "100%", background: "var(--bg)" }}>
 
-      {/* Header */}
-      <div style={{ marginBottom: 22 }}>
-        <h1 className="page-title" style={{ marginBottom: 4 }}>Add New Lead</h1>
-        <p className="page-subtitle">Capture a new enquiry into the pipeline.</p>
-      </div>
-
-      {/* Mode toggle */}
-      <div style={{ display: "flex", gap: 8, marginBottom: 20, background: "var(--surface)", border: "1px solid var(--border)", borderRadius: 10, padding: 4 }}>
-        {(["manual", "csv"] as Mode[]).map(m => (
-          <button key={m} onClick={() => setMode(m)} style={{
-            flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 7,
-            padding: "9px 16px", borderRadius: 7, fontSize: 13, fontWeight: 700, cursor: "pointer", transition: "all .15s",
-            background: mode === m ? "var(--text-primary)" : "transparent",
-            color: mode === m ? "#fff" : "var(--text-secondary)",
-            border: "none",
-          }}>
-            {m === "manual" ? <><UserPlus size={14} />Add Manually</> : <><Upload size={14} />Import CSV</>}
+      {/* ── Page header ── */}
+      <div className="animate-fade-up" style={{ padding: "20px 24px 0", background: "var(--surface)", borderBottom: "1px solid var(--border)", flexShrink: 0 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 14 }}>
+          <button onClick={() => router.back()} className="btn-ghost" style={{ padding: "5px 8px", color: "var(--text-muted)", marginLeft: -4 }}>
+            <ArrowLeft size={15} />
           </button>
-        ))}
+          <div>
+            <h1 className="page-title" style={{ fontSize: 18, marginBottom: 2 }}>Add New Lead</h1>
+            <p className="page-subtitle">Capture a new enquiry into the pipeline.</p>
+          </div>
+        </div>
+
+        {/* Mode toggle */}
+        <div style={{ display: "flex", gap: 0, borderBottom: "1px solid var(--border)", marginLeft: -24, marginRight: -24, paddingLeft: 24 }}>
+          {(["manual", "csv"] as Mode[]).map(m => (
+            <button key={m} onClick={() => setMode(m)} style={{
+              display: "flex", alignItems: "center", gap: 6,
+              padding: "9px 16px",
+              fontSize: 12, fontWeight: mode === m ? 700 : 500, cursor: "pointer",
+              background: "none", border: "none",
+              color: mode === m ? "var(--text-primary)" : "var(--text-secondary)",
+              borderBottom: mode === m ? "2px solid var(--text-primary)" : "2px solid transparent",
+              marginBottom: -1,
+              transition: "all .15s",
+            }}>
+              {m === "manual" ? <><UserPlus size={13} />Add Manually</> : <><Upload size={13} />Import CSV</>}
+            </button>
+          ))}
+        </div>
       </div>
 
-      {/* ── MANUAL FORM ── */}
-      {mode === "manual" && (
-        <form onSubmit={handleSubmit}>
-          <div className="card" style={{ overflow: "hidden" }}>
-            {/* Section: Contact */}
-            <div style={{ padding: "16px 20px", borderBottom: "1px solid var(--surface-2)" }}>
-              <p style={{ fontSize: 11, fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.06em", color: "var(--text-muted)", margin: "0 0 14px" }}>Contact Information</p>
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
-                <div>
-                  <FieldLabel icon={<UserPlus size={11} />} required>Full Name</FieldLabel>
-                  <input className="input" name="name" placeholder="Rahul Sharma" value={form.name} onChange={handleChange} required />
-                </div>
-                <div>
-                  <FieldLabel icon={<Phone size={11} />} required>Phone</FieldLabel>
-                  <input className="input" name="phone" placeholder="+91 98000 00000" value={form.phone} onChange={handleChange} required />
-                </div>
-              </div>
-              <div style={{ marginTop: 14 }}>
-                <FieldLabel icon={<Mail size={11} />}>Email</FieldLabel>
-                <input className="input" name="email" type="email" placeholder="name@email.com" value={form.email} onChange={handleChange} />
-              </div>
-              <div style={{ marginTop: 14 }}>
-                <FieldLabel icon={<MapPin size={11} />}>City</FieldLabel>
-                <SelectWrap>
-                  <select className="input" name="city" value={form.city} onChange={handleChange}>
-                    <option value="">Select city…</option>
-                    {cities.map(c => <option key={c} value={c}>{c}</option>)}
-                  </select>
-                </SelectWrap>
-              </div>
-            </div>
+      {/* ── Scrollable content ── */}
+      <div className="animate-fade-up" style={{ flex: 1, overflowY: "auto", padding: "20px 24px 32px", animationDelay: "40ms" }}>
 
-            {/* Section: Programme */}
-            <div style={{ padding: "16px 20px", borderBottom: "1px solid var(--surface-2)" }}>
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
-                <div>
-                  <FieldLabel icon={<Megaphone size={11} />} required>Lead Source</FieldLabel>
-                  <SelectWrap>
-                    <select className="input" name="source" value={form.source} onChange={handleChange} required>
-                      <option value="">Select source…</option>
-                      {sources.map(s => <option key={s} value={s}>{s}</option>)}
+        {/* ── MANUAL FORM ── */}
+        {mode === "manual" && (
+          <form onSubmit={handleSubmit} style={{ maxWidth: 640 }}>
+            <div className="card" style={{ overflow: "hidden", marginBottom: 14 }}>
+
+              {/* Contact section */}
+              <div style={{ padding: "16px 18px", borderBottom: "1px solid var(--surface-2)" }}>
+                <p style={{ fontSize: 10, fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.07em", color: "var(--text-muted)", margin: "0 0 14px" }}>Contact Information</p>
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
+                  <div>
+                    <FieldLabel icon={<UserPlus size={10} />} required>Full Name</FieldLabel>
+                    <input className="input" name="name" placeholder="Rahul Sharma" value={form.name} onChange={handleChange} required />
+                  </div>
+                  <div>
+                    <FieldLabel icon={<Phone size={10} />} required>Phone</FieldLabel>
+                    <input className="input" name="phone" placeholder="+91 98000 00000" value={form.phone} onChange={handleChange} required />
+                  </div>
+                </div>
+                <div style={{ marginTop: 12 }}>
+                  <FieldLabel icon={<Mail size={10} />}>Email</FieldLabel>
+                  <input className="input" name="email" type="email" placeholder="name@email.com" value={form.email} onChange={handleChange} />
+                </div>
+                <div style={{ marginTop: 12 }}>
+                  <FieldLabel icon={<MapPin size={10} />}>City</FieldLabel>
+                  <div style={{ position: "relative" }}>
+                    <select className="input" name="city" value={form.city} onChange={handleChange}>
+                      <option value="">Select city…</option>
+                      {cities.map(c => <option key={c} value={c}>{c}</option>)}
                     </select>
-                  </SelectWrap>
+                  </div>
                 </div>
-                <div>
-                  <FieldLabel icon={<BookOpen size={11} />} required>Course Interest</FieldLabel>
-                  <SelectWrap>
-                    <select className="input" name="service" value={form.service} onChange={handleChange} required>
-                      <option value="">Select course…</option>
-                      {services.map(s => <option key={s} value={s}>{s}</option>)}
-                    </select>
-                  </SelectWrap>
+              </div>
+
+              {/* Programme section */}
+              <div style={{ padding: "16px 18px", borderBottom: "1px solid var(--surface-2)" }}>
+                <p style={{ fontSize: 10, fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.07em", color: "var(--text-muted)", margin: "0 0 14px" }}>Programme Details</p>
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
+                  <div>
+                    <FieldLabel icon={<Megaphone size={10} />} required>Lead Source</FieldLabel>
+                    <div style={{ position: "relative" }}>
+                      <select className="input" name="source" value={form.source} onChange={handleChange} required>
+                        <option value="">Select source…</option>
+                        {sources.map(s => <option key={s} value={s}>{s}</option>)}
+                      </select>
+                    </div>
+                  </div>
+                  <div>
+                    <FieldLabel icon={<BookOpen size={10} />} required>Course Interest</FieldLabel>
+                    <div style={{ position: "relative" }}>
+                      <select className="input" name="service" value={form.service} onChange={handleChange} required>
+                        <option value="">Select course…</option>
+                        {services.map(s => <option key={s} value={s}>{s}</option>)}
+                      </select>
+                    </div>
+                  </div>
                 </div>
+              </div>
+
+              {/* Notes section */}
+              <div style={{ padding: "16px 18px" }}>
+                <FieldLabel icon={<StickyNote size={10} />}>Notes</FieldLabel>
+                <textarea
+                  className="input"
+                  name="notes" rows={3}
+                  placeholder="Budget, timeline, any specific requirements..."
+                  value={form.notes} onChange={handleChange}
+                />
               </div>
             </div>
 
-            {/* Section: Notes */}
-            <div style={{ padding: "16px 20px" }}>
-              <FieldLabel icon={<StickyNote size={11} />}>Notes</FieldLabel>
-              <textarea
-                className="input"
-                name="notes" rows={3}
-                placeholder="Budget, timeline, any specific requirements..."
-                value={form.notes} onChange={handleChange}
-              />
+            {/* Actions */}
+            <div style={{ display: "flex", gap: 10 }}>
+              <button type="submit" className="btn-primary" style={{ flex: 1, justifyContent: "center", padding: "10px 24px" }}>
+                <UserPlus size={13} /> Save Lead
+              </button>
+              <button type="button" onClick={() => router.back()} className="btn-secondary" style={{ padding: "10px 20px" }}>
+                Cancel
+              </button>
             </div>
-          </div>
+          </form>
+        )}
 
-          {/* Actions */}
-          <div style={{ display: "flex", gap: 10, marginTop: 16 }}>
-            <button type="submit" className="btn-primary" style={{ flex: 1, justifyContent: "center", padding: "11px 24px", borderRadius: 10 }}>
-              <UserPlus size={14} /> Save Lead
-            </button>
-            <button type="button" onClick={() => router.back()} className="btn-secondary" style={{ padding: "11px 20px", borderRadius: 10 }}>
-              Cancel
-            </button>
-          </div>
-        </form>
-      )}
-
-      {/* ── CSV IMPORT ── */}
-      {mode === "csv" && (
-        <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
-          {/* Upload zone */}
-          <div className="card" style={{ padding: "20px" }}>
-            <div
-              onClick={() => fileRef.current?.click()}
-              onDragOver={e => { e.preventDefault(); setDragOver(true); }}
-              onDragLeave={() => setDragOver(false)}
-              onDrop={handleDrop}
-              style={{
-                border: `2px dashed ${dragOver ? "var(--accent)" : "var(--border-strong)"}`,
-                borderRadius: 11, padding: "32px 20px", textAlign: "center", cursor: "pointer",
-                background: dragOver ? "var(--accent-light)" : "var(--surface-2)", transition: "all .15s",
-              }}>
-              <div style={{ width: 44, height: 44, borderRadius: 12, background: "var(--accent-light)", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 12px" }}>
-                <Upload size={20} style={{ color: "var(--accent)" }} />
+        {/* ── CSV IMPORT ── */}
+        {mode === "csv" && (
+          <div style={{ display: "flex", flexDirection: "column", gap: 14, maxWidth: 640 }}>
+            <div className="card" style={{ padding: "18px" }}>
+              {/* Drop zone */}
+              <div
+                onClick={() => fileRef.current?.click()}
+                onDragOver={e => { e.preventDefault(); setDragOver(true); }}
+                onDragLeave={() => setDragOver(false)}
+                onDrop={handleDrop}
+                style={{
+                  border: `1.5px dashed ${dragOver ? "var(--accent)" : "var(--border-strong)"}`,
+                  borderRadius: 10, padding: "28px 20px", textAlign: "center", cursor: "pointer",
+                  background: dragOver ? "var(--accent-light)" : "var(--surface-2)", transition: "all .15s",
+                }}>
+                <div style={{ width: 40, height: 40, borderRadius: 10, background: "var(--accent-light)", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 10px" }}>
+                  <Upload size={18} style={{ color: "var(--accent)" }} />
+                </div>
+                <p style={{ fontSize: 13, fontWeight: 700, color: "var(--text-primary)", margin: "0 0 4px" }}>
+                  {csvFile ? csvFile : "Drop your CSV here or click to browse"}
+                </p>
+                <p style={{ fontSize: 11, color: "var(--text-secondary)", margin: 0 }}>
+                  Required: name, phone · Optional: email, source, course, city, notes
+                </p>
+                <input ref={fileRef} type="file" accept=".csv" style={{ display: "none" }} onChange={handleFile} />
               </div>
-              <p style={{ fontSize: 14, fontWeight: 700, color: "var(--text-primary)", margin: "0 0 4px" }}>
-                {csvFile ? csvFile : "Drop your CSV here or click to browse"}
-              </p>
-              <p style={{ fontSize: 12, color: "var(--text-secondary)", margin: 0 }}>
-                Required columns: name, phone — Optional: email, source, course, city, notes
-              </p>
-              <input ref={fileRef} type="file" accept=".csv" style={{ display: "none" }} onChange={handleFile} />
+
+              {csvError && (
+                <div style={{ display: "flex", alignItems: "center", gap: 7, marginTop: 10, padding: "8px 12px", background: "var(--danger-light)", border: "1px solid var(--danger-border)", borderRadius: 7 }}>
+                  <AlertCircle size={13} style={{ color: "var(--danger)" }} />
+                  <span style={{ fontSize: 12, color: "var(--danger)", fontWeight: 600 }}>{csvError}</span>
+                </div>
+              )}
+
+              {/* Format hint */}
+              <div style={{ marginTop: 12, padding: "9px 12px", background: "var(--surface-2)", borderRadius: 8, border: "1px solid var(--border)" }}>
+                <p style={{ fontSize: 10, fontWeight: 700, color: "var(--text-secondary)", margin: "0 0 3px", textTransform: "uppercase", letterSpacing: "0.05em" }}>Expected format</p>
+                <code style={{ fontSize: 11, color: "var(--text-secondary)", fontFamily: "monospace" }}>
+                  name,phone,email,source,course,city,notes
+                </code>
+              </div>
             </div>
 
-            {csvError && (
-              <div style={{ display: "flex", alignItems: "center", gap: 7, marginTop: 10, padding: "9px 12px", background: "var(--danger-light)", border: "1px solid var(--danger-border)", borderRadius: 8 }}>
-                <AlertCircle size={14} style={{ color: "var(--danger)" }} />
-                <span style={{ fontSize: 12, color: "var(--danger)", fontWeight: 600 }}>{csvError}</span>
+            {/* Preview table */}
+            {csvRows.length > 0 && (
+              <div className="card" style={{ overflow: "hidden" }}>
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "11px 16px", borderBottom: "1px solid var(--border)", background: "var(--surface-2)" }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 7 }}>
+                    <FileText size={13} style={{ color: "var(--text-muted)" }} />
+                    <span style={{ fontSize: 12, fontWeight: 700, color: "var(--text-primary)" }}>Preview — {csvRows.length} rows</span>
+                  </div>
+                  <div style={{ display: "flex", gap: 10, fontSize: 11 }}>
+                    <span style={{ color: "var(--success)", fontWeight: 700 }}>{validCount} valid</span>
+                    {csvRows.length - validCount > 0 && <span style={{ color: "var(--danger)", fontWeight: 700 }}>{csvRows.length - validCount} errors</span>}
+                  </div>
+                </div>
+
+                <div style={{ maxHeight: 240, overflowY: "auto" }}>
+                  <table style={{ width: "100%", borderCollapse: "collapse" }}>
+                    <thead>
+                      <tr style={{ background: "var(--surface-2)" }}>
+                        {["Name", "Phone", "Email", "Course", "City", "Status"].map(h => (
+                          <th key={h} style={{ textAlign: "left", padding: "7px 12px", fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.05em", color: "var(--text-muted)" }}>{h}</th>
+                        ))}
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {csvRows.map((row, i) => (
+                        <tr key={i} style={{ borderTop: "1px solid var(--surface-2)", background: row._valid ? undefined : "var(--danger-light)" }}>
+                          <td style={{ padding: "7px 12px", fontSize: 12, color: "var(--text-primary)", fontWeight: 500 }}>{row.name || "—"}</td>
+                          <td style={{ padding: "7px 12px", fontSize: 11, color: "var(--text-secondary)", fontFamily: "monospace" }}>{row.phone || "—"}</td>
+                          <td style={{ padding: "7px 12px", fontSize: 11, color: "var(--text-secondary)" }}>{row.email || "—"}</td>
+                          <td style={{ padding: "7px 12px", fontSize: 11, color: "var(--text-secondary)" }}>{row.service || "—"}</td>
+                          <td style={{ padding: "7px 12px", fontSize: 11, color: "var(--text-secondary)" }}>{row.city || "—"}</td>
+                          <td style={{ padding: "7px 12px" }}>
+                            {row._valid
+                              ? <span style={{ display: "flex", alignItems: "center", gap: 3, fontSize: 10, fontWeight: 700, color: "var(--success)" }}><CheckCircle2 size={11} />Valid</span>
+                              : <span style={{ display: "flex", alignItems: "center", gap: 3, fontSize: 10, fontWeight: 700, color: "var(--danger)" }}><X size={11} />{row._error}</span>}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+
+                <div style={{ padding: "11px 16px", borderTop: "1px solid var(--border)", display: "flex", gap: 10 }}>
+                  <button onClick={handleCsvSubmit} disabled={!validCount} className={validCount ? "btn-primary" : "btn-secondary"} style={{ padding: "8px 18px" }}>
+                    <Upload size={12} /> Import {validCount} Lead{validCount !== 1 ? "s" : ""}
+                  </button>
+                  <button onClick={() => { setCsvRows([]); setCsvFile(null); }} className="btn-secondary" style={{ padding: "8px 14px" }}>
+                    <X size={12} /> Clear
+                  </button>
+                </div>
               </div>
             )}
-
-            {/* Template */}
-            <div style={{ marginTop: 14, padding: "10px 14px", background: "var(--surface-2)", borderRadius: 9, border: "1px solid var(--border)" }}>
-              <p style={{ fontSize: 11, fontWeight: 700, color: "var(--text-secondary)", margin: "0 0 4px" }}>Expected CSV format:</p>
-              <code style={{ fontSize: 11, color: "var(--text-secondary)", fontFamily: "monospace" }}>
-                name,phone,email,source,course,city,notes
-              </code>
-            </div>
           </div>
-
-          {/* Preview table */}
-          {csvRows.length > 0 && (
-            <div className="card" style={{ overflow: "hidden" }}>
-              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "12px 16px", borderBottom: "1px solid var(--border)", background: "var(--surface-2)" }}>
-                <div style={{ display: "flex", alignItems: "center", gap: 7 }}>
-                  <FileText size={14} style={{ color: "var(--text-secondary)" }} />
-                  <span style={{ fontSize: 13, fontWeight: 700, color: "var(--text-primary)" }}>Preview — {csvRows.length} rows</span>
-                </div>
-                <div style={{ display: "flex", gap: 10, fontSize: 12 }}>
-                  <span style={{ color: "var(--success)", fontWeight: 700 }}>{validCount} valid</span>
-                  {csvRows.length - validCount > 0 && <span style={{ color: "var(--danger)", fontWeight: 700 }}>{csvRows.length - validCount} errors</span>}
-                </div>
-              </div>
-
-              <div style={{ maxHeight: 260, overflowY: "auto" }}>
-                <table style={{ width: "100%", borderCollapse: "collapse" }}>
-                  <thead>
-                    <tr style={{ background: "var(--surface-2)" }}>
-                      {["Name", "Phone", "Email", "Course", "City", "Status"].map(h => (
-                        <th key={h} style={{ textAlign: "left", padding: "8px 12px", fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.05em", color: "var(--text-secondary)" }}>{h}</th>
-                      ))}
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {csvRows.map((row, i) => (
-                      <tr key={i} style={{ borderTop: "1px solid var(--surface-2)", background: row._valid ? undefined : "var(--danger-light)" }}>
-                        <td style={{ padding: "8px 12px", fontSize: 12, color: "var(--text-primary)", fontWeight: 500 }}>{row.name || "—"}</td>
-                        <td style={{ padding: "8px 12px", fontSize: 12, color: "var(--text-secondary)", fontFamily: "monospace" }}>{row.phone || "—"}</td>
-                        <td style={{ padding: "8px 12px", fontSize: 12, color: "var(--text-secondary)" }}>{row.email || "—"}</td>
-                        <td style={{ padding: "8px 12px", fontSize: 12, color: "var(--text-secondary)" }}>{row.service || "—"}</td>
-                        <td style={{ padding: "8px 12px", fontSize: 12, color: "var(--text-secondary)" }}>{row.city || "—"}</td>
-                        <td style={{ padding: "8px 12px" }}>
-                          {row._valid
-                            ? <span style={{ display: "flex", alignItems: "center", gap: 4, fontSize: 11, fontWeight: 700, color: "var(--success)" }}><CheckCircle2 size={12} />Valid</span>
-                            : <span style={{ display: "flex", alignItems: "center", gap: 4, fontSize: 11, fontWeight: 700, color: "var(--danger)" }}><X size={12} />{row._error}</span>}
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-
-              <div style={{ padding: "12px 16px", borderTop: "1px solid var(--border)", display: "flex", gap: 10 }}>
-                <button onClick={handleCsvSubmit} disabled={!validCount} className={validCount ? "btn-primary" : "btn-secondary"} style={{ padding: "9px 20px" }}>
-                  <Upload size={13} /> Import {validCount} Lead{validCount !== 1 ? "s" : ""}
-                </button>
-                <button onClick={() => { setCsvRows([]); setCsvFile(null); }} className="btn-secondary" style={{ padding: "9px 16px" }}>
-                  <X size={13} /> Clear
-                </button>
-              </div>
-            </div>
-          )}
-        </div>
-      )}
+        )}
+      </div>
     </div>
   );
 }
