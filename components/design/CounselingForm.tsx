@@ -32,81 +32,93 @@ export const DEFAULT_FORM_FIELDS: FormField[] = [
     options: ["Approved","Pending","Not Applicable"] },
 ];
 
-const FIELD_TYPE_ICONS: Record<string, React.ReactNode> = {
-  text:     <Type size={11} />,
-  select:   <List size={11} />,
-  textarea: <FileText size={11} />,
-  number:   <Hash size={11} />,
-  date:     <Calendar size={11} />,
+const TYPE_ICONS: Record<string, React.ReactNode> = {
+  text:     <Type size={10} />,
+  select:   <List size={10} />,
+  textarea: <FileText size={10} />,
+  number:   <Hash size={10} />,
+  date:     <Calendar size={10} />,
 };
 
+const TYPE_LABEL: Record<string, string> = {
+  text: "Text", select: "Dropdown", textarea: "Paragraph", number: "Number", date: "Date",
+};
+
+// ─── Stat chip ───────────────────────────────────────────────────
+function Stat({ value, label, color, bg, border }: {
+  value: number; label: string;
+  color: string; bg: string; border: string;
+}) {
+  return (
+    <div style={{
+      flex: 1, padding: "10px 12px", background: bg,
+      border: `1px solid ${border}`, borderRadius: 9,
+      display: "flex", alignItems: "center", gap: 10,
+    }}>
+      <span style={{ fontSize: 22, fontWeight: 900, color, lineHeight: 1 }}>{value}</span>
+      <span style={{ fontSize: 11, color, fontWeight: 600, lineHeight: 1.3 }}>{label}</span>
+    </div>
+  );
+}
+
+// ─── Field Row ───────────────────────────────────────────────────
 function FieldRow({ field, onChange, onDelete }: {
-  field: FormField;
-  onChange: (f: FormField) => void;
-  onDelete: () => void;
+  field: FormField; onChange: (f: FormField) => void; onDelete: () => void;
 }) {
   const [expanded, setExpanded] = useState(false);
 
   return (
-    <div style={{ border: "1px solid var(--surface-3)", borderRadius: 9, overflow: "hidden", marginBottom: 5, opacity: field.enabled ? 1 : 0.55 }}>
-      {/* Row header */}
-      <div style={{ display: "flex", alignItems: "center", gap: 7, padding: "8px 11px", background: "var(--surface-2)" }}>
-        <GripVertical size={12} style={{ color: "var(--border-strong)", flexShrink: 0, cursor: "grab" }} />
-        <span style={{ color: "var(--text-muted)", flexShrink: 0 }}>{FIELD_TYPE_ICONS[field.type]}</span>
-        <span style={{ flex: 1, fontSize: 12, fontWeight: 600, color: "var(--text-secondary)" }}>{field.label}</span>
-        <span style={{ fontSize: 9, fontWeight: 700, padding: "2px 7px", borderRadius: 99, background: "var(--surface-3)", color: "var(--text-muted)", border: "1px solid var(--border)" }}>
-          {field.type}
+    <div style={{
+      border: "1px solid #F3F4F6", borderRadius: 8,
+      overflow: "hidden", marginBottom: 4,
+      opacity: field.enabled ? 1 : 0.5,
+      transition: "opacity .15s",
+    }}>
+      {/* Header row */}
+      <div style={{
+        display: "flex", alignItems: "center", gap: 6,
+        padding: "7px 10px", background: "#FAFAFA",
+      }}>
+        <GripVertical size={12} style={{ color: "#D1D5DB", cursor: "grab", flexShrink: 0 }} />
+        <span style={{ color: "#9CA3AF", flexShrink: 0, display: "flex" }}>{TYPE_ICONS[field.type]}</span>
+        <span style={{ flex: 1, fontSize: 12, fontWeight: 600, color: "#374151", minWidth: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+          {field.label}
+        </span>
+        <span style={{ fontSize: 9, fontWeight: 700, padding: "1px 6px", borderRadius: 99, background: "#F3F4F6", color: "#6B7280", border: "1px solid #E5E7EB", flexShrink: 0 }}>
+          {TYPE_LABEL[field.type]}
         </span>
         {field.required && (
-          <span style={{ fontSize: 9, fontWeight: 700, padding: "2px 7px", borderRadius: 99, background: "var(--warning-light)", color: "var(--warning)", border: "1px solid var(--warning-border)" }}>
+          <span style={{ fontSize: 9, fontWeight: 700, padding: "1px 6px", borderRadius: 99, background: "#FFFBEB", color: "#B45309", border: "1px solid #FDE68A", flexShrink: 0 }}>
             Req
           </span>
         )}
-        <button
-          onClick={() => onChange({ ...field, enabled: !field.enabled })}
-          style={{ background: "none", border: "none", cursor: "pointer", color: field.enabled ? "var(--success)" : "var(--border-strong)", display: "flex" }}
-        >
-          {field.enabled ? <ToggleRight size={17} /> : <ToggleLeft size={17} />}
+        <button onClick={() => onChange({ ...field, enabled: !field.enabled })}
+          style={{ background: "none", border: "none", cursor: "pointer", display: "flex", color: field.enabled ? "#059669" : "#D1D5DB", flexShrink: 0 }}>
+          {field.enabled ? <ToggleRight size={16} /> : <ToggleLeft size={16} />}
         </button>
-        <button
-          onClick={() => setExpanded(e => !e)}
-          style={{ background: "none", border: "none", cursor: "pointer", color: "var(--text-muted)", display: "flex", padding: 0 }}
-        >
-          <ChevronDown size={13} style={{ transform: expanded ? "rotate(180deg)" : "none", transition: "transform .2s" }} />
+        <button onClick={() => setExpanded(e => !e)}
+          style={{ background: "none", border: "none", cursor: "pointer", color: "#9CA3AF", display: "flex", padding: 0, flexShrink: 0 }}>
+          <ChevronDown size={12} style={{ transform: expanded ? "rotate(180deg)" : "none", transition: "transform .2s" }} />
         </button>
-        <button
-          onClick={onDelete}
-          style={{ background: "none", border: "none", cursor: "pointer", color: "var(--danger)", display: "flex", padding: 0 }}
-        >
-          <Trash2 size={12} />
+        <button onClick={onDelete}
+          style={{ background: "none", border: "none", cursor: "pointer", color: "#F87171", display: "flex", padding: 0, flexShrink: 0 }}>
+          <Trash2 size={11} />
         </button>
       </div>
 
-      {/* Expanded edit */}
+      {/* Expanded editor */}
       {expanded && (
-        <div style={{ padding: "10px 11px", borderTop: "1px solid var(--surface-3)", background: "var(--surface)" }}>
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, marginBottom: 8 }}>
+        <div style={{ padding: "9px 10px", borderTop: "1px solid #F3F4F6", background: "#fff", display: "flex", flexDirection: "column", gap: 7 }}>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 7 }}>
             <div>
-              <label style={{ fontSize: 10, fontWeight: 700, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.06em", display: "block", marginBottom: 3 }}>
-                Label
-              </label>
-              <input
-                value={field.label}
-                onChange={e => onChange({ ...field, label: e.target.value })}
-                className="input"
-                style={{ fontSize: 12, padding: "7px 10px" }}
-              />
+              <label style={{ fontSize: 9, fontWeight: 700, color: "#9CA3AF", textTransform: "uppercase", letterSpacing: "0.06em", display: "block", marginBottom: 3 }}>Label</label>
+              <input value={field.label} onChange={e => onChange({ ...field, label: e.target.value })}
+                style={{ width: "100%", fontSize: 11, padding: "5px 8px", borderRadius: 6, border: "1px solid #E5E7EB", outline: "none", boxSizing: "border-box" as const }} />
             </div>
             <div>
-              <label style={{ fontSize: 10, fontWeight: 700, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.06em", display: "block", marginBottom: 3 }}>
-                Type
-              </label>
-              <select
-                value={field.type}
-                onChange={e => onChange({ ...field, type: e.target.value as FormField["type"] })}
-                className="input"
-                style={{ fontSize: 12, padding: "7px 10px" }}
-              >
+              <label style={{ fontSize: 9, fontWeight: 700, color: "#9CA3AF", textTransform: "uppercase", letterSpacing: "0.06em", display: "block", marginBottom: 3 }}>Type</label>
+              <select value={field.type} onChange={e => onChange({ ...field, type: e.target.value as FormField["type"] })}
+                style={{ width: "100%", fontSize: 11, padding: "5px 8px", borderRadius: 6, border: "1px solid #E5E7EB", outline: "none", boxSizing: "border-box" as const }}>
                 <option value="text">Text</option>
                 <option value="textarea">Paragraph</option>
                 <option value="select">Dropdown</option>
@@ -115,33 +127,23 @@ function FieldRow({ field, onChange, onDelete }: {
               </select>
             </div>
           </div>
-
           {field.type === "select" && field.options && (
             <div>
-              <label style={{ fontSize: 10, fontWeight: 700, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.06em", display: "block", marginBottom: 3 }}>
-                Options (one per line)
-              </label>
-              <textarea
-                value={field.options.join("\n")}
+              <label style={{ fontSize: 9, fontWeight: 700, color: "#9CA3AF", textTransform: "uppercase", letterSpacing: "0.06em", display: "block", marginBottom: 3 }}>Options (one per line)</label>
+              <textarea value={field.options.join("\n")} rows={3}
                 onChange={e => onChange({ ...field, options: e.target.value.split("\n").filter(Boolean) })}
-                rows={3}
-                className="input"
-                style={{ fontSize: 12, padding: "7px 10px", resize: "none", lineHeight: 1.5 }}
-              />
+                style={{ width: "100%", fontSize: 11, padding: "5px 8px", borderRadius: 6, border: "1px solid #E5E7EB", outline: "none", resize: "none", lineHeight: 1.5, boxSizing: "border-box" as const }} />
             </div>
           )}
-
-          <button
-            onClick={() => onChange({ ...field, required: !field.required })}
+          <button onClick={() => onChange({ ...field, required: !field.required })}
             style={{
-              marginTop: 8, fontSize: 11, fontWeight: 700, padding: "3px 10px",
-              borderRadius: 6, cursor: "pointer", border: "1px solid",
-              background: field.required ? "var(--warning-light)" : "var(--surface-2)",
-              color: field.required ? "var(--warning)" : "var(--text-muted)",
-              borderColor: field.required ? "var(--warning-border)" : "var(--border)",
-            }}
-          >
-            {field.required ? "Required ✓" : "Make Required"}
+              alignSelf: "flex-start", fontSize: 10, fontWeight: 700, padding: "3px 9px",
+              borderRadius: 5, cursor: "pointer", border: "1px solid",
+              background: field.required ? "#FFFBEB" : "#F9FAFB",
+              color: field.required ? "#B45309" : "#9CA3AF",
+              borderColor: field.required ? "#FDE68A" : "#E5E7EB",
+            }}>
+            {field.required ? "Required ✓" : "Mark as Required"}
           </button>
         </div>
       )}
@@ -149,89 +151,130 @@ function FieldRow({ field, onChange, onDelete }: {
   );
 }
 
+// ─── Main ─────────────────────────────────────────────────────────
 export default function CounselingForm({ fields, setFields }: {
   fields: FormField[];
   setFields: React.Dispatch<React.SetStateAction<FormField[]>>;
 }) {
-  const [newFieldLabel, setNewFieldLabel] = useState("");
-  const [newFieldType, setNewFieldType]   = useState<FormField["type"]>("text");
+  const [newLabel, setNewLabel] = useState("");
+  const [newType, setNewType]   = useState<FormField["type"]>("text");
+
+  const safeFields = fields ?? DEFAULT_FORM_FIELDS;
+  const active   = safeFields.filter(f => f.enabled).length;
+  const required = safeFields.filter(f => f.required).length;
+  const disabled = safeFields.filter(f => !f.enabled).length;
 
   const addField = () => {
-    if (!newFieldLabel.trim()) return;
+    if (!newLabel.trim()) return;
     setFields(prev => [...prev, {
-      id: `f${Date.now()}`, label: newFieldLabel.trim(),
-      type: newFieldType, required: false, enabled: true,
-      options: newFieldType === "select" ? ["Option 1", "Option 2"] : undefined,
+      id: `f${Date.now()}`, label: newLabel.trim(), type: newType,
+      required: false, enabled: true,
+      options: newType === "select" ? ["Option 1", "Option 2"] : undefined,
     }]);
-    setNewFieldLabel("");
+    setNewLabel("");
   };
 
-  const updateField = (updated: FormField) =>
-    setFields(prev => prev.map(f => f.id === updated.id ? updated : f));
+  const update = (u: FormField) => setFields(prev => prev.map(f => f.id === u.id ? u : f));
+  const remove = (id: string)   => setFields(prev => prev.filter(f => f.id !== id));
 
-  const deleteField = (id: string) =>
-    setFields(prev => prev.filter(f => f.id !== id));
-
-  const totalFields    = fields.length;
-  const activeFields   = fields.filter(f => f.enabled).length;
-  const requiredFields = fields.filter(f => f.required).length;
+  const cardStyle: React.CSSProperties = {
+    background: "#fff", border: "1px solid #E5E7EB",
+    borderRadius: 10, overflow: "hidden", display: "flex", flexDirection: "column",
+  };
 
   return (
-    <div style={{ maxWidth: 680 }}>
-      {/* Stats */}
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 10, marginBottom: 14 }}>
-        {[
-          { label: "Total Fields",    value: totalFields,    color: "var(--text-primary)", bg: "var(--surface-2)" },
-          { label: "Active Fields",   value: activeFields,   color: "var(--success)",      bg: "var(--success-light)" },
-          { label: "Required Fields", value: requiredFields, color: "var(--warning)",      bg: "var(--warning-light)" },
-        ].map(s => (
-          <div key={s.label} style={{ padding: "11px 13px", background: s.bg, borderRadius: 10, border: "1px solid var(--border)" }}>
-            <p style={{ fontSize: 20, fontWeight: 900, color: s.color, margin: "0 0 2px" }}>{s.value}</p>
-            <p style={{ fontSize: 11, color: "var(--text-secondary)", margin: 0 }}>{s.label}</p>
-          </div>
-        ))}
+    <div style={{ display: "flex", flexDirection: "column", gap: 10, height: "100%" }}>
+
+      {/* ── Summary strip (top) ── */}
+      <div style={{ display: "flex", gap: 8 }}>
+        <Stat value={safeFields.length} label="Total Fields"    color="#374151" bg="#F9FAFB"  border="#E5E7EB" />
+        <Stat value={active}            label="Active"          color="#059669" bg="#ECFDF5"  border="#A7F3D0" />
+        <Stat value={required}          label="Required"        color="#B45309" bg="#FFFBEB"  border="#FDE68A" />
+        <Stat value={disabled}          label="Hidden"          color="#6B7280" bg="#F3F4F6"  border="#E5E7EB" />
       </div>
 
-      {/* Fields card */}
-      <div className="card">
-        <div style={{ padding: "11px 16px", borderBottom: "1px solid var(--border)", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-          <div>
-            <p style={{ fontSize: 13, fontWeight: 700, color: "var(--text-primary)", margin: 0 }}>Form Fields</p>
-            <p style={{ fontSize: 11, color: "var(--text-secondary)", margin: "2px 0 0" }}>Click a field to edit · toggle to enable/disable</p>
-          </div>
-        </div>
-        <div style={{ padding: "11px 13px" }}>
-          {fields.map(field => (
-            <FieldRow key={field.id} field={field} onChange={updateField} onDelete={() => deleteField(field.id)} />
-          ))}
+      {/* ── Two columns: active fields | disabled fields ── */}
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, flex: 1, minHeight: 0 }}>
 
-          {/* Add new field */}
-          <div style={{ display: "flex", gap: 6, marginTop: 8, padding: 10, background: "var(--surface-2)", borderRadius: 9, border: "1px dashed var(--border)" }}>
+        {/* Active / enabled fields */}
+        <div style={cardStyle}>
+          <div style={{
+            padding: "9px 13px", borderBottom: "1px solid #F3F4F6",
+            background: "#FAFAFA", flexShrink: 0,
+            display: "flex", alignItems: "center", justifyContent: "space-between",
+          }}>
+            <div>
+              <p style={{ fontSize: 12, fontWeight: 700, color: "#111827", margin: 0 }}>Active Fields</p>
+              <p style={{ fontSize: 10, color: "#9CA3AF", margin: "1px 0 0" }}>Shown to reps during counseling</p>
+            </div>
+            <span style={{ fontSize: 10, fontWeight: 700, padding: "1px 7px", borderRadius: 99, background: "#ECFDF5", color: "#059669", border: "1px solid #A7F3D0" }}>
+              {active}
+            </span>
+          </div>
+          <div style={{ flex: 1, overflowY: "auto", padding: "8px 10px" }}>
+            {safeFields.filter(f => f.enabled).map(f => (
+              <FieldRow key={f.id} field={f} onChange={update} onDelete={() => remove(f.id)} />
+            ))}
+            {active === 0 && (
+              <p style={{ fontSize: 11, color: "#9CA3AF", textAlign: "center", padding: "20px 0", margin: 0 }}>No active fields</p>
+            )}
+          </div>
+          {/* Add field */}
+          <div style={{ padding: "8px 10px", borderTop: "1px solid #F3F4F6", display: "flex", gap: 5, flexShrink: 0 }}>
             <input
-              value={newFieldLabel}
-              onChange={e => setNewFieldLabel(e.target.value)}
+              value={newLabel} onChange={e => setNewLabel(e.target.value)}
               onKeyDown={e => e.key === "Enter" && addField()}
               placeholder="New field label…"
-              className="input"
-              style={{ flex: 1, fontSize: 12, padding: "7px 10px" }}
+              style={{ flex: 1, fontSize: 11, padding: "5px 8px", borderRadius: 6, border: "1px solid #E5E7EB", outline: "none", minWidth: 0 }}
             />
-            <select
-              value={newFieldType}
-              onChange={e => setNewFieldType(e.target.value as FormField["type"])}
-              className="input"
-              style={{ width: 105, fontSize: 12, padding: "7px 10px" }}
-            >
+            <select value={newType} onChange={e => setNewType(e.target.value as FormField["type"])}
+              style={{ width: 88, fontSize: 11, padding: "5px 6px", borderRadius: 6, border: "1px solid #E5E7EB", outline: "none" }}>
               <option value="text">Text</option>
               <option value="textarea">Paragraph</option>
               <option value="select">Dropdown</option>
               <option value="number">Number</option>
               <option value="date">Date</option>
             </select>
-            <button onClick={addField} className="btn-primary" style={{ fontSize: 12, padding: "7px 12px", flexShrink: 0 }}>
-              <Plus size={12} /> Add
-            </button>
+            <button onClick={addField} style={{
+              display: "flex", alignItems: "center", gap: 3, padding: "5px 10px",
+              borderRadius: 6, background: "#111827", color: "#fff",
+              fontSize: 11, fontWeight: 700, border: "none", cursor: "pointer", flexShrink: 0,
+            }}><Plus size={11} /> Add</button>
           </div>
         </div>
+
+        {/* Disabled / hidden fields */}
+        <div style={cardStyle}>
+          <div style={{
+            padding: "9px 13px", borderBottom: "1px solid #F3F4F6",
+            background: "#FAFAFA", flexShrink: 0,
+            display: "flex", alignItems: "center", justifyContent: "space-between",
+          }}>
+            <div>
+              <p style={{ fontSize: 12, fontWeight: 700, color: "#111827", margin: 0 }}>Hidden Fields</p>
+              <p style={{ fontSize: 10, color: "#9CA3AF", margin: "1px 0 0" }}>Toggle on to make visible to reps</p>
+            </div>
+            <span style={{ fontSize: 10, fontWeight: 700, padding: "1px 7px", borderRadius: 99, background: "#F3F4F6", color: "#6B7280", border: "1px solid #E5E7EB" }}>
+              {disabled}
+            </span>
+          </div>
+          <div style={{ flex: 1, overflowY: "auto", padding: "8px 10px" }}>
+            {safeFields.filter(f => !f.enabled).map(f => (
+              <FieldRow key={f.id} field={f} onChange={update} onDelete={() => remove(f.id)} />
+            ))}
+            {disabled === 0 && (
+              <p style={{ fontSize: 11, color: "#9CA3AF", textAlign: "center", padding: "20px 0", margin: 0 }}>
+                All fields are active
+              </p>
+            )}
+          </div>
+          <div style={{ padding: "8px 10px", borderTop: "1px solid #F3F4F6", flexShrink: 0 }}>
+            <p style={{ fontSize: 10, color: "#9CA3AF", margin: 0, lineHeight: 1.5 }}>
+              Toggle the switch on any field to move it between Active and Hidden.
+            </p>
+          </div>
+        </div>
+
       </div>
     </div>
   );

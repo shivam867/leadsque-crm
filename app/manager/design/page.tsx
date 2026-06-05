@@ -2,10 +2,19 @@
 import { useState } from "react";
 import { Layers, FileText, Star, Save, RotateCcw, Check } from "lucide-react";
 
-import PipelineStages, { DEFAULT_STAGES, type Stage } from "@/components/design/PipelineStages";
-import CounselingForm, { DEFAULT_FORM_FIELDS, type FormField } from "@/components/design/CounselingForm";
-import LeadScoring, { DEFAULT_SCORE_WEIGHTS, type ScoreWeight } from "@/components/design/LeadScoring";
+import PipelineStages, {
+  DEFAULT_STAGES, type Stage,
+} from "@/components/design/PipelineStages";
 
+import CounselingForm, {
+  DEFAULT_FORM_FIELDS, type FormField,
+} from "@/components/design/CounselingForm";
+
+import LeadScoring, {
+  DEFAULT_SCORE_WEIGHTS, type ScoreWeight,
+} from "@/components/design/LeadScoring";
+
+// ─── Toast ───────────────────────────────────────────────────────
 function SaveToast({ show }: { show: boolean }) {
   if (!show) return null;
   return (
@@ -13,21 +22,23 @@ function SaveToast({ show }: { show: boolean }) {
       position: "fixed", bottom: 20, right: 20, zIndex: 99,
       display: "flex", alignItems: "center", gap: 8,
       padding: "10px 16px", borderRadius: 9,
-      background: "var(--text-primary)", color: "#fff",
+      background: "#111827", color: "#fff",
       fontSize: 12, fontWeight: 600,
       boxShadow: "0 4px 16px rgba(0,0,0,0.18)",
     }}>
-      <Check size={13} style={{ color: "var(--success)" }} /> Settings saved
+      <Check size={13} style={{ color: "#4ADE80" }} /> Settings saved
     </div>
   );
 }
 
+// ─── Tabs ────────────────────────────────────────────────────────
 const TABS = [
   { key: "pipeline", label: "Pipeline Stages", icon: <Layers size={13} /> },
   { key: "form",     label: "Counseling Form", icon: <FileText size={13} /> },
   { key: "scoring",  label: "Lead Scoring",    icon: <Star size={13} /> },
 ];
 
+// ─── Main Component ───────────────────────────────────────────────
 export default function ManagerDesignSettings() {
   const [activeTab, setActiveTab]       = useState("pipeline");
   const [stages, setStages]             = useState<Stage[]>(DEFAULT_STAGES);
@@ -47,13 +58,17 @@ export default function ManagerDesignSettings() {
   };
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", height: "100%", background: "var(--bg)" }}>
+    <div style={{ display: "flex", flexDirection: "column", height: "100%", background: "#F9FAFB" }}>
 
       {/* Page header */}
-      <div style={{ padding: "20px 24px 0", background: "var(--surface)", borderBottom: "1px solid var(--border)" }}>
+      <div style={{ padding: "20px 24px 0", background: "#fff", borderBottom: "1px solid #E5E7EB" }}>
         <div style={{ marginBottom: 14 }}>
-          <h1 className="page-title" style={{ fontSize: 18, marginBottom: 3 }}>CRM Design</h1>
-          <p className="page-subtitle">Configure pipeline stages, counseling form, and lead scoring rules for all reps.</p>
+          <h1 style={{ fontSize: 18, fontWeight: 800, color: "#111827", margin: "0 0 3px", letterSpacing: "-0.02em" }}>
+            CRM Design
+          </h1>
+          <p style={{ fontSize: 12, color: "#6B7280", margin: 0 }}>
+            Configure pipeline stages, counseling form, and lead scoring rules for all reps.
+          </p>
         </div>
 
         {/* Tabs */}
@@ -66,9 +81,9 @@ export default function ManagerDesignSettings() {
                 display: "flex", alignItems: "center", gap: 6,
                 padding: "9px 14px",
                 fontSize: 12, fontWeight: activeTab === tab.key ? 700 : 500,
-                color: activeTab === tab.key ? "var(--text-primary)" : "var(--text-secondary)",
+                color: activeTab === tab.key ? "#111827" : "#6B7280",
                 background: "none", border: "none", cursor: "pointer",
-                borderBottom: activeTab === tab.key ? "2px solid var(--text-primary)" : "2px solid transparent",
+                borderBottom: activeTab === tab.key ? "2px solid #111827" : "2px solid transparent",
                 marginBottom: -1,
                 transition: "all .15s",
                 whiteSpace: "nowrap",
@@ -83,23 +98,43 @@ export default function ManagerDesignSettings() {
 
       {/* Scrollable content */}
       <div style={{ flex: 1, overflowY: "auto", padding: "20px 24px 80px" }}>
-        {activeTab === "pipeline" && <PipelineStages stages={stages} setStages={setStages} />}
-        {activeTab === "form"     && <CounselingForm fields={fields} setFields={setFields} />}
-        {activeTab === "scoring"  && <LeadScoring scoreWeights={scoreWeights} setScoreWeights={setScoreWeights} />}
+        {activeTab === "pipeline" && (
+          <PipelineStages stages={stages} setStages={setStages} />
+        )}
+        {activeTab === "form" && (
+          <CounselingForm fields={fields} setFields={setFields} />
+        )}
+        {activeTab === "scoring" && (
+          <LeadScoring scoreWeights={scoreWeights} setScoreWeights={setScoreWeights} />
+        )}
       </div>
 
       {/* Save bar */}
       <div style={{
-        borderTop: "1px solid var(--border)", background: "var(--surface)",
+        borderTop: "1px solid #E5E7EB", background: "#fff",
         padding: "11px 24px", display: "flex", alignItems: "center", gap: 10, flexShrink: 0,
       }}>
-        <button onClick={handleSave} className="btn-primary" style={{ fontSize: 12 }}>
+        <button
+          onClick={handleSave}
+          style={{
+            display: "flex", alignItems: "center", gap: 6, padding: "8px 18px",
+            borderRadius: 8, background: "#111827", color: "#fff",
+            fontSize: 12, fontWeight: 700, border: "none", cursor: "pointer",
+          }}
+        >
           <Save size={13} /> Save Changes
         </button>
-        <button onClick={handleReset} className="btn-secondary" style={{ fontSize: 12 }}>
+        <button
+          onClick={handleReset}
+          style={{
+            display: "flex", alignItems: "center", gap: 5, padding: "8px 14px",
+            borderRadius: 8, background: "#fff", color: "#374151",
+            fontSize: 12, fontWeight: 600, border: "1px solid #E5E7EB", cursor: "pointer",
+          }}
+        >
           <RotateCcw size={12} /> Reset
         </button>
-        <span style={{ fontSize: 11, color: "var(--text-muted)" }}>Changes apply to all reps in your workspace</span>
+        <span style={{ fontSize: 11, color: "#9CA3AF" }}>Changes apply to all reps in your workspace</span>
       </div>
 
       <SaveToast show={saved} />
