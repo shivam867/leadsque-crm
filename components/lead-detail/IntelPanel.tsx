@@ -1,133 +1,81 @@
 "use client";
 import { useState } from "react";
-import { Shield, Target, MessageSquare, Plus, X } from "lucide-react";
+import { Target, MessageSquare, Plus, X } from "lucide-react";
 import { LeadIntelligence, ObjectionEntry } from "./types";
 
 interface IntelPanelProps {
   intel: LeadIntelligence;
 }
 
-const cardHeaderStyle: React.CSSProperties = {
-  padding: "10px 14px",
+const CARD_HEAD = (accent: string): React.CSSProperties => ({
+  padding: "8px 12px",
   borderBottom: "1px solid var(--border)",
   display: "flex", justifyContent: "space-between", alignItems: "center",
   background: "var(--surface-2)",
+  borderLeft: `3px solid ${accent}`,
+});
+
+const LABEL: React.CSSProperties = {
+  fontSize: 10, fontWeight: 700, letterSpacing: "0.06em",
+  textTransform: "uppercase", color: "var(--text-muted)",
 };
 
-const labelStyle: React.CSSProperties = {
-  fontSize: 10, fontWeight: 800, letterSpacing: "0.07em",
-  textTransform: "uppercase", color: "var(--text-secondary)",
-};
-
-const editBtnStyle: React.CSSProperties = {
-  fontSize: 11, padding: "4px 9px", borderRadius: 5,
+const editBtn: React.CSSProperties = {
+  fontSize: 11, padding: "3px 8px", borderRadius: 4,
   border: "1px solid var(--border-strong)", background: "var(--surface)",
-  color: "var(--text-secondary)", cursor: "pointer",
+  color: "var(--text-secondary)", cursor: "pointer", fontWeight: 500,
 };
 
-const saveBtnStyle = (color: string): React.CSSProperties => ({
-  fontSize: 11, padding: "4px 9px", borderRadius: 5,
+const saveBtn = (color: string): React.CSSProperties => ({
+  fontSize: 11, padding: "3px 8px", borderRadius: 4,
   border: "none", background: color, color: "#fff",
   cursor: "pointer", fontWeight: 700,
 });
 
-const textareaStyle: React.CSSProperties = {
-  width: "100%", fontSize: 12, padding: "8px 10px",
-  borderRadius: 7, border: "1px solid var(--border-strong)",
-  background: "var(--surface)", color: "var(--text-primary)",
-  resize: "vertical", boxSizing: "border-box", outline: "none",
-  lineHeight: 1.55, fontFamily: "inherit",
-};
-
-const inputStyle: React.CSSProperties = {
+const INPUT: React.CSSProperties = {
   width: "100%", fontSize: 12, padding: "6px 9px",
-  borderRadius: 5, border: "1px solid var(--border-strong)",
+  borderRadius: 4, border: "1px solid var(--border-strong)",
   background: "var(--surface)", color: "var(--text-primary)",
   outline: "none", fontFamily: "inherit", boxSizing: "border-box",
 };
 
 export default function IntelPanel({ intel }: IntelPanelProps) {
-  const [compEdit, setCompEdit] = useState(false);
-  const [compVal,  setCompVal]  = useState(intel.competitorIntel ?? "");
-  const [objEdit,  setObjEdit]  = useState(false);
+  const [objEdit,    setObjEdit]    = useState(false);
   const [objections, setObjections] = useState<ObjectionEntry[]>(intel.handlingObjections ?? []);
-  const [langs,   setLangs]   = useState<string[]>(intel.languagePreference ?? []);
-  const [langIn,  setLangIn]  = useState("");
+  const [langs,      setLangs]      = useState<string[]>(intel.languagePreference ?? []);
+  const [langIn,     setLangIn]     = useState("");
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+    <div style={{ display: "grid", gridTemplateColumns: "1fr 320px", gap: 12 }}>
 
-      {/* ── Competitor Intel ── */}
-      <div style={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: 10, overflow: "hidden", borderTop: "3px solid var(--purple)" }}>
-        <div style={cardHeaderStyle}>
+      {/* Handling Objections — takes the wider left slot */}
+      <div style={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: "var(--radius-md)", overflow: "hidden" }}>
+        <div style={CARD_HEAD("var(--warning)")}>
           <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-            <Shield size={12} style={{ color: "var(--purple)" }} />
-            <span style={{ ...labelStyle }}>Competitor Intel</span>
-          </div>
-          {compEdit ? (
-            <div style={{ display: "flex", gap: 5 }}>
-              <button onClick={() => setCompEdit(false)} style={editBtnStyle}>Cancel</button>
-              <button onClick={() => setCompEdit(false)} style={saveBtnStyle("var(--purple)")}>Save</button>
-            </div>
-          ) : (
-            <button onClick={() => setCompEdit(true)} style={editBtnStyle}>Edit</button>
-          )}
-        </div>
-        <div style={{ padding: "12px 14px" }}>
-          {compEdit ? (
-            <textarea
-              value={compVal}
-              onChange={e => setCompVal(e.target.value)}
-              rows={3}
-              style={textareaStyle}
-            />
-          ) : (
-            <p style={{ fontSize: 12, color: compVal ? "var(--text-primary)" : "var(--text-muted)", margin: 0, lineHeight: 1.6, fontStyle: compVal ? "normal" : "italic" }}>
-              {compVal || "No competitor intel added."}
-            </p>
-          )}
-        </div>
-      </div>
-
-      {/* ── Handling Objections ── */}
-      <div style={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: 10, overflow: "hidden", borderTop: "3px solid var(--warning)" }}>
-        <div style={cardHeaderStyle}>
-          <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-            <Target size={12} style={{ color: "var(--warning)" }} />
-            <span style={labelStyle}>Handling Objections</span>
+            <Target size={11} style={{ color: "var(--warning)" }} />
+            <span style={LABEL}>Handling Objections</span>
           </div>
           {objEdit ? (
             <div style={{ display: "flex", gap: 5 }}>
-              <button onClick={() => setObjEdit(false)} style={editBtnStyle}>Cancel</button>
-              <button onClick={() => setObjEdit(false)} style={saveBtnStyle("var(--warning)")}>Save</button>
+              <button onClick={() => setObjEdit(false)} style={editBtn}>Cancel</button>
+              <button onClick={() => setObjEdit(false)} style={saveBtn("var(--warning)")}>Save</button>
             </div>
           ) : (
-            <button onClick={() => setObjEdit(true)} style={editBtnStyle}>Edit</button>
+            <button onClick={() => setObjEdit(true)} style={editBtn}>Edit</button>
           )}
         </div>
-        <div style={{ padding: "12px 14px", display: "flex", flexDirection: "column", gap: 8 }}>
+        <div style={{ padding: "10px 12px", display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
+          {objections.length === 0 && !objEdit && (
+            <p style={{ fontSize: 12, color: "var(--text-muted)", margin: 0, fontStyle: "italic", gridColumn: "1 / -1" }}>No objections added yet.</p>
+          )}
           {objections.map((obj, i) => (
-            <div key={i} style={{ padding: "10px 12px", background: "var(--warning-light)", borderRadius: 8, border: "1px solid var(--warning-border)" }}>
+            <div key={i} style={{ padding: "8px 10px", background: "var(--warning-light)", borderRadius: 6, border: "1px solid var(--warning-border)" }}>
               {objEdit ? (
-                <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-                  <input
-                    value={obj.objection}
-                    onChange={e => { const o = [...objections]; o[i] = { ...o[i], objection: e.target.value }; setObjections(o); }}
-                    placeholder="Objection..."
-                    style={{ ...inputStyle, fontWeight: 600 }}
-                  />
-                  <input
-                    value={obj.response}
-                    onChange={e => { const o = [...objections]; o[i] = { ...o[i], response: e.target.value }; setObjections(o); }}
-                    placeholder="Response..."
-                    style={inputStyle}
-                  />
+                <div style={{ display: "flex", flexDirection: "column" as const, gap: 5 }}>
+                  <input value={obj.objection} onChange={e => { const o = [...objections]; o[i] = { ...o[i], objection: e.target.value }; setObjections(o); }} placeholder="Objection..." style={{ ...INPUT, fontWeight: 600 }} />
+                  <input value={obj.response}  onChange={e => { const o = [...objections]; o[i] = { ...o[i], response:  e.target.value }; setObjections(o); }} placeholder="Response..." style={INPUT} />
                   {objections.length > 1 && (
-                    <button
-                      onClick={() => setObjections(objections.filter((_, j) => j !== i))}
-                      style={{ fontSize: 10, color: "var(--danger)", background: "transparent", border: "none", cursor: "pointer", textAlign: "left", padding: 0 }}>
-                      Remove
-                    </button>
+                    <button onClick={() => setObjections(objections.filter((_, j) => j !== i))} style={{ fontSize: 10, color: "var(--danger)", background: "transparent", border: "none", cursor: "pointer", textAlign: "left" as const, padding: 0, fontWeight: 600 }}>Remove</button>
                   )}
                 </div>
               ) : (
@@ -138,35 +86,28 @@ export default function IntelPanel({ intel }: IntelPanelProps) {
               )}
             </div>
           ))}
-          {objections.length === 0 && !objEdit && (
-            <p style={{ fontSize: 12, color: "var(--text-muted)", margin: 0, fontStyle: "italic" }}>No objections added yet.</p>
-          )}
           {objEdit && (
-            <button
-              onClick={() => setObjections([...objections, { objection: "", response: "" }])}
-              style={{ display: "flex", alignItems: "center", gap: 5, fontSize: 11, color: "var(--warning)", background: "transparent", border: "1px dashed var(--warning-border)", borderRadius: 7, padding: "6px 10px", cursor: "pointer", fontWeight: 600 }}>
-              <Plus size={11} /> Add Objection
+            <button onClick={() => setObjections([...objections, { objection: "", response: "" }])} style={{ display: "flex", alignItems: "center", gap: 5, fontSize: 11, color: "var(--warning)", background: "transparent", border: "1px dashed var(--warning-border)", borderRadius: 5, padding: "5px 9px", cursor: "pointer", fontWeight: 600 }}>
+              <Plus size={10} /> Add Objection
             </button>
           )}
         </div>
       </div>
 
-      {/* ── Language Preference ── */}
-      <div style={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: 10, overflow: "hidden", borderTop: "3px solid var(--info)" }}>
-        <div style={cardHeaderStyle}>
+      {/* Language Preference — narrower right slot */}
+      <div style={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: "var(--radius-md)", overflow: "hidden" }}>
+        <div style={CARD_HEAD("var(--info)")}>
           <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-            <MessageSquare size={12} style={{ color: "var(--info)" }} />
-            <span style={labelStyle}>Language Preference</span>
+            <MessageSquare size={11} style={{ color: "var(--info)" }} />
+            <span style={LABEL}>Language Preference</span>
           </div>
         </div>
-        <div style={{ padding: "12px 14px" }}>
-          <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: langs.length ? 10 : 0 }}>
+        <div style={{ padding: "10px 12px" }}>
+          <div style={{ display: "flex", flexWrap: "wrap" as const, gap: 6, marginBottom: langs.length ? 10 : 0 }}>
             {langs.map(l => (
-              <span key={l} style={{ display: "inline-flex", alignItems: "center", gap: 4, fontSize: 12, fontWeight: 600, padding: "3px 9px", borderRadius: 6, background: "var(--info-light)", color: "var(--info)", border: "1px solid var(--info-border)" }}>
+              <span key={l} style={{ display: "inline-flex", alignItems: "center", gap: 4, fontSize: 12, fontWeight: 600, padding: "3px 9px", borderRadius: 5, background: "var(--info-light)", color: "var(--info)", border: "1px solid var(--info-border)" }}>
                 {l}
-                <button
-                  onClick={() => setLangs(langs.filter(x => x !== l))}
-                  style={{ background: "transparent", border: "none", cursor: "pointer", color: "var(--info)", padding: 0, display: "flex", alignItems: "center" }}>
+                <button onClick={() => setLangs(langs.filter(x => x !== l))} style={{ background: "transparent", border: "none", cursor: "pointer", color: "var(--info)", padding: 0, display: "flex", alignItems: "center" }}>
                   <X size={9} />
                 </button>
               </span>
@@ -175,18 +116,12 @@ export default function IntelPanel({ intel }: IntelPanelProps) {
           <input
             value={langIn}
             onChange={e => setLangIn(e.target.value)}
-            onKeyDown={e => {
-              if (e.key === "Enter" && langIn.trim()) {
-                setLangs([...langs, langIn.trim()]);
-                setLangIn("");
-              }
-            }}
-            placeholder="Type a language and press Enter"
-            style={{ ...inputStyle, width: "auto", minWidth: 200 }}
+            onKeyDown={e => { if (e.key === "Enter" && langIn.trim()) { setLangs([...langs, langIn.trim()]); setLangIn(""); } }}
+            placeholder="Type a language, press Enter"
+            style={{ ...INPUT, width: "100%" }}
           />
         </div>
       </div>
-
     </div>
   );
 }

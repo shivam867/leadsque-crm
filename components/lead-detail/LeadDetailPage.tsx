@@ -76,10 +76,10 @@ export default function LeadDetailPage({ lead: propLead, onBack }: LeadDetailPag
   const lead = propLead ?? DEMO_LEAD;
 
   const [selectedStatus, setSelectedStatus] = useState<LeadStatus>(lead.status);
-  const [tab, setTab]     = useState<TabKey>("overview");
+  const [tab, setTab] = useState<TabKey>("overview");
   const [copied, setCopied] = useState(false);
 
-  const sc     = STATUS_CONFIG[selectedStatus] ?? STATUS_CONFIG["New"];
+  const sc = STATUS_CONFIG[selectedStatus] ?? STATUS_CONFIG["New"];
   const scorec = SCORE_CONFIG[lead.score] ?? SCORE_CONFIG.Cold;
 
   const copyPhone = () => {
@@ -91,59 +91,70 @@ export default function LeadDetailPage({ lead: propLead, onBack }: LeadDetailPag
   const leadScoreColor = (s: number) => s >= 70 ? "var(--success)" : s >= 40 ? "var(--warning)" : "var(--text-muted)";
 
   const TABS: { key: TabKey; label: string; icon: React.ReactNode }[] = [
-    { key: "overview", label: "Overview",  icon: <Layers size={13} />        },
-    { key: "calls",    label: "Call Logs", icon: <PhoneCall size={13} />     },
-    { key: "activity", label: "Activity",  icon: <Activity size={13} />      },
-    { key: "escalate", label: "Escalate",  icon: <AlertTriangle size={13} /> },
+    { key: "overview", label: "Overview",  icon: <Layers size={12} />        },
+    { key: "calls",    label: "Call Logs", icon: <PhoneCall size={12} />     },
+    { key: "activity", label: "Activity",  icon: <Activity size={12} />      },
+    { key: "escalate", label: "Escalate",  icon: <AlertTriangle size={12} /> },
   ];
 
   return (
     <div style={{ minHeight: "100vh", background: "var(--surface-2)", fontFamily: "'Bricolage Grotesque', sans-serif" }}>
 
-      {/* Sticky Nav */}
-      <div style={{ height: 52, display: "flex", alignItems: "center", justifyContent: "space-between", padding: "0 24px", borderBottom: "1px solid var(--border)", background: "var(--surface)", position: "sticky", top: 0, zIndex: 10 }}>
-        <button
-          onClick={onBack ?? (() => {})}
-          className="btn-secondary"
-          style={{ fontSize: 12, padding: "5px 12px" }}
-        >
-          <ArrowLeft size={13} strokeWidth={2.5} /> Back to Leads
+      {/* ── Sticky Nav ── */}
+      <div style={{
+        height: 50, display: "flex", alignItems: "center", justifyContent: "space-between",
+        padding: "0 24px", borderBottom: "1px solid var(--border)",
+        background: "var(--surface)", position: "sticky", top: 0, zIndex: 10,
+      }}>
+        <button onClick={onBack ?? (() => {})} className="btn-secondary" style={{ fontSize: 12, padding: "5px 11px" }}>
+          <ArrowLeft size={12} strokeWidth={2.5} /> Back to Leads
         </button>
 
         <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
           <span style={{ fontSize: 11, fontFamily: "monospace", color: "var(--text-muted)" }}>{lead.id}</span>
-          <span style={{ fontSize: 11, fontWeight: 700, padding: "3px 10px", borderRadius: 99, background: sc.bg, color: sc.text, border: `1px solid ${sc.border}`, transition: "all 0.2s" }}>
+          <span style={{
+            fontSize: 11, fontWeight: 700, padding: "3px 10px", borderRadius: 99,
+            background: sc.bg, color: sc.text, border: `1px solid ${sc.border}`, transition: "all 0.2s",
+          }}>
             {selectedStatus}
           </span>
           <a href={`tel:${lead.phone}`} style={{ textDecoration: "none" }}>
-            <button className="btn-primary" style={{ fontSize: 12, padding: "6px 14px" }}>
+            <button className="btn-primary" style={{ fontSize: 12, padding: "5px 13px" }}>
               <Phone size={12} /> Call Now
             </button>
           </a>
         </div>
       </div>
 
-      {/* Hero */}
+      {/* ── Hero ── */}
       <div style={{ background: "var(--surface)", borderBottom: "1px solid var(--border)" }}>
         <div style={{ padding: "16px 24px 12px", display: "flex", alignItems: "flex-start", gap: 14 }}>
+
           {/* Avatar */}
-          <div style={{ width: 52, height: 52, borderRadius: 14, flexShrink: 0, background: "var(--info-light)", color: "var(--info)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 17, fontWeight: 800, letterSpacing: "-0.02em", boxShadow: "0 0 0 3px var(--info-border)" }}>
+          <div style={{
+            width: 48, height: 48, borderRadius: 12, flexShrink: 0,
+            background: "var(--info-light)", color: "var(--info)",
+            display: "flex", alignItems: "center", justifyContent: "center",
+            fontSize: 16, fontWeight: 800, letterSpacing: "-0.02em",
+            boxShadow: "0 0 0 3px var(--info-border)",
+          }}>
             {getInitials(lead.name)}
           </div>
 
           {/* Name & contact */}
-          <div style={{ flex: 1 }}>
-            <h1 style={{ fontSize: 20, fontWeight: 800, color: "var(--text-primary)", margin: "0 0 5px", letterSpacing: "-0.03em" }}>{lead.name}</h1>
-            <div style={{ display: "flex", flexWrap: "wrap", gap: 12, alignItems: "center" }}>
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <h1 style={{ fontSize: 18, fontWeight: 800, color: "var(--text-primary)", margin: "0 0 5px", letterSpacing: "-0.03em" }}>{lead.name}</h1>
+            <div style={{ display: "flex", flexWrap: "wrap", gap: 10, alignItems: "center" }}>
               <button onClick={copyPhone} style={{ display: "flex", alignItems: "center", gap: 4, fontSize: 12, color: "var(--text-secondary)", background: "transparent", border: "none", cursor: "pointer", padding: 0, fontFamily: "monospace" }}>
-                <Phone size={12} style={{ color: "var(--text-muted)" }} />{lead.phone}
+                <Phone size={11} style={{ color: "var(--text-muted)" }} />
+                {lead.phone}
                 {copied ? <Check size={10} style={{ color: "var(--success)" }} /> : <Copy size={10} style={{ color: "var(--border-strong)" }} />}
               </button>
               <span style={{ display: "flex", alignItems: "center", gap: 4, fontSize: 12, color: "var(--text-secondary)" }}>
-                <Mail size={12} style={{ color: "var(--text-muted)" }} />{lead.email}
+                <Mail size={11} style={{ color: "var(--text-muted)" }} />{lead.email}
               </span>
               <span style={{ display: "flex", alignItems: "center", gap: 4, fontSize: 12, color: "var(--text-secondary)" }}>
-                <MapPin size={12} style={{ color: "var(--text-muted)" }} />{lead.city}
+                <MapPin size={11} style={{ color: "var(--text-muted)" }} />{lead.city}
               </span>
             </div>
           </div>
@@ -152,46 +163,48 @@ export default function LeadDetailPage({ lead: propLead, onBack }: LeadDetailPag
           <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 7, flexShrink: 0 }}>
             <div style={{ display: "flex", gap: 6 }}>
               <span style={{ display: "inline-flex", alignItems: "center", gap: 4, fontSize: 11, fontWeight: 700, padding: "3px 10px", borderRadius: 99, background: scorec.bg, color: scorec.text }}>
-                <span style={{ width: 6, height: 6, borderRadius: "50%", background: scorec.dot }} />{lead.score}
+                <span style={{ width: 5, height: 5, borderRadius: "50%", background: scorec.dot }} />
+                {lead.score}
               </span>
               <span style={{ fontSize: 11, fontWeight: 600, padding: "3px 10px", borderRadius: 99, background: "var(--surface-2)", color: "var(--text-secondary)", border: "1px solid var(--border)" }}>
                 {lead.service}
               </span>
             </div>
             {typeof lead.leadScore === "number" && (
-              <div style={{ display: "flex", alignItems: "center", gap: 8, background: "var(--surface-2)", padding: "5px 12px", borderRadius: 99, border: "1px solid var(--border)" }}>
-                <span style={{ fontSize: 11, color: "var(--text-secondary)", fontWeight: 600 }}>Lead Score</span>
-                <div style={{ width: 70, height: 4, background: "var(--border)", borderRadius: 99, overflow: "hidden" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 8, background: "var(--surface-2)", padding: "4px 10px", borderRadius: 99, border: "1px solid var(--border)" }}>
+                <span style={{ fontSize: 10, color: "var(--text-muted)", fontWeight: 600 }}>Score</span>
+                <div style={{ width: 60, height: 3, background: "var(--border)", borderRadius: 99, overflow: "hidden" }}>
                   <div style={{ height: "100%", width: `${lead.leadScore}%`, borderRadius: 99, background: leadScoreColor(lead.leadScore) }} />
                 </div>
-                <span style={{ fontSize: 14, fontWeight: 900, color: leadScoreColor(lead.leadScore) }}>
-                  {lead.leadScore}
-                </span>
+                <span style={{ fontSize: 13, fontWeight: 900, color: leadScoreColor(lead.leadScore) }}>{lead.leadScore}</span>
               </div>
             )}
           </div>
         </div>
 
+        {/* Pipeline */}
         <PipelineStepper currentStatus={selectedStatus} />
+
+        {/* Intel Strip — 3 key info cards */}
         <IntelStrip lead={lead} currentStatus={selectedStatus} />
 
         {/* Tab bar */}
-        <div style={{ display: "flex", padding: "0 24px", borderTop: "1px solid var(--surface-3)", marginTop: 14 }}>
+        <div style={{ display: "flex", padding: "0 24px", borderTop: "1px solid var(--surface-3)", marginTop: 12 }}>
           {TABS.map(t => (
             <button
               key={t.key}
               onClick={() => setTab(t.key)}
               style={{
-                display: "flex", alignItems: "center", gap: 5, padding: "11px 16px",
-                fontSize: 13, fontWeight: 600, border: "none", cursor: "pointer",
-                borderBottom: tab === t.key ? "2.5px solid var(--text-primary)" : "2.5px solid transparent",
+                display: "flex", alignItems: "center", gap: 5, padding: "10px 16px",
+                fontSize: 12, fontWeight: 600, border: "none", cursor: "pointer",
+                borderBottom: tab === t.key ? "2px solid var(--text-primary)" : "2px solid transparent",
                 color: tab === t.key ? "var(--text-primary)" : "var(--text-muted)",
-                background: "transparent",
+                background: "transparent", letterSpacing: "-0.01em", transition: "color .12s",
               }}
             >
               {t.icon}{t.label}
               {t.key === "escalate" && (
-                <span style={{ fontSize: 9, fontWeight: 800, padding: "1px 5px", borderRadius: 99, background: "var(--danger-light)", color: "var(--danger)" }}>!</span>
+                <span style={{ fontSize: 9, fontWeight: 800, padding: "1px 4px", borderRadius: 99, background: "var(--danger-light)", color: "var(--danger)" }}>!</span>
               )}
             </button>
           ))}
@@ -199,7 +212,7 @@ export default function LeadDetailPage({ lead: propLead, onBack }: LeadDetailPag
       </div>
 
       {/* Tab content */}
-      <div style={{ padding: "20px 24px" }}>
+      <div style={{ padding: "18px 24px" }}>
         {tab === "overview" && <OverviewTab lead={lead} currentStatus={selectedStatus} onStatusChange={setSelectedStatus} />}
         {tab === "calls"    && <CallLogsTab lead={lead} />}
         {tab === "activity" && <ActivityTab lead={lead} />}

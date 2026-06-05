@@ -14,14 +14,12 @@ export default function PipelineStepper({ currentStatus }: PipelineStepperProps)
   if (isTerminal) {
     return (
       <div style={{ padding: "10px 24px 14px" }}>
-        <span
-          style={{
-            display: "inline-flex", alignItems: "center", gap: 6,
-            padding: "5px 14px", background: "#FEF2F2",
-            border: "1px solid #FECACA", borderRadius: 99,
-            fontSize: 12, fontWeight: 700, color: "#B91C1C",
-          }}
-        >
+        <span style={{
+          display: "inline-flex", alignItems: "center", gap: 6,
+          padding: "5px 14px", background: "#FEF2F2",
+          border: "1px solid #FECACA", borderRadius: 99,
+          fontSize: 12, fontWeight: 700, color: "#B91C1C",
+        }}>
           <span style={{ width: 7, height: 7, borderRadius: "50%", background: "#EF4444" }} />
           Lead {currentStatus}
         </span>
@@ -29,76 +27,67 @@ export default function PipelineStepper({ currentStatus }: PipelineStepperProps)
     );
   }
 
-  const progressPct = ORDERED_STAGES.length > 1
-    ? (idx / (ORDERED_STAGES.length - 1)) * 100
-    : 0;
-
   return (
-    <div style={{ padding: "14px 28px 16px", background: "#fff" }}>
-      <div style={{ position: "relative" }}>
-        {/* Track */}
-        <div
-          style={{
-            position: "absolute", top: 14, left: 14, right: 14,
-            height: 2, background: "#E5E7EB", borderRadius: 99,
-          }}
-        />
-        {/* Progress fill */}
-        {idx > 0 && (
-          <div
-            style={{
-              position: "absolute", top: 14, left: 14,
-              width: `calc(${progressPct}% - 28px)`,
-              height: 2,
-              background: "linear-gradient(90deg, #2563EB, #60A5FA)",
-              borderRadius: 99,
-              transition: "width 0.4s ease",
-            }}
-          />
-        )}
-        {/* Steps */}
-        <div style={{ display: "flex", justifyContent: "space-between", position: "relative" }}>
-          {ORDERED_STAGES.map((stage, i) => {
-            const done = i < idx;
-            const active = i === idx;
-            const cfg = STATUS_CONFIG[stage];
-            return (
-              <div key={stage} style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 6 }}>
-                <div
-                  style={{
-                    width: 30, height: 30, borderRadius: "50%",
-                    display: "flex", alignItems: "center", justifyContent: "center",
-                    background: done ? "#2563EB" : "#fff",
-                    border: done ? "none" : active ? `2.5px solid ${cfg.text}` : "2px solid #E5E7EB",
-                    boxShadow: active
-                      ? `0 0 0 4px ${cfg.text}15`
-                      : done ? "0 2px 6px rgba(37,99,235,0.2)" : "none",
-                    zIndex: 1, position: "relative",
-                    transition: "all 0.3s ease",
-                  }}
-                >
-                  {done
-                    ? <Check size={12} style={{ color: "#fff" }} strokeWidth={3} />
-                    : active
-                      ? <div style={{ width: 9, height: 9, borderRadius: "50%", background: cfg.text }} />
-                      : <div style={{ width: 7, height: 7, borderRadius: "50%", background: "#D1D5DB" }} />
-                  }
-                </div>
-                <span
-                  style={{
-                    fontSize: 10,
-                    fontWeight: active ? 800 : done ? 600 : 400,
-                    color: active ? cfg.text : done ? "#374151" : "#9CA3AF",
-                    whiteSpace: "nowrap",
-                    transition: "color 0.3s ease",
-                  }}
-                >
-                  {stage}
-                </span>
-              </div>
-            );
-          })}
-        </div>
+    <div style={{ padding: "14px 24px 0", background: "var(--surface)" }}>
+      {/* Chevron pipeline */}
+      <div style={{ display: "flex", alignItems: "stretch", height: 40, gap: 0 }}>
+        {ORDERED_STAGES.map((stage, i) => {
+          const done = i < idx;
+          const active = i === idx;
+          const isLast = i === ORDERED_STAGES.length - 1;
+
+          let bg = "#F0F0F0";
+          let textColor = "#999999";
+          let fontWeight = 500;
+
+          if (done) { bg = "#111111"; textColor = "#FFFFFF"; fontWeight = 600; }
+          else if (active) { bg = "#111111"; textColor = "#FFFFFF"; fontWeight = 700; }
+
+          const W = `${100 / ORDERED_STAGES.length}%`;
+          const chevronSize = 12;
+
+          return (
+            <div
+              key={stage}
+              style={{
+                flex: 1,
+                position: "relative",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                background: bg,
+                fontSize: 10,
+                fontWeight,
+                color: textColor,
+                letterSpacing: "-0.01em",
+                whiteSpace: "nowrap",
+                overflow: "hidden",
+                /* left notch */
+                clipPath: i === 0
+                  ? `polygon(0 0, calc(100% - ${chevronSize}px) 0, 100% 50%, calc(100% - ${chevronSize}px) 100%, 0 100%)`
+                  : isLast
+                  ? `polygon(0 0, 100% 0, 100% 100%, 0 100%, ${chevronSize}px 50%)`
+                  : `polygon(0 0, calc(100% - ${chevronSize}px) 0, 100% 50%, calc(100% - ${chevronSize}px) 100%, 0 100%, ${chevronSize}px 50%)`,
+                paddingLeft: i === 0 ? 14 : 20,
+                paddingRight: isLast ? 14 : 20,
+                transition: "background 0.25s ease",
+              }}
+            >
+              {done ? (
+                <Check size={10} strokeWidth={3} style={{ color: "#fff", marginRight: 4, flexShrink: 0 }} />
+              ) : null}
+              <span style={{ fontSize: 10, lineHeight: 1 }}>{stage}</span>
+
+              {/* Separator gap */}
+              {!isLast && (
+                <div style={{
+                  position: "absolute", right: -1, top: 0, bottom: 0, width: 2,
+                  background: "var(--surface)", zIndex: 1,
+                }} />
+              )}
+            </div>
+          );
+        })}
       </div>
     </div>
   );

@@ -1,38 +1,38 @@
 "use client";
 import { useState } from "react";
 import {
-  Check, Activity, ChevronDown, ChevronUp, StickyNote, CalendarDays, Tag,
+  Check, StickyNote, CalendarDays,
   CheckCircle2, MessageSquare, Zap, User, TrendingUp,
+  Target, MessageSquare as LangIcon, Plus, X,
 } from "lucide-react";
 import { Lead, LeadStatus } from "./types";
-import { STATUS_CONFIG, LOST_REASONS, COURSE_OPTIONS, ACTIVITY_COLORS, ACTIVITY_LABELS } from "./constants";
-import IntelPanel from "./IntelPanel";
+import { STATUS_CONFIG, LOST_REASONS, ACTIVITY_COLORS, ACTIVITY_LABELS } from "./constants";
 import CounselingForm from "./CounselingForm";
+import { ObjectionEntry } from "./types";
 
-// ─── SHARED UI ────────────────────────────────────────────────────
-interface SCardProps { title: string; icon?: React.ReactNode; accent?: string; children: React.ReactNode; }
-function SCard({ title, icon, accent = "#9CA3AF", children }: SCardProps) {
+/* ─── Card primitive ─── */
+interface SCardProps { title: string; icon?: React.ReactNode; accent?: string; children: React.ReactNode; noPad?: boolean; }
+function SCard({ title, icon, accent = "var(--border-strong)", children, noPad }: SCardProps) {
   return (
-    <div style={{ background: "#fff", border: "1px solid #E5E7EB", borderRadius: 10, overflow: "hidden" }}>
-      <div style={{ padding: "9px 14px", borderBottom: "1px solid #F3F4F6", display: "flex", alignItems: "center", gap: 6 }}>
-        {icon && <span style={{ color: accent }}>{icon}</span>}
-        <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.06em", textTransform: "uppercase" as const, color: "#4B5563" }}>{title}</span>
+    <div style={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: "var(--radius-md)", overflow: "hidden" }}>
+      <div style={{ padding: "8px 12px", borderBottom: "1px solid var(--border)", display: "flex", alignItems: "center", gap: 6, background: "var(--surface-2)", borderLeft: `3px solid ${accent}` }}>
+        {icon && <span style={{ color: accent, display: "flex", alignItems: "center" }}>{icon}</span>}
+        <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.06em", textTransform: "uppercase" as const, color: "var(--text-muted)" }}>{title}</span>
       </div>
-      <div style={{ padding: "12px 14px" }}>{children}</div>
+      <div style={noPad ? {} : { padding: "12px" }}>{children}</div>
     </div>
   );
 }
 
 function InfoRow({ label, value, mono, last }: { label: string; value: string; mono?: boolean; last?: boolean }) {
   return (
-    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "7px 0", borderBottom: last ? "none" : "1px solid #F9FAFB" }}>
-      <span style={{ fontSize: 12, color: "#6B7280" }}>{label}</span>
-      <span style={{ fontSize: 12, color: "#111827", fontWeight: 500, fontFamily: mono ? "monospace" : undefined }}>{value}</span>
+    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "6px 0", borderBottom: last ? "none" : "1px solid var(--surface-3)" }}>
+      <span style={{ fontSize: 12, color: "var(--text-muted)", flexShrink: 0 }}>{label}</span>
+      <span style={{ fontSize: 12, color: "var(--text-primary)", fontWeight: 500, fontFamily: mono ? "monospace" : undefined, textAlign: "right" as const, marginLeft: 12 }}>{value}</span>
     </div>
   );
 }
 
-// ─── OVERVIEW TAB ─────────────────────────────────────────────────
 interface OverviewTabProps {
   lead: Lead;
   currentStatus: LeadStatus;
@@ -41,137 +41,196 @@ interface OverviewTabProps {
 
 export default function OverviewTab({ lead, currentStatus, onStatusChange }: OverviewTabProps) {
   const intel = lead.intelligence ?? {};
-  const [notes, setNotes] = useState(lead.notes ?? "");
-  const [noteSaved, setNoteSaved] = useState(false);
-  const [noteInput, setNoteInput] = useState("");
-  const [noteAdded, setNoteAdded] = useState(false);
+
+  // Status
   const [selectedLostReason, setSelectedLostReason] = useState(lead.lostReason ?? "");
   const [statusSaved, setStatusSaved] = useState(false);
-  const [selectedCourses, setSelectedCourses] = useState<string[]>(lead.courseInterests ?? []);
-  const [showAllAct, setShowAllAct] = useState(false);
-
-  const saveNote = () => { setNoteSaved(true); setTimeout(() => setNoteSaved(false), 1800); };
-  const addNote = () => {
-    if (!noteInput.trim()) return;
-    setNoteAdded(true);
-    setTimeout(() => { setNoteAdded(false); setNoteInput(""); }, 1800);
-  };
-  const updateStatus = () => {
-    setStatusSaved(true);
-    setTimeout(() => setStatusSaved(false), 1800);
-  };
-
-  const displayedAct = showAllAct ? lead.activity : lead.activity.slice(0, 5);
+  const updateStatus = () => { setStatusSaved(true); setTimeout(() => setStatusSaved(false), 1800); };
   const sc = STATUS_CONFIG[currentStatus];
 
+  // Notes
+  const [notes, setNotes]         = useState(lead.notes ?? "");
+  const [noteSaved, setNoteSaved] = useState(false);
+  const saveNote = () => { setNoteSaved(true); setTimeout(() => setNoteSaved(false), 1800); };
+
+  // Quick note
+  const [noteInput, setNoteInput] = useState("");
+  const [noteAdded, setNoteAdded] = useState(false);
+  const addNote = () => { if (!noteInput.trim()) return; setNoteAdded(true); setTimeout(() => { setNoteAdded(false); setNoteInput(""); }, 1800); };
+
+  // Objections (inline, not via IntelPanel)
+  const [objEdit, setObjEdit]       = useState(false);
+  const [objections, setObjections] = useState<ObjectionEntry[]>(intel.handlingObjections ?? []);
+
+  // Language
+  const [langs, setLangs]   = useState<string[]>(intel.languagePreference ?? []);
+  const [langIn, setLangIn] = useState("");
+
+  const scoreColor = (s: number) => s >= 70 ? "var(--success)" : s >= 40 ? "var(--warning)" : "var(--text-muted)";
+
+  const INPUT: React.CSSProperties = {
+    width: "100%", fontSize: 12, padding: "6px 9px",
+    borderRadius: 4, border: "1px solid var(--border-strong)",
+    background: "var(--surface)", color: "var(--text-primary)",
+    outline: "none", fontFamily: "inherit", boxSizing: "border-box",
+  };
+
   return (
-    <div style={{ display: "grid", gridTemplateColumns: "1fr 340px", gap: 16 }}>
+    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 300px", gap: 14, alignItems: "start" }}>
 
-      {/* ── LEFT ── */}
-      <div style={{ display: "flex", flexDirection: "column" as const, gap: 14 }}>
-        <IntelPanel intel={intel} />
-
-        <SCard title="Lead Information" icon={<User size={12} />}>
-          <InfoRow label="Lead ID"       value={lead.id}           mono />
-          <InfoRow label="Source"        value={lead.source}            />
-          <InfoRow label="City"          value={lead.city}              />
-          <InfoRow label="Assigned To"   value={lead.assignedTo}        />
-          <InfoRow label="Created"       value={lead.createdAt}    mono />
-          {lead.followUpDate && <InfoRow label="Next Follow-up" value={lead.followUpDate} mono />}
-          <InfoRow label="Priority"      value={lead.priority}     last />
-        </SCard>
-
-        <SCard title="Lead Qualification" icon={<TrendingUp size={12} />} accent="#2563EB">
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, marginBottom: 10 }}>
-            {([
-              { label: "Intake Timeline",  value: lead.intakeTimeline  ?? "—" },
-              { label: "Education",        value: lead.education        ?? "—" },
-              { label: "Engagement Level", value: lead.engagementLevel  ?? "—" },
-              { label: "Budget Readiness", value: lead.budgetReadiness  ?? "—" },
-            ] as const).map(r => (
-              <div key={r.label} style={{ padding: "10px 12px", background: "#F9FAFB", borderRadius: 8, border: "1px solid #F0F0F0" }}>
-                <p style={{ fontSize: 9, fontWeight: 700, color: "#6B7280", textTransform: "uppercase" as const, letterSpacing: "0.05em", margin: "0 0 3px" }}>{r.label}</p>
-                <p style={{ fontSize: 13, fontWeight: 700, color: "#111827", margin: 0 }}>{r.value}</p>
-              </div>
-            ))}
-          </div>
-          {typeof lead.leadScore === "number" && (
-            <div style={{ padding: "10px 12px", background: "#F9FAFB", borderRadius: 8, border: "1px solid #F0F0F0", display: "flex", alignItems: "center", gap: 10 }}>
-              <span style={{ fontSize: 11, fontWeight: 700, color: "#4B5563" }}>Lead Score</span>
-              <div style={{ flex: 1, height: 5, background: "#E5E7EB", borderRadius: 99, overflow: "hidden" }}>
-                <div style={{ height: "100%", width: `${lead.leadScore}%`, background: lead.leadScore >= 70 ? "#059669" : lead.leadScore >= 40 ? "#D97706" : "#9CA3AF", borderRadius: 99 }} />
-              </div>
-              <span style={{ fontSize: 18, fontWeight: 900, color: lead.leadScore >= 70 ? "#059669" : lead.leadScore >= 40 ? "#D97706" : "#6B7280" }}>
-                {lead.leadScore}
-              </span>
-            </div>
-          )}
-        </SCard>
+      {/* ══ COL 1: Counseling Form → Lead Info → Qualification ══ */}
+      <div style={{ display: "flex", flexDirection: "column" as const, gap: 12 }}>
 
         <CounselingForm lead={lead} />
 
-        <SCard title="Course Interests" icon={<Tag size={12} />} accent="#7C3AED">
-          <div style={{ display: "flex", gap: 5, flexWrap: "wrap" as const, marginBottom: 10 }}>
-            {(lead.courseInterests ?? []).length > 0
-              ? (lead.courseInterests ?? []).map(c => (
-                  <span key={c} style={{ fontSize: 11, fontWeight: 700, padding: "3px 10px", borderRadius: 7, background: "#EFF6FF", color: "#1D4ED8", border: "1px solid #BFDBFE" }}>{c}</span>
-                ))
-              : <span style={{ fontSize: 12, color: "#9CA3AF" }}>None selected</span>
-            }
-          </div>
-          <div style={{ display: "flex", gap: 5, flexWrap: "wrap" as const }}>
-            {COURSE_OPTIONS.map(c => {
-              const sel = selectedCourses.includes(c);
-              return (
-                <button
-                  key={c}
-                  onClick={() => setSelectedCourses(p => p.includes(c) ? p.filter(x => x !== c) : [...p, c])}
-                  style={{ fontSize: 11, fontWeight: 600, padding: "3px 9px", borderRadius: 6, cursor: "pointer", border: `1.5px solid ${sel ? "#7C3AED" : "#E5E7EB"}`, background: sel ? "#FAF5FF" : "#fff", color: sel ? "#7C3AED" : "#374151" }}
-                >
-                  {c}
-                </button>
-              );
-            })}
-          </div>
+        <SCard title="Lead Information" icon={<User size={11} />} accent="#111111">
+          <InfoRow label="Lead ID"     value={lead.id}        mono />
+          <InfoRow label="Source"      value={lead.source}         />
+          <InfoRow label="City"        value={lead.city}           />
+          <InfoRow label="Assigned To" value={lead.assignedTo}     />
+          <InfoRow label="Created"     value={lead.createdAt} mono />
+          {lead.followUpDate && <InfoRow label="Follow-up" value={lead.followUpDate} mono />}
+          <InfoRow label="Priority"    value={lead.priority}  last />
         </SCard>
 
+        {lead.lostReason && (
+          <div style={{ padding: "10px 12px", background: "var(--danger-light)", border: "1px solid var(--danger-border)", borderRadius: "var(--radius-md)" }}>
+            <p style={{ fontSize: 10, fontWeight: 800, textTransform: "uppercase" as const, letterSpacing: "0.06em", color: "var(--danger)", margin: "0 0 3px" }}>Lost Reason</p>
+            <p style={{ fontSize: 12, color: "var(--danger)", lineHeight: 1.5, margin: 0 }}>{lead.lostReason}</p>
+          </div>
+        )}
+      </div>
+
+      {/* ══ COL 2: Handling Objections → Language Preference ══ */}
+      <div style={{ display: "flex", flexDirection: "column" as const, gap: 12 }}>
+
+        {/* Handling Objections */}
+        <div style={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: "var(--radius-md)", overflow: "hidden" }}>
+          <div style={{ padding: "8px 12px", borderBottom: "1px solid var(--border)", display: "flex", alignItems: "center", justifyContent: "space-between", background: "var(--surface-2)", borderLeft: "3px solid var(--warning)" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+              <Target size={11} style={{ color: "var(--warning)" }} />
+              <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.06em", textTransform: "uppercase" as const, color: "var(--text-muted)" }}>Handling Objections</span>
+            </div>
+            {objEdit ? (
+              <div style={{ display: "flex", gap: 5 }}>
+                <button onClick={() => setObjEdit(false)} style={{ fontSize: 11, padding: "3px 8px", borderRadius: 4, border: "1px solid var(--border-strong)", background: "var(--surface)", color: "var(--text-secondary)", cursor: "pointer" }}>Cancel</button>
+                <button onClick={() => setObjEdit(false)} style={{ fontSize: 11, padding: "3px 8px", borderRadius: 4, border: "none", background: "var(--warning)", color: "#fff", cursor: "pointer", fontWeight: 700 }}>Save</button>
+              </div>
+            ) : (
+              <button onClick={() => setObjEdit(true)} style={{ fontSize: 11, padding: "3px 8px", borderRadius: 4, border: "1px solid var(--border-strong)", background: "var(--surface)", color: "var(--text-secondary)", cursor: "pointer" }}>Edit</button>
+            )}
+          </div>
+          <div style={{ padding: "12px", display: "flex", flexDirection: "column" as const, gap: 8, maxHeight: 260, overflowY: "auto" as const, scrollbarWidth: "thin" as const }}>
+            {objections.length === 0 && !objEdit && (
+              <p style={{ fontSize: 12, color: "var(--text-muted)", margin: 0, fontStyle: "italic" }}>No objections added yet.</p>
+            )}
+            {objections.map((obj, i) => (
+              <div key={i} style={{ padding: "9px 11px", background: "var(--warning-light)", borderRadius: 6, border: "1px solid var(--warning-border)" }}>
+                {objEdit ? (
+                  <div style={{ display: "flex", flexDirection: "column" as const, gap: 5 }}>
+                    <input value={obj.objection} onChange={e => { const o = [...objections]; o[i] = { ...o[i], objection: e.target.value }; setObjections(o); }} placeholder="Objection..." style={{ ...INPUT, fontWeight: 600 }} />
+                    <input value={obj.response}  onChange={e => { const o = [...objections]; o[i] = { ...o[i], response:  e.target.value }; setObjections(o); }} placeholder="Response..."  style={INPUT} />
+                    {objections.length > 1 && (
+                      <button onClick={() => setObjections(objections.filter((_, j) => j !== i))} style={{ fontSize: 10, color: "var(--danger)", background: "transparent", border: "none", cursor: "pointer", textAlign: "left" as const, padding: 0, fontWeight: 600 }}>Remove</button>
+                    )}
+                  </div>
+                ) : (
+                  <>
+                    <p style={{ fontSize: 11, fontWeight: 700, color: "var(--warning)", margin: "0 0 3px" }}>If: {obj.objection}</p>
+                    <p style={{ fontSize: 11, color: "var(--text-primary)", margin: 0, lineHeight: 1.5 }}>→ {obj.response}</p>
+                  </>
+                )}
+              </div>
+            ))}
+            {objEdit && (
+              <button onClick={() => setObjections([...objections, { objection: "", response: "" }])} style={{ display: "flex", alignItems: "center", gap: 5, fontSize: 11, color: "var(--warning)", background: "transparent", border: "1px dashed var(--warning-border)", borderRadius: 5, padding: "5px 9px", cursor: "pointer", fontWeight: 600 }}>
+                <Plus size={10} /> Add Objection
+              </button>
+            )}
+          </div>
+        </div>
+
+        {/* Language Preference */}
+        <div style={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: "var(--radius-md)", overflow: "hidden" }}>
+          <div style={{ padding: "8px 12px", borderBottom: "1px solid var(--border)", display: "flex", alignItems: "center", gap: 6, background: "var(--surface-2)", borderLeft: "3px solid var(--info)" }}>
+            <LangIcon size={11} style={{ color: "var(--info)" }} />
+            <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.06em", textTransform: "uppercase" as const, color: "var(--text-muted)" }}>Language Preference</span>
+          </div>
+          <div style={{ padding: "12px" }}>
+            <div style={{ display: "flex", flexWrap: "wrap" as const, gap: 6, marginBottom: langs.length ? 10 : 0 }}>
+              {langs.map(l => (
+                <span key={l} style={{ display: "inline-flex", alignItems: "center", gap: 4, fontSize: 12, fontWeight: 600, padding: "3px 9px", borderRadius: 5, background: "var(--info-light)", color: "var(--info)", border: "1px solid var(--info-border)" }}>
+                  {l}
+                  <button onClick={() => setLangs(langs.filter(x => x !== l))} style={{ background: "transparent", border: "none", cursor: "pointer", color: "var(--info)", padding: 0, display: "flex", alignItems: "center" }}>
+                    <X size={9} />
+                  </button>
+                </span>
+              ))}
+            </div>
+            <input
+              value={langIn}
+              onChange={e => setLangIn(e.target.value)}
+              onKeyDown={e => { if (e.key === "Enter" && langIn.trim()) { setLangs([...langs, langIn.trim()]); setLangIn(""); } }}
+              placeholder="Type a language, press Enter"
+              style={{ ...INPUT, width: "100%" }}
+            />
+          </div>
+        </div>
+
         {lead.followUps.length > 0 && (
-          <SCard title="Follow-up Schedule" icon={<CalendarDays size={12} />} accent="#059669">
-            {lead.followUps.map(fu => (
-              <div key={fu.id} style={{ padding: "8px 0", borderBottom: "1px solid #F9FAFB", display: "flex", gap: 10 }}>
-                <div style={{ width: 8, height: 8, borderRadius: "50%", marginTop: 4, flexShrink: 0, background: fu.status === "Completed" ? "#059669" : fu.status === "Missed" ? "#EF4444" : "#D97706" }} />
-                <div>
-                  <div style={{ display: "flex", gap: 7, marginBottom: 2 }}>
-                    <span style={{ fontSize: 12, fontWeight: 700, color: "#111827" }}>{fu.date} · {fu.time}</span>
-                    <span style={{ fontSize: 9, fontWeight: 800, padding: "2px 7px", borderRadius: 99, background: fu.status === "Completed" ? "#ECFDF5" : fu.status === "Missed" ? "#FEF2F2" : "#FFFBEB", color: fu.status === "Completed" ? "#059669" : fu.status === "Missed" ? "#B91C1C" : "#B45309" }}>
+          <SCard title="Follow-up Schedule" icon={<CalendarDays size={11} />} accent="var(--success)">
+            {lead.followUps.map((fu, i) => (
+              <div key={fu.id} style={{ padding: "6px 0", borderBottom: i < lead.followUps.length - 1 ? "1px solid var(--border)" : "none", display: "flex", gap: 8 }}>
+                <div style={{ width: 7, height: 7, borderRadius: "50%", marginTop: 4, flexShrink: 0, background: fu.status === "Completed" ? "var(--success)" : fu.status === "Missed" ? "var(--danger)" : "var(--warning)" }} />
+                <div style={{ flex: 1 }}>
+                  <div style={{ display: "flex", gap: 6, marginBottom: 2, alignItems: "center", flexWrap: "wrap" as const }}>
+                    <span style={{ fontSize: 11, fontWeight: 700, color: "var(--text-primary)" }}>{fu.date} · {fu.time}</span>
+                    <span style={{ fontSize: 9, fontWeight: 800, padding: "1px 5px", borderRadius: 99, background: fu.status === "Completed" ? "var(--success-light)" : fu.status === "Missed" ? "var(--danger-light)" : "var(--warning-light)", color: fu.status === "Completed" ? "var(--success)" : fu.status === "Missed" ? "var(--danger)" : "var(--warning)" }}>
                       {fu.status}
                     </span>
                   </div>
-                  {fu.remarks && <p style={{ fontSize: 11, color: "#1F2937", margin: 0 }}>{fu.remarks}</p>}
+                  {fu.remarks && <p style={{ fontSize: 11, color: "var(--text-secondary)", margin: 0, lineHeight: 1.4 }}>{fu.remarks}</p>}
                 </div>
               </div>
             ))}
           </SCard>
         )}
 
-        {lead.lostReason && (
-          <div style={{ padding: "12px 14px", background: "#FEF2F2", border: "1px solid #FECACA", borderRadius: 10 }}>
-            <p style={{ fontSize: 10, fontWeight: 800, textTransform: "uppercase" as const, letterSpacing: "0.06em", color: "#B91C1C", margin: "0 0 5px" }}>Lost Reason</p>
-            <p style={{ fontSize: 13, color: "#7F1D1D", lineHeight: 1.5, margin: 0 }}>{lead.lostReason}</p>
+        <SCard title="Lead Qualification" icon={<TrendingUp size={11} />} accent="var(--accent)">
+          <div style={{ display: "flex", flexDirection: "column" as const, gap: 6, marginBottom: 10 }}>
+            {([
+              { label: "Intake Timeline",  value: lead.intakeTimeline  ?? "—" },
+              { label: "Education",        value: lead.education        ?? "—" },
+              { label: "Engagement Level", value: lead.engagementLevel  ?? "—" },
+              { label: "Budget Readiness", value: lead.budgetReadiness  ?? "—" },
+            ] as const).map(r => (
+              <div key={r.label} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "6px 9px", background: "var(--surface-2)", borderRadius: 5, border: "1px solid var(--border)" }}>
+                <span style={{ fontSize: 11, color: "var(--text-muted)" }}>{r.label}</span>
+                <span style={{ fontSize: 12, fontWeight: 700, color: "var(--text-primary)" }}>{r.value}</span>
+              </div>
+            ))}
           </div>
-        )}
+          {typeof lead.leadScore === "number" && (
+            <div style={{ display: "flex", alignItems: "center", gap: 9, padding: "7px 9px", background: "var(--surface-2)", borderRadius: 5, border: "1px solid var(--border)" }}>
+              <span style={{ fontSize: 11, fontWeight: 600, color: "var(--text-secondary)", whiteSpace: "nowrap" as const }}>Lead Score</span>
+              <div style={{ flex: 1, height: 4, background: "var(--border)", borderRadius: 99, overflow: "hidden" }}>
+                <div style={{ height: "100%", width: `${lead.leadScore}%`, background: scoreColor(lead.leadScore), borderRadius: 99 }} />
+              </div>
+              <span style={{ fontSize: 15, fontWeight: 900, color: scoreColor(lead.leadScore) }}>{lead.leadScore}</span>
+            </div>
+          )}
+        </SCard>
       </div>
 
-      {/* ── RIGHT ── */}
-      <div style={{ display: "flex", flexDirection: "column" as const, gap: 14 }}>
+      {/* ══ COL 3 (300px): Update Status → Rep Notes → Quick Note ══ */}
+      <div style={{ display: "flex", flexDirection: "column" as const, gap: 12 }}>
 
-        {/* Update Status */}
-        <SCard title="Update Status" icon={<Zap size={12} />} accent="#F59E0B">
+        <SCard title="Update Status" icon={<Zap size={11} />} accent="var(--warning)">
           <div style={{ display: "flex", flexDirection: "column" as const, gap: 7 }}>
             <select
               value={currentStatus}
               onChange={e => onStatusChange(e.target.value as LeadStatus)}
-              style={{ width: "100%", fontSize: 12, padding: "9px 10px", borderRadius: 8, border: `1px solid ${sc.border}`, background: sc.bg, color: sc.text, cursor: "pointer", fontWeight: 700 }}
+              style={{ width: "100%", fontSize: 12, padding: "7px 9px", borderRadius: "var(--radius-sm)", border: `1px solid ${sc.border}`, background: sc.bg, color: sc.text, cursor: "pointer", fontWeight: 700, fontFamily: "inherit", outline: "none" }}
             >
               {(["New","Contacted","Qualified","Proposal Sent","Negotiation","Enrolled","Not Interested","Lost"] as LeadStatus[]).map(s => (
                 <option key={s} value={s}>{s}</option>
@@ -181,7 +240,7 @@ export default function OverviewTab({ lead, currentStatus, onStatusChange }: Ove
               <select
                 value={selectedLostReason}
                 onChange={e => setSelectedLostReason(e.target.value)}
-                style={{ width: "100%", fontSize: 12, padding: "9px 10px", borderRadius: 8, border: "1px solid #FECACA", background: "#FEF2F2", color: "#B91C1C", cursor: "pointer" }}
+                style={{ width: "100%", fontSize: 12, padding: "7px 9px", borderRadius: "var(--radius-sm)", border: "1px solid var(--danger-border)", background: "var(--danger-light)", color: "var(--danger)", cursor: "pointer", fontFamily: "inherit", outline: "none" }}
               >
                 <option value="">Select lost reason...</option>
                 {LOST_REASONS.map(r => <option key={r} value={r}>{r}</option>)}
@@ -189,78 +248,46 @@ export default function OverviewTab({ lead, currentStatus, onStatusChange }: Ove
             )}
             <button
               onClick={updateStatus}
-              style={{ padding: "9px 0", borderRadius: 8, fontSize: 12, fontWeight: 700, background: statusSaved ? "#ECFDF5" : "#111827", color: statusSaved ? "#059669" : "#fff", border: statusSaved ? "1px solid #A7F3D0" : "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 5 }}
+              style={{ padding: "7px 0", borderRadius: "var(--radius-sm)", fontSize: 12, fontWeight: 700, background: statusSaved ? "var(--success-light)" : "#111111", color: statusSaved ? "var(--success)" : "#fff", border: statusSaved ? "1px solid var(--success-border)" : "1px solid #111", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 5, transition: "all .15s" }}
             >
-              {statusSaved ? <><CheckCircle2 size={13} />Status Saved!</> : "Save Status"}
+              {statusSaved ? <><CheckCircle2 size={13} />Saved!</> : "Save Status"}
             </button>
           </div>
         </SCard>
 
-        {/* Rep Notes */}
-        <SCard title="Rep Notes" icon={<StickyNote size={12} />} accent="#D97706">
+        <SCard title="Rep Notes" icon={<StickyNote size={11} />} accent="var(--warning)">
           <textarea
             value={notes}
             onChange={e => setNotes(e.target.value)}
             rows={5}
             placeholder="Add notes..."
-            style={{ width: "100%", fontSize: 12, borderRadius: 8, padding: "9px 10px", resize: "vertical" as const, lineHeight: 1.6, boxSizing: "border-box" as const, background: "#F9FAFB", border: `1px solid ${noteSaved ? "#A7F3D0" : "#E5E7EB"}`, color: "#111827", outline: "none" }}
+            style={{ width: "100%", fontSize: 12, borderRadius: "var(--radius-sm)", padding: "7px 9px", resize: "vertical" as const, lineHeight: 1.6, boxSizing: "border-box" as const, background: "var(--surface-2)", border: `1px solid ${noteSaved ? "var(--success-border)" : "var(--border)"}`, color: "var(--text-primary)", outline: "none", fontFamily: "inherit" }}
           />
           <button
             onClick={saveNote}
-            style={{ marginTop: 7, display: "flex", alignItems: "center", gap: 4, fontSize: 11, fontWeight: 700, padding: "7px 13px", borderRadius: 7, background: noteSaved ? "#ECFDF5" : "#fff", color: noteSaved ? "#065F46" : "#374151", border: `1px solid ${noteSaved ? "#A7F3D0" : "#E5E7EB"}`, cursor: "pointer" }}
+            style={{ marginTop: 6, display: "flex", alignItems: "center", gap: 4, fontSize: 11, fontWeight: 600, padding: "5px 10px", borderRadius: "var(--radius-sm)", background: noteSaved ? "var(--success-light)" : "var(--surface-2)", color: noteSaved ? "var(--success)" : "var(--text-secondary)", border: `1px solid ${noteSaved ? "var(--success-border)" : "var(--border-strong)"}`, cursor: "pointer", transition: "all .15s" }}
           >
-            {noteSaved ? <><Check size={12} strokeWidth={2.5} />Saved!</> : "Save Notes"}
+            {noteSaved ? <><Check size={11} strokeWidth={2.5} />Saved!</> : "Save Notes"}
           </button>
         </SCard>
 
-        {/* Quick Note */}
-        <SCard title="Add Quick Note" icon={<MessageSquare size={12} />}>
+        <SCard title="Quick Note" icon={<MessageSquare size={11} />} accent="var(--accent)">
           <textarea
             value={noteInput}
             onChange={e => setNoteInput(e.target.value)}
-            rows={3}
-            placeholder="Quick note..."
-            style={{ width: "100%", fontSize: 12, borderRadius: 8, padding: "8px 10px", resize: "none" as const, boxSizing: "border-box" as const, background: "#F9FAFB", border: "1px solid #E5E7EB", color: "#111827", outline: "none" }}
+            rows={4}
+            placeholder="Type and add..."
+            style={{ width: "100%", fontSize: 12, borderRadius: "var(--radius-sm)", padding: "7px 9px", resize: "none" as const, boxSizing: "border-box" as const, background: "var(--surface-2)", border: "1px solid var(--border)", color: "var(--text-primary)", outline: "none", fontFamily: "inherit" }}
           />
           <button
             onClick={addNote}
             disabled={!noteInput.trim()}
-            style={{ marginTop: 7, width: "100%", display: "flex", alignItems: "center", justifyContent: "center", gap: 4, padding: "8px 0", borderRadius: 8, fontSize: 12, fontWeight: 700, background: noteAdded ? "#ECFDF5" : noteInput.trim() ? "#2563EB" : "#F3F4F6", color: noteAdded ? "#059669" : noteInput.trim() ? "#fff" : "#9CA3AF", border: "none", cursor: noteInput.trim() ? "pointer" : "not-allowed" }}
+            style={{ marginTop: 6, width: "100%", display: "flex", alignItems: "center", justifyContent: "center", gap: 4, padding: "7px 0", borderRadius: "var(--radius-sm)", fontSize: 12, fontWeight: 600, background: noteAdded ? "var(--success-light)" : noteInput.trim() ? "#111111" : "var(--surface-2)", color: noteAdded ? "var(--success)" : noteInput.trim() ? "#fff" : "var(--text-muted)", border: noteAdded ? "1px solid var(--success-border)" : "none", cursor: noteInput.trim() ? "pointer" : "not-allowed", transition: "all .15s" }}
           >
             {noteAdded ? <><CheckCircle2 size={13} />Added!</> : "Add Note"}
           </button>
         </SCard>
 
-        {/* Recent Activity */}
-        <SCard title="Recent Activity" icon={<Activity size={12} />}>
-          {lead.activity.length === 0 ? (
-            <p style={{ fontSize: 12, color: "#9CA3AF", margin: 0 }}>No activity recorded.</p>
-          ) : (
-            <>
-              <ol style={{ position: "relative" as const, borderLeft: "2px solid #F0F0F0", marginLeft: 4, padding: 0, listStyle: "none" as const }}>
-                {displayedAct.map((item, i) => {
-                  const color = ACTIVITY_COLORS[item.type] ?? "#374151";
-                  return (
-                    <li key={i} style={{ position: "relative" as const, paddingBottom: 12, paddingLeft: 14 }}>
-                      <span style={{ position: "absolute" as const, left: -4, top: 4, width: 7, height: 7, borderRadius: "50%", background: color, border: "2px solid #fff" }} />
-                      <p style={{ fontSize: 9, fontWeight: 800, color, margin: "0 0 1px", textTransform: "uppercase" as const, letterSpacing: "0.05em" }}>{ACTIVITY_LABELS[item.type]}</p>
-                      <p style={{ fontSize: 11, color: "#1F2937", lineHeight: 1.4, margin: "0 0 1px" }}>{item.text}</p>
-                      <p style={{ fontSize: 10, color: "#9CA3AF", margin: 0 }}>{item.time}</p>
-                    </li>
-                  );
-                })}
-              </ol>
-              {lead.activity.length > 5 && (
-                <button
-                  onClick={() => setShowAllAct(v => !v)}
-                  style={{ display: "flex", alignItems: "center", gap: 3, fontSize: 11, color: "#2563EB", background: "transparent", border: "none", cursor: "pointer", padding: "3px 0" }}
-                >
-                  {showAllAct ? <><ChevronUp size={11} />Show less</> : <><ChevronDown size={11} />Show all {lead.activity.length}</>}
-                </button>
-              )}
-            </>
-          )}
-        </SCard>
       </div>
     </div>
   );
