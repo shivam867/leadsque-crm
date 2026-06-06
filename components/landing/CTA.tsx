@@ -28,6 +28,12 @@ const roleButtons = [
     className:
       "bg-purple-50 hover:bg-purple-100 text-purple-800 border border-purple-200",
   },
+  {
+    href: "/operations",
+    title: "Operations",
+    className:
+      "bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-200",
+  },
 ];
 
 export default function CTA() {
@@ -104,8 +110,7 @@ export default function CTA() {
         </div>
 
         <p className="text-xs text-gray-400">
-          No credit card required · Free demo access · Works with LeadSquared,
-          Meritto & Zoho
+          No credit card required · Free demo access
         </p>
       </div>
     </section>

@@ -85,6 +85,32 @@ const roles = [
     ctaText: "Enter as Director",
     ctaHref: "/director",
   },
+  {
+    key: "operations",
+    label: "Operations",
+    tagline: "Enrolments & fulfilment",
+    description:
+      "Manage enrolled students, track onboarding progress, collect documents, dispatch welcome kits, and monitor batch readiness.",
+    icon: (
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M9 11l3 3L22 4"/>
+        <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>
+      </svg>
+    ),
+    features: [
+      "Enrolled student management",
+      "Onboarding checklist tracking",
+      "Document & payment status",
+      "Batch strength & kit dispatch",
+    ],
+    accentColor: "emerald",
+    borderTop: "border-t-emerald-500",
+    iconBg: "bg-emerald-50 text-emerald-600",
+    taglineColor: "text-emerald-600",
+    arrowHover: "group-hover:text-emerald-600",
+    ctaText: "Enter as Operations",
+    ctaHref: "/operations",
+  },
 ];
 
 export default function RoleSelector() {
@@ -97,8 +123,8 @@ export default function RoleSelector() {
         </p>
       </div>
 
-      {/* Role cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+      {/* Role cards — 4 columns on large screens, 2 on medium, 1 on small */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
         {roles.map((role) => (
           <Link
             key={role.key}
