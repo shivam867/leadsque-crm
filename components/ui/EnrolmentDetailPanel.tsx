@@ -4,7 +4,7 @@ import { useState } from "react";
 import {
   X, Phone, Mail, MapPin, BookOpen, CalendarCheck, Clock,
   User, FileText, CreditCard, ChevronRight, CheckCircle2,
-  AlertCircle, Download, MessageSquare, Users,
+  AlertCircle, Download, MessageSquare, Users, Lock, Plus,
 } from "lucide-react";
 import { EnrolledLead, PAYMENT_COLORS, AVATAR_PALETTE } from "../../data/enrolment";
 
@@ -31,6 +31,8 @@ function InfoRow({ icon, label, value }: { icon: React.ReactNode; label: string;
   );
 }
 
+type PaymentRow = { date: string; amount: number; mode: string; ref: string };
+
 // ── EnrolmentPanel ────────────────────────────────────────────────────────────
 export default function EnrolmentPanel({
   lead,
@@ -47,8 +49,38 @@ export default function EnrolmentPanel({
   const doneSteps   = lead.onboardingSteps.filter(s => s.done).length;
   const totalSteps  = lead.onboardingSteps.length;
   const progressPct = Math.round((doneSteps / totalSteps) * 100);
-  const collected   = lead.paymentHistory.reduce((s, p) => s + p.amount, 0);
-  const balance     = lead.fee - collected;
+
+  // ── Editable payment tracking (operations team) ──────────────────────────────
+  // Seeded with the lead's dummy data; in production wire these to your backend.
+  const [totalFee, setTotalFee] = useState<number>(lead.fee);
+  const [payments, setPayments] = useState<PaymentRow[]>(lead.paymentHistory);
+  const [amtInput, setAmtInput] = useState<string>("");
+  const [modeInput, setModeInput] = useState<string>("UPI");
+
+  const collected   = payments.reduce((s, p) => s + p.amount, 0);
+  const balance     = Math.max(totalFee - collected, 0);
+  const status: "Paid" | "Partial" | "Pending" =
+    collected <= 0 ? "Pending" : collected >= totalFee ? "Paid" : "Partial";
+  const statusColor = PAYMENT_COLORS[status];
+
+  function addPayment() {
+    const amt = parseInt(amtInput, 10);
+    if (!amt || amt <= 0) return;
+    setPayments(prev => [
+      ...prev,
+      {
+        date: new Date().toISOString().slice(0, 10),
+        amount: amt,
+        mode: modeInput,
+        ref: "TXN" + Math.floor(Math.random() * 9_000_000 + 1_000_000),
+      },
+    ]);
+    setAmtInput("");
+  }
+
+  function removePayment(i: number) {
+    setPayments(prev => prev.filter((_, idx) => idx !== i));
+  }
 
   return (
     <aside style={{
@@ -86,12 +118,12 @@ export default function EnrolmentPanel({
           </button>
         </div>
 
-        {/* Quick stats strip */}
+        {/* Quick stats strip — Payment chip reflects the LIVE status */}
         <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 6, marginBottom: 12 }}>
           {[
-            { label: "Fee",     value: `₹${(lead.fee / 1000).toFixed(0)}K`,                                            color: "#111827" },
-            { label: "Payment", value: lead.paymentStatus,                                                               color: PAYMENT_COLORS[lead.paymentStatus] },
-            { label: "Kit",     value: lead.kitStatus === "Dispatched" ? "Sent ✓" : lead.kitStatus,                     color: lead.kitStatus === "Dispatched" ? "#059669" : "#d97706" },
+            { label: "Fee",     value: `₹${(totalFee / 1000).toFixed(0)}K`,                                          color: "#111827" },
+            { label: "Payment", value: status,                                                                        color: statusColor },
+            { label: "Kit",     value: lead.kitStatus === "Dispatched" ? "Sent ✓" : lead.kitStatus,                   color: lead.kitStatus === "Dispatched" ? "#059669" : "#d97706" },
           ].map(({ label, value, color }) => (
             <div key={label} style={{ textAlign: "center", padding: "8px 6px", borderRadius: 8, background: "#f3f4f6", border: "1px solid #e5e7eb" }}>
               <p style={{ margin: 0, fontSize: 13, fontWeight: 800, color }}>{value}</p>
@@ -158,6 +190,23 @@ export default function EnrolmentPanel({
               </div>
             </div>
 
+            {/* ── Sales Rep Note (READ-ONLY, mirrored from the rep's lead page) ── */}
+            <SectionLabel>Sales Rep Note</SectionLabel>
+            <div style={{ padding: "10px 12px", background: "#eef2ff", borderRadius: 8, border: "1px solid #c7d2fe", marginBottom: 14 }}>
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 8 }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                  <div style={{ width: 22, height: 22, borderRadius: 6, background: "#dbeafe", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 700, fontSize: 9, color: "#1d4ed8" }}>
+                    {lead.repAvatar}
+                  </div>
+                  <span style={{ fontSize: 11, fontWeight: 600, color: "#3730a3" }}>{lead.rep}</span>
+                </div>
+                <span style={{ display: "inline-flex", alignItems: "center", gap: 3, fontSize: 9, fontWeight: 700, color: "#6b7280", background: "#fff", border: "1px solid #e5e7eb", padding: "2px 7px", borderRadius: 99 }}>
+                  <Lock size={9} /> Read-only
+                </span>
+              </div>
+              <p style={{ fontSize: 12, color: "#1e1b4b", lineHeight: 1.6, margin: 0 }}>{lead.salesRepNote}</p>
+            </div>
+
             <SectionLabel>Documents</SectionLabel>
             <div style={{ display: "flex", flexDirection: "column", gap: 5, marginBottom: 14 }}>
               {lead.documents.map((doc, i) => {
@@ -186,41 +235,90 @@ export default function EnrolmentPanel({
           </div>
         )}
 
-        {/* ── PAYMENTS ── */}
+        {/* ── PAYMENTS (editable by operations) ── */}
         {tab === "payments" && (
           <div style={{ padding: "14px" }}>
-            <SectionLabel>Fee Summary</SectionLabel>
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, marginBottom: 14 }}>
-              {[
-                { label: "Total Fee",  value: `₹${lead.fee.toLocaleString("en-IN")}`,   color: "#111827" },
-                { label: "Status",     value: lead.paymentStatus,                         color: PAYMENT_COLORS[lead.paymentStatus] },
-                { label: "Collected",  value: `₹${collected.toLocaleString("en-IN")}`,   color: "#059669" },
-                { label: "Balance",    value: `₹${balance.toLocaleString("en-IN")}`,     color: balance === 0 ? "#059669" : "#dc2626" },
-              ].map(({ label, value, color }) => (
-                <div key={label} style={{ padding: "10px 12px", borderRadius: 8, background: "#f3f4f6", border: "1px solid #e5e7eb", textAlign: "center" }}>
-                  <p style={{ fontSize: 16, fontWeight: 800, color, margin: 0 }}>{value}</p>
-                  <p style={{ fontSize: 10, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.06em", color: "#525252", margin: "2px 0 0" }}>{label}</p>
-                </div>
-              ))}
+
+            {/* Total course fee — operations sets this */}
+            <SectionLabel>Total Course Fee</SectionLabel>
+            <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "8px 12px", borderRadius: 8, background: "#f3f4f6", border: "1px solid #e5e7eb", marginBottom: 14 }}>
+              <span style={{ fontSize: 16, fontWeight: 800, color: "#111827" }}>₹</span>
+              <input
+                type="number"
+                value={totalFee}
+                onChange={e => setTotalFee(Math.max(0, parseInt(e.target.value || "0", 10)))}
+                style={{ flex: 1, minWidth: 0, border: "none", background: "transparent", outline: "none", fontSize: 16, fontWeight: 800, color: "#111827" }}
+              />
+              <span style={{ fontSize: 9, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.06em", color: "#9ca3af" }}>editable</span>
             </div>
 
-            <SectionLabel>Payment History</SectionLabel>
-            {lead.paymentHistory.length === 0 ? (
+            {/* Live summary: collected / pending / status */}
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 8, marginBottom: 16 }}>
+              <div style={{ padding: "10px 6px", borderRadius: 8, background: "#f3f4f6", border: "1px solid #e5e7eb", textAlign: "center" }}>
+                <p style={{ fontSize: 15, fontWeight: 800, color: "#059669", margin: 0 }}>₹{collected.toLocaleString("en-IN")}</p>
+                <p style={{ fontSize: 9, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.05em", color: "#525252", margin: "2px 0 0" }}>Paid</p>
+              </div>
+              <div style={{ padding: "10px 6px", borderRadius: 8, background: "#f3f4f6", border: "1px solid #e5e7eb", textAlign: "center" }}>
+                <p style={{ fontSize: 15, fontWeight: 800, color: balance === 0 ? "#059669" : "#dc2626", margin: 0 }}>₹{balance.toLocaleString("en-IN")}</p>
+                <p style={{ fontSize: 9, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.05em", color: "#525252", margin: "2px 0 0" }}>Pending</p>
+              </div>
+              <div style={{ padding: "10px 6px", borderRadius: 8, background: "#f3f4f6", border: "1px solid #e5e7eb", textAlign: "center", display: "flex", flexDirection: "column", justifyContent: "center" }}>
+                <span style={{ alignSelf: "center", fontSize: 11, fontWeight: 800, color: "#fff", background: statusColor, padding: "3px 10px", borderRadius: 99 }}>{status}</span>
+                <p style={{ fontSize: 9, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.05em", color: "#525252", margin: "5px 0 0" }}>Status</p>
+              </div>
+            </div>
+
+            {/* Record a payment */}
+            <SectionLabel>Record a Payment</SectionLabel>
+            <div style={{ display: "flex", gap: 6, marginBottom: 14 }}>
+              <input
+                type="number"
+                placeholder="Amount"
+                value={amtInput}
+                onChange={e => setAmtInput(e.target.value)}
+                onKeyDown={e => { if (e.key === "Enter") addPayment(); }}
+                style={{ flex: 1, minWidth: 0, padding: "8px 10px", borderRadius: 8, border: "1px solid #e5e7eb", fontSize: 13, outline: "none", color: "#111827" }}
+              />
+              <select
+                value={modeInput}
+                onChange={e => setModeInput(e.target.value)}
+                style={{ padding: "8px 8px", borderRadius: 8, border: "1px solid #e5e7eb", fontSize: 13, background: "#fff", color: "#374151", outline: "none" }}
+              >
+                <option>UPI</option>
+                <option>Cash</option>
+                <option>Card</option>
+                <option>Bank Transfer</option>
+              </select>
+              <button
+                onClick={addPayment}
+                style={{ display: "flex", alignItems: "center", gap: 4, padding: "8px 12px", borderRadius: 8, border: "none", background: "#111827", color: "#fff", fontSize: 13, fontWeight: 700, cursor: "pointer", whiteSpace: "nowrap" }}
+              >
+                <Plus size={13} /> Add
+              </button>
+            </div>
+
+            {/* Recorded payments */}
+            <SectionLabel>Payments Recorded ({payments.length})</SectionLabel>
+            {payments.length === 0 ? (
               <div style={{ padding: "20px 0", textAlign: "center" }}>
                 <AlertCircle size={18} style={{ color: "#dc2626", margin: "0 auto 6px", display: "block" }} />
-                <p style={{ fontSize: 13, color: "#dc2626", fontWeight: 600, margin: 0 }}>No payments received</p>
+                <p style={{ fontSize: 13, color: "#dc2626", fontWeight: 600, margin: 0 }}>No payments recorded yet</p>
               </div>
             ) : (
               <div style={{ display: "flex", flexDirection: "column", gap: 7, marginBottom: 14 }}>
-                {lead.paymentHistory.map((p, i) => (
-                  <div key={i} style={{ padding: "10px 12px", borderRadius: 8, background: "#f3f4f6", border: "1px solid #e5e7eb" }}>
-                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
-                      <div>
-                        <p style={{ fontSize: 14, fontWeight: 700, color: "#059669", margin: 0 }}>₹{p.amount.toLocaleString("en-IN")}</p>
-                        <p style={{ fontSize: 11, color: "#525252", margin: "2px 0 0" }}>{p.mode} · {p.date}</p>
-                      </div>
-                      <span style={{ fontSize: 10, fontFamily: "monospace", color: "#9ca3af", background: "#e5e7eb", padding: "2px 6px", borderRadius: 4 }}>{p.ref}</span>
+                {payments.map((p, i) => (
+                  <div key={i} style={{ padding: "10px 12px", borderRadius: 8, background: "#f3f4f6", border: "1px solid #e5e7eb", display: "flex", justifyContent: "space-between", alignItems: "center", gap: 8 }}>
+                    <div style={{ minWidth: 0 }}>
+                      <p style={{ fontSize: 14, fontWeight: 700, color: "#059669", margin: 0 }}>₹{p.amount.toLocaleString("en-IN")}</p>
+                      <p style={{ fontSize: 11, color: "#525252", margin: "2px 0 0" }}>{p.mode} · {p.date}</p>
                     </div>
+                    <button
+                      onClick={() => removePayment(i)}
+                      title="Remove payment"
+                      style={{ width: 24, height: 24, borderRadius: 6, border: "1px solid #fca5a5", background: "#fee2e2", color: "#dc2626", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}
+                    >
+                      <X size={12} />
+                    </button>
                   </div>
                 ))}
               </div>
