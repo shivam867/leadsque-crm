@@ -1,3 +1,17 @@
+export type DiscountRequest = {
+  requestedBy: string;
+  repAvatar: string;
+  type: "percent" | "amount";
+  value: number;
+  reason: string;
+  requestedOn: string;
+  status: "Pending" | "Approved" | "Rejected";
+  approvedAmount?: number;
+  decidedBy?: string;
+  decidedOn?: string;
+  decisionNote?: string;
+};
+
 export type EnrolledLead = {
   id: string;
   name: string;
@@ -19,11 +33,7 @@ export type EnrolledLead = {
   batchEndDate: string;
   classTimings: string;
   counsellorNotes: string;
-  // Note written by the sales rep on the lead detail page.
-  // Shown READ-ONLY inside the operations panel.
   salesRepNote: string;
-  // The single payment operations/admissions actually cares about:
-  // the first / token / admission payment that confirms the seat.
   admissionPayment: {
     amount: number;
     status: "Paid" | "Partial" | "Pending";
@@ -32,6 +42,7 @@ export type EnrolledLead = {
   };
   kitStatus: "Dispatched" | "Pending" | "Not Dispatched";
   onboardingSteps: { label: string; done: boolean }[];
+  discountRequest?: DiscountRequest;
 };
 
 export const enrolledLeads: EnrolledLead[] = [
@@ -53,6 +64,7 @@ export const enrolledLeads: EnrolledLead[] = [
       { label: "LMS access granted",       done: false },
       { label: "Orientation completed",    done: false },
     ],
+    // No discount request
   },
   {
     id: "e2", name: "Sneha Kapoor", service: "CA Foundation", rep: "Rohan Mehta", repAvatar: "RM",
@@ -72,6 +84,15 @@ export const enrolledLeads: EnrolledLead[] = [
       { label: "LMS access granted",       done: false },
       { label: "Orientation completed",    done: false },
     ],
+    discountRequest: {
+      requestedBy: "Rohan Mehta",
+      repAvatar: "RM",
+      type: "amount",
+      value: 2000,
+      reason: "Family is cost-conscious — father asked for a small concession to commit on the balance. A ₹2K waiver should close it.",
+      requestedOn: "26 May 2025",
+      status: "Pending",
+    },
   },
   {
     id: "e3", name: "Amit Joshi", service: "UPSC Mains", rep: "Priya Nair", repAvatar: "PN",
@@ -94,6 +115,19 @@ export const enrolledLeads: EnrolledLead[] = [
       { label: "LMS access granted",       done: true },
       { label: "Orientation completed",    done: false },
     ],
+    discountRequest: {
+      requestedBy: "Priya Nair",
+      repAvatar: "PN",
+      type: "percent",
+      value: 5,
+      reason: "Third-attempt student, showed real loyalty to our brand. A 5% goodwill discount will lock in the referral goodwill as well.",
+      requestedOn: "25 May 2025",
+      status: "Approved",
+      approvedAmount: 1750,
+      decidedBy: "Operations",
+      decidedOn: "25 May 2025",
+      decisionNote: "Approved. Within the 5% goodwill allowance.",
+    },
   },
   {
     id: "e4", name: "Pooja Iyer", service: "Data Science", rep: "Aanya Sharma", repAvatar: "AS",
@@ -113,6 +147,7 @@ export const enrolledLeads: EnrolledLead[] = [
       { label: "LMS access granted",       done: false },
       { label: "Orientation completed",    done: false },
     ],
+    // No discount request — self-converted, full fee paid
   },
   {
     id: "e5", name: "Karan Malhotra", service: "MBA Prep", rep: "Meera Iyer", repAvatar: "MI",
@@ -132,6 +167,19 @@ export const enrolledLeads: EnrolledLead[] = [
       { label: "LMS access granted",       done: false },
       { label: "Orientation completed",    done: false },
     ],
+    discountRequest: {
+      requestedBy: "Meera Iyer",
+      repAvatar: "MI",
+      type: "percent",
+      value: 15,
+      reason: "Karan is stalling on the balance. A 15% reduction brings it within his stated budget and should get him to close this week.",
+      requestedOn: "23 May 2025",
+      status: "Rejected",
+      approvedAmount: 0,
+      decidedBy: "Operations",
+      decidedOn: "24 May 2025",
+      decisionNote: "Exceeds the 10% cap. Offered a free mock-test package instead.",
+    },
   },
   {
     id: "e6", name: "Divya Chauhan", service: "Full Stack Dev", rep: "Kabir Singh", repAvatar: "KS",
@@ -151,6 +199,7 @@ export const enrolledLeads: EnrolledLead[] = [
       { label: "LMS access granted",       done: true },
       { label: "Orientation completed",    done: true },
     ],
+    // No discount request — paid in full without negotiating
   },
   {
     id: "e7", name: "Naveen Kumar", service: "CA Foundation", rep: "Aryan Gupta", repAvatar: "AG",
@@ -170,6 +219,15 @@ export const enrolledLeads: EnrolledLead[] = [
       { label: "LMS access granted",       done: false },
       { label: "Orientation completed",    done: false },
     ],
+    discountRequest: {
+      requestedBy: "Aryan Gupta",
+      repAvatar: "AG",
+      type: "percent",
+      value: 10,
+      reason: "Student, tight budget, parents not convinced. A 10% reduction might be the push needed to get the token payment in before the seat lapses.",
+      requestedOn: "21 May 2025",
+      status: "Pending",
+    },
   },
   {
     id: "e8", name: "Riya Saxena", service: "UPSC Prelims", rep: "Divya Reddy", repAvatar: "DR",
@@ -189,6 +247,7 @@ export const enrolledLeads: EnrolledLead[] = [
       { label: "LMS access granted",       done: true },
       { label: "Orientation completed",    done: true },
     ],
+    // No discount request — closed on quality, not price
   },
   {
     id: "e9", name: "Ankit Sharma", service: "Data Science", rep: "Rohan Mehta", repAvatar: "RM",
@@ -208,6 +267,19 @@ export const enrolledLeads: EnrolledLead[] = [
       { label: "LMS access granted",       done: false },
       { label: "Orientation completed",    done: false },
     ],
+    discountRequest: {
+      requestedBy: "Rohan Mehta",
+      repAvatar: "RM",
+      type: "amount",
+      value: 4000,
+      reason: "Ankit negotiated hard. Offering ₹4K off the balance to stop him from going dark again — he has a competing offer from another institute.",
+      requestedOn: "19 May 2025",
+      status: "Approved",
+      approvedAmount: 3000,
+      decidedBy: "Operations",
+      decidedOn: "20 May 2025",
+      decisionNote: "Approved ₹3K (not full ₹4K). Within retention budget.",
+    },
   },
   {
     id: "e10", name: "Simran Bhatia", service: "Full Stack Dev", rep: "Priya Nair", repAvatar: "PN",
@@ -227,6 +299,7 @@ export const enrolledLeads: EnrolledLead[] = [
       { label: "LMS access granted",       done: true },
       { label: "Orientation completed",    done: false },
     ],
+    // No discount request — paid in full, no negotiation
   },
   {
     id: "e11", name: "Tarun Mehta", service: "MBA Prep", rep: "Aanya Sharma", repAvatar: "AS",
@@ -246,6 +319,7 @@ export const enrolledLeads: EnrolledLead[] = [
       { label: "LMS access granted",       done: false },
       { label: "Orientation completed",    done: false },
     ],
+    // No discount request
   },
   {
     id: "e12", name: "Preethi Nair", service: "UPSC Mains", rep: "Meera Iyer", repAvatar: "MI",
@@ -265,13 +339,23 @@ export const enrolledLeads: EnrolledLead[] = [
       { label: "LMS access granted",       done: false },
       { label: "Orientation completed",    done: false },
     ],
+    discountRequest: {
+      requestedBy: "Meera Iyer",
+      repAvatar: "MI",
+      type: "percent",
+      value: 8,
+      reason: "Preethi is waiting on a loan — an 8% reduction lowers the amount she needs to borrow and could unlock the payment this week.",
+      requestedOn: "16 May 2025",
+      status: "Pending",
+    },
   },
 ];
 
 export const PAYMENT_COLORS: Record<string, string> = {
   Paid:    "#059669",
   Partial: "#d97706",
-  Pending: "#dc2626",
+  Pending: "#6b7280",
+  Overdue: "#dc2626",
 };
 
 export const AVATAR_PALETTE = [
