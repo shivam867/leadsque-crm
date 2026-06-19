@@ -37,7 +37,7 @@ export default function Footer() {
             <Activity size={15} color="white" strokeWidth={2.5} />
           </div>
           <span className="font-bold text-lg text-gray-900 tracking-tight">
-            LeadsQueue
+            LeadsQue
           </span>
         </Link>
 
