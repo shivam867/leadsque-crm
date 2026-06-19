@@ -29,7 +29,7 @@ export default function Header() {
           <div className="w-8 h-8 rounded-lg bg-neutral-900 flex items-center justify-center">
             <Activity size={15} color="white" strokeWidth={2.5} />
           </div>
-          <span className="font-bold text-lg text-gray-900 tracking-tight">LeadsQueue</span>
+          <span className="font-bold text-lg text-gray-900 tracking-tight">LeadsQue</span>
         </Link>
 
         {/* Center nav — desktop */}

@@ -41,7 +41,7 @@ export default function Hero() {
         </h1>
 
         <p className="text-base text-gray-500 leading-relaxed mb-8 max-w-lg">
-          LeadsQueue gives your entire sales organisation a unified system to capture,
+          LeadsQue gives your entire sales organisation a unified system to capture,
           track, and close with optional AI-powered insights built right in.
         </p>
 

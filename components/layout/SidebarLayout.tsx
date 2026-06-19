@@ -47,7 +47,7 @@ export default function SidebarLayout({ children, role, navItems, userName, user
             </svg>
           </div>
           <span style={{ fontWeight: 700, fontSize: 14, letterSpacing: "-0.02em", color: "var(--text-primary)" }}>
-            LeadsQueue
+            LeadsQue
           </span>
         </Link>
 

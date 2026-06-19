@@ -66,7 +66,7 @@ export default function Footer() {
             All data encrypted in transit
           </span>
           <span className="text-gray-400 ml-0 sm:ml-2">
-            © {new Date().getFullYear()} LeadsQueue
+            © {new Date().getFullYear()} LeadsQue
           </span>
         </div>
       </div>
